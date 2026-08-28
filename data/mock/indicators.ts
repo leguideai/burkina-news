@@ -17,6 +17,7 @@ export const indicators: Indicator[] = [
     source: 'FMI / INSD',
     category: 'economie',
     program: 'Programme 4.4 — Développement du commerce',
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=85',
     history: [
       { year: 2022, value: 1.5, source: 'INSD' },
       { year: 2023, value: 3.1, source: 'INSD' },
@@ -41,6 +42,7 @@ export const indicators: Indicator[] = [
     source: 'SONABEL / Ministère de l\'Énergie',
     category: 'chantiers',
     program: 'Programme 4.2 — Souveraineté énergétique',
+    image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=85',
     history: [
       { year: 2022, value: 380, source: 'SONABEL' },
       { year: 2023, value: 420, source: 'SONABEL' },
@@ -64,6 +66,7 @@ export const indicators: Indicator[] = [
     trend: 'up',
     source: 'DGMG / Chambre des mines',
     category: 'economie',
+    image: 'https://images.unsplash.com/photo-1605792657660-596af9009e82?auto=format&fit=crop&w=800&q=85',
     history: [
       { year: 2022, value: 45.8, source: 'DGMG' },
       { year: 2023, value: 48.3, source: 'DGMG' },
@@ -88,6 +91,7 @@ export const indicators: Indicator[] = [
     source: 'INSD / Banque mondiale',
     category: 'societe',
     program: 'Programme 3.4 — Travail, emploi et protection sociale',
+    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=85',
     history: [
       { year: 2022, value: 45.1, source: 'INSD' },
       { year: 2023, value: 44.3, source: 'INSD' },
@@ -112,6 +116,7 @@ export const indicators: Indicator[] = [
     source: 'MENAPLN / UNICEF',
     category: 'societe',
     program: 'Programme 3.2 — Éducation et formation',
+    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=85',
     history: [
       { year: 2022, value: 74.6, source: 'MENAPLN' },
       { year: 2023, value: 76.1, source: 'MENAPLN' },
@@ -136,6 +141,7 @@ export const indicators: Indicator[] = [
     source: 'CONASUR / OCHA',
     category: 'securite',
     program: 'Programme 1.2 — Cohésion sociale et paix',
+    image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=85',
     history: [
       { year: 2022, value: 1.88, source: 'CONASUR' },
       { year: 2023, value: 2.03, source: 'CONASUR' },
@@ -160,6 +166,7 @@ export const indicators: Indicator[] = [
     source: 'DGPV / FAO',
     category: 'agriculture',
     program: 'Programme 4.1 — Développement agro-sylvo-pastoral',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=85',
     history: [
       { year: 2022, value: 4.2, source: 'DGPV' },
       { year: 2023, value: 4.5, source: 'DGPV' },
@@ -184,6 +191,7 @@ export const indicators: Indicator[] = [
     source: 'DGRE / ONEA',
     category: 'chantiers',
     program: 'Programme 3.5 — Environnement, eau et cadre de vie',
+    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=85',
     history: [
       { year: 2022, value: 69.1, source: 'DGRE' },
       { year: 2023, value: 70.8, source: 'DGRE' },

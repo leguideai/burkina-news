@@ -139,6 +139,7 @@ export interface Indicator {
   source: string
   category: CategoryCode
   program?: string
+  image?: string
   history: DataPoint[]
 }
 
@@ -164,6 +165,7 @@ export interface BriefFact {
   sourceUrl?: string
   category?: CategoryCode
   whyWatch?: string
+  image?: string
 }
 
 export interface Brief {
@@ -172,6 +174,7 @@ export interface Brief {
   slug: string
   date: string
   weekNumber: number
+  image?: string
   facts: BriefFact[]
 }
 

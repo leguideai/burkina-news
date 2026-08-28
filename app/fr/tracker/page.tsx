@@ -271,11 +271,22 @@ export default function TrackerPage() {
                           <td className="py-2.5 px-3 whitespace-nowrap">
                             <StatusBadge status={proj.currentStatus} size="sm" />
                           </td>
-                          <td className="py-2.5 px-3 max-w-xs">
-                            <Link href={`/fr/tracker/projets/${proj.slug}`} className="font-bold text-[#141414] hover:text-[#0b4627] block leading-snug">
-                              {proj.title}
-                            </Link>
-                            <span className="text-[11px] text-[#737373] line-clamp-1">{proj.description}</span>
+                          <td className="py-2.5 px-3 max-w-sm">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-9 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                                <img 
+                                  src={proj.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
+                                  alt={proj.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <Link href={`/fr/tracker/projets/${proj.slug}`} className="font-bold text-[#141414] hover:text-[#0b4627] block leading-snug truncate">
+                                  {proj.title}
+                                </Link>
+                                <span className="text-[10px] text-[#737373] line-clamp-1">{proj.description}</span>
+                              </div>
+                            </div>
                           </td>
                           <td className="py-2.5 px-3 font-mono whitespace-nowrap text-[#555555]">
                             {proj.sector}

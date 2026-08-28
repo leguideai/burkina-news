@@ -70,20 +70,34 @@ export default function FilPage() {
                       <span className="text-xs font-mono font-bold text-[#0b4627]">10 faits vérifiés</span>
                     </div>
 
-                    <h2 className="text-xl font-bold font-serif text-[#141414] hover:text-[#0b4627] leading-snug mb-4">
-                      <Link href={`/fr/fil/${brief.slug}`}>
-                        {brief.title}
-                      </Link>
-                    </h2>
+                    <div className="flex flex-col sm:flex-row gap-5 mb-4">
+                      {brief.image && (
+                        <div className="sm:w-1/3 aspect-[16/10] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                          <img 
+                            src={brief.image} 
+                            alt={brief.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="sm:w-2/3 flex flex-col justify-between">
+                        <h2 className="text-xl font-bold font-serif text-[#141414] hover:text-[#0b4627] leading-snug mb-3">
+                          <Link href={`/fr/fil/${brief.slug}`}>
+                            {brief.title}
+                          </Link>
+                        </h2>
 
-                    <ul className="space-y-2 mb-6 text-xs sm:text-sm font-serif text-[#444444] divide-y divide-neutral-100">
-                      {brief.facts.slice(0, 3).map((fact, idx) => (
-                        <li key={idx} className="pt-2 flex items-start gap-2">
-                          <span className="font-mono text-[11px] font-bold text-[#0b4627] shrink-0">[{fact.time}]</span>
-                          <span className="line-clamp-2 leading-relaxed">{fact.text}</span>
-                        </li>
-                      ))}
-                    </ul>
+                        <ul className="space-y-2 text-xs font-serif text-[#444444] divide-y divide-neutral-100">
+                          {brief.facts.slice(0, 3).map((fact, idx) => (
+                            <li key={idx} className="pt-2 first:pt-0 flex items-start gap-2">
+                              <span className="font-mono text-[11px] font-bold text-[#0b4627] shrink-0">[{fact.time}]</span>
+                              <span className="line-clamp-2 leading-relaxed">{fact.text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
 
                     <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center">
                       <span className="text-[11px] font-serif text-[#737373]">Sources officielles confrontées</span>

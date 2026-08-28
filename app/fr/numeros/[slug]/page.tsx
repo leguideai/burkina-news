@@ -80,21 +80,28 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
 
             <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5]">
               {issueArticles.map((art, idx) => (
-                <article key={art.id} className="p-6 hover:bg-[#faf8f5] transition-colors group flex gap-5">
-                  <span className="font-mono text-xl font-bold text-[#0b4627] shrink-0 w-8">
-                    0{idx + 1}
-                  </span>
+                <article key={art.id} className="p-6 hover:bg-[#faf8f5] transition-colors group flex flex-col sm:flex-row gap-5 items-start">
+                  <div className="flex items-center gap-3 sm:block shrink-0">
+                    <span className="font-mono text-xl font-bold text-[#0b4627] block mb-2">
+                      0{idx + 1}
+                    </span>
+                    <div className="w-28 sm:w-36 aspect-[16/10] overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                      <img 
+                        src={art.image || '/images/lead.jpeg'} 
+                        alt={art.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  </div>
 
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase text-[#0b4627] mb-1">
                       <span>{art.category}</span>
                       <span>·</span>
-                      <span className="text-[#737373] font-normal">{art.readTime}</span>
-                      <span>·</span>
-                      <span className="text-[#737373] font-normal">{art.sourceCount} sources</span>
+                      <span className="text-[#0b4627] font-semibold">{art.sourceCount} sources vérifiées</span>
                     </div>
 
-                    <h3 className="font-serif font-bold text-lg text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-2">
+                    <h3 className="font-serif font-bold text-base sm:text-lg text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-2">
                       <Link href={`/fr/${art.category}/${art.slug}`}>
                         {art.title}
                       </Link>
@@ -108,7 +115,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
                       href={`/fr/${art.category}/${art.slug}`}
                       className="font-mono text-xs font-bold text-[#0b4627] hover:underline inline-flex items-center gap-1"
                     >
-                      Lire l'enquête →
+                      Consulter l'enquête →
                     </Link>
                   </div>
                 </article>

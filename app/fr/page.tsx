@@ -70,29 +70,47 @@ export default function HomePage() {
           {/* COLUMN 1 (Col 3 / 25%) : LE FIL DE LA SEMAINE */}
           <div className="lg:col-span-3 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
             <div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-[#141414]">
-              <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-[#0b4627] inline-block"></span>
-                Le Fil Hebdo
-              </h3>
+              <Link href={`/fr/fil/${latestBrief?.slug || '2026-semaine-34'}`} className="hover:text-[#0b4627] transition-colors">
+                <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] hover:text-[#0b4627] flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-[#0b4627] inline-block"></span>
+                  Le Fil Hebdo
+                </h3>
+              </Link>
               <span className="text-[10px] font-mono text-[#737373]">Semaine 34</span>
             </div>
 
-            <div className="space-y-4 font-serif text-xs">
+            <div className="space-y-3 font-serif text-xs">
               {latestBrief?.facts.slice(0, 5).map((fact, idx) => (
-                <div key={idx} className="pb-3 border-b border-[#e6dfd5] last:border-0 last:pb-0">
-                  <div className="flex items-center gap-2 mb-1 text-[10px] font-mono text-[#555555]">
-                    <span className="font-bold text-[#0b4627]">[{fact.time}]</span>
-                    <span className="uppercase">{fact.source}</span>
+                <Link 
+                  key={idx} 
+                  href={`/fr/fil/${latestBrief.slug}#fait-${idx + 1}`}
+                  className="group block p-2 -mx-2 hover:bg-white hover:border-[#141414] border border-transparent transition-all"
+                >
+                  <div className="flex items-center gap-2 mb-1.5 text-[10px] font-mono text-[#555555]">
+                    <span className="font-bold text-[#0b4627] group-hover:underline">[{fact.time}]</span>
+                    <span className="uppercase font-semibold">{fact.source}</span>
                   </div>
-                  <p className="text-[#141414] leading-snug">
-                    {fact.text}
-                  </p>
-                </div>
+
+                  <div className="flex gap-2.5 items-start">
+                    {fact.image && (
+                      <div className="w-14 h-11 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <img 
+                          src={fact.image} 
+                          alt="Preuve factuelle" 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      </div>
+                    )}
+                    <p className="text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-3">
+                      {fact.text}
+                    </p>
+                  </div>
+                </Link>
               ))}
             </div>
 
             <Link 
-              href="/fr/fil"
+              href={`/fr/fil/${latestBrief?.slug || '2026-semaine-34'}`}
               className="mt-6 font-mono text-xs font-bold text-[#0b4627] hover:underline inline-flex items-center gap-1"
             >
               <span>Tous les 10 faits de la semaine</span>
@@ -128,7 +146,7 @@ export default function HomePage() {
 
             <div className="pt-3 border-t border-[#e6dfd5] flex flex-wrap justify-between items-center text-xs font-serif text-[#555555]">
               <span>Par {leadArticle.author} · Bobo-Dioulasso</span>
-              <span className="font-mono text-[11px]">{leadArticle.readTime} de lecture</span>
+              <span className="font-mono text-[11px] text-[#0b4627] font-semibold">{leadArticle.sourceCount} sources vérifiées</span>
             </div>
           </div>
 
@@ -154,7 +172,7 @@ export default function HomePage() {
                   <p className="text-xs font-serif text-[#555555] line-clamp-2 mb-2">
                     {art.excerpt}
                   </p>
-                  <span className="text-[11px] font-serif text-[#737373]">{art.readTime}</span>
+                  <span className="text-[11px] font-mono text-[#0b4627] font-semibold">{art.sourceCount} sources vérifiées</span>
                 </article>
               ))}
             </div>

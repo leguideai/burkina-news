@@ -64,7 +64,10 @@ export default async function ArticleDetailPage({
             <span className="text-[#737373]">·</span>
             <span className="font-bold text-[#141414]">{article.type.replace('-', ' ')}</span>
             <span className="text-[#737373]">·</span>
-            <span className="text-[#737373]">{article.readTime} de lecture</span>
+            <span className="text-[#0b4627] font-semibold flex items-center gap-1">
+              <ShieldCheck size={13} />
+              {article.sourceCount} sources vérifiées
+            </span>
           </div>
 
           {/* Headline */}
@@ -209,16 +212,25 @@ export default async function ArticleDetailPage({
                 </h3>
                 <div className="space-y-3">
                   {relatedProjects.map(p => (
-                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
-                      <div className="flex justify-between items-center mb-1">
-                        <StatusBadge status={p.currentStatus} size="sm" />
-                        <span className="text-[10px] font-mono text-[#737373]">{p.region}</span>
+                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] flex gap-3 items-start">
+                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <img 
+                          src={p.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
+                          alt={p.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <h4 className="font-serif font-bold text-xs text-[#141414] mb-1">
-                        <Link href={`/fr/tracker/projets/${p.slug}`} className="hover:text-[#0b4627]">
-                          {p.title}
-                        </Link>
-                      </h4>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-1">
+                          <StatusBadge status={p.currentStatus} size="sm" />
+                          <span className="text-[10px] font-mono text-[#737373]">{p.region}</span>
+                        </div>
+                        <h4 className="font-serif font-bold text-xs text-[#141414] leading-snug line-clamp-1">
+                          <Link href={`/fr/tracker/projets/${p.slug}`} className="hover:text-[#0b4627]">
+                            {p.title}
+                          </Link>
+                        </h4>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -231,15 +243,24 @@ export default async function ArticleDetailPage({
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#141414]">
                   Sur le Même Sujet
                 </h3>
-                <div className="space-y-3 divide-y divide-[#e6dfd5]">
+                <div className="space-y-3">
                   {relatedArticles.map(art => (
-                    <div key={art.id} className="pt-2 first:pt-0">
-                      <h4 className="font-serif font-bold text-xs text-[#141414] mb-1">
-                        <Link href={`/fr/${art.category}/${art.slug}`} className="hover:text-[#0b4627]">
-                          {art.title}
-                        </Link>
-                      </h4>
-                      <span className="font-mono text-[10px] text-[#737373]">{art.readTime} de lecture</span>
+                    <div key={art.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] flex gap-3 items-start">
+                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <img 
+                          src={art.image || '/images/lead.jpeg'} 
+                          alt={art.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-serif font-bold text-xs text-[#141414] leading-snug line-clamp-2 mb-1">
+                          <Link href={`/fr/${art.category}/${art.slug}`} className="hover:text-[#0b4627]">
+                            {art.title}
+                          </Link>
+                        </h4>
+                        <span className="font-mono text-[10px] text-[#0b4627] font-semibold">{art.sourceCount} sources</span>
+                      </div>
                     </div>
                   ))}
                 </div>

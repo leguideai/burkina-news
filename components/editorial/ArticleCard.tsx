@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Article } from '@/data/types';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface ArticleCardProps {
   article: Article;
@@ -25,9 +25,10 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
         <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-wider text-[#555555] mb-3">
           <span className="font-bold text-[#0b4627]">{article.category}</span>
           <span>·</span>
-          <span>{article.readTime} de lecture</span>
-          <span>·</span>
-          <span className="text-[#0b4627] font-semibold">{article.sourceCount} sources vérifiées</span>
+          <span className="text-[#0b4627] font-semibold flex items-center gap-1">
+            <ShieldCheck size={13} />
+            {article.sourceCount} sources vérifiées
+          </span>
         </div>
 
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] leading-[1.18] mb-4 group-hover:text-[#0b4627] transition-colors">
@@ -76,28 +77,37 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
               {article.excerpt}
             </p>
           </div>
-          <div className="text-[11px] text-[#737373] flex justify-between items-center pt-2 border-t border-neutral-100 font-mono">
-            <span>{article.sourceCount} sources</span>
-            <span className="font-semibold">{article.readTime}</span>
+          <div className="text-[11px] text-[#0b4627] flex justify-between items-center pt-2 border-t border-neutral-100 font-mono">
+            <span className="font-semibold">{article.sourceCount} sources vérifiées</span>
+            <span className="text-[#737373] group-hover:text-[#0b4627] font-bold">Lire →</span>
           </div>
         </div>
       </article>
     );
   }
 
-  // 3. COMPACT VARIANT (Text-first for sidebars)
+  // 3. COMPACT VARIANT (With photographic evidence thumbnail)
   if (variant === 'compact') {
     return (
-      <article className="group pb-4 mb-4 border-b border-[#e6dfd5] last:border-0 last:pb-0 last:mb-0">
-        <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-1">
-          {article.category}
+      <article className="group flex gap-3 pb-4 mb-4 border-b border-[#e6dfd5] last:border-0 last:pb-0 last:mb-0 items-start">
+        <div className="w-20 h-16 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+          <img 
+            src={imageSrc} 
+            alt={article.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         </div>
-        <h4 className="text-sm font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-1">
-          <Link href={`/fr/${article.category}/${article.slug}`}>
-            {article.title}
-          </Link>
-        </h4>
-        <span className="text-[11px] font-serif text-[#737373]">{article.readTime} de lecture</span>
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-0.5">
+            {article.category}
+          </div>
+          <h4 className="text-xs font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-1">
+            <Link href={`/fr/${article.category}/${article.slug}`}>
+              {article.title}
+            </Link>
+          </h4>
+          <span className="text-[10px] font-mono text-[#0b4627] font-semibold">{article.sourceCount} sources</span>
+        </div>
       </article>
     );
   }
@@ -117,7 +127,6 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
         <div>
           <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#555555] mb-2">
             <span className="font-bold text-[#0b4627]">{article.category}</span>
-            <span>{article.readTime}</span>
           </div>
 
           <h3 className="text-lg font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">
@@ -132,7 +141,7 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
         </div>
 
         <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-mono text-[#737373]">
-          <span>{article.sourceCount} sources vérifiées</span>
+          <span className="font-semibold text-[#0b4627]">{article.sourceCount} sources vérifiées</span>
           <span className="font-serif font-bold text-[#0b4627] group-hover:underline">Lire →</span>
         </div>
       </div>

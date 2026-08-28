@@ -5,6 +5,7 @@ import { PROJECT_STATUS_LABELS, PROJECT_STATUS_ORDER } from '@/data/types';
 import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getSourceUrl } from '@/data/sources';
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -129,7 +130,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                       <span className="font-mono text-xs font-bold text-[#141414]">
                         {new Date(entry.date).toLocaleDateString('fr-FR')}
                       </span>
-                      <span className="text-xs text-[#737373]">· Source : {entry.source}</span>
+                      <span className="text-xs text-[#737373] inline-flex items-center gap-1">
+                        · Source :{' '}
+                        <a 
+                          href={getSourceUrl(entry.source)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-[#0b4627] hover:underline inline-flex items-center gap-0.5"
+                          title={`Ouvrir le portail ou document officiel : ${entry.source}`}
+                        >
+                          <span>{entry.source}</span>
+                          <ExternalLink size={9} />
+                        </a>
+                      </span>
                     </div>
                     {entry.note && (
                       <p className="text-xs font-serif text-[#555555] mt-1 bg-[#faf8f5] p-3 border border-[#e6dfd5]">
@@ -237,7 +250,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <ul className="space-y-3 text-xs font-serif">
                 {project.sources.map((src, idx) => (
                   <li key={idx} className="pb-2 border-b border-[#e6dfd5] last:border-0 last:pb-0">
-                    <span className="font-semibold text-[#141414] block leading-snug">{src.title}</span>
+                    <a 
+                      href={getSourceUrl(src.institution || src.title, src.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-[#141414] hover:text-[#0b4627] hover:underline block leading-snug"
+                      title="Consulter le document source officiel"
+                    >
+                      <span>{src.title}</span>
+                      <ExternalLink size={10} className="inline ml-1 text-[#0b4627]" />
+                    </a>
                     <span className="text-[11px] text-[#737373] block mt-0.5">
                       {src.institution} · {new Date(src.date).toLocaleDateString('fr-FR')}
                     </span>

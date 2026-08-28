@@ -1,9 +1,10 @@
 import { getIndicatorByCode, indicators } from '@/data/mock/indicators';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
-import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowRight, ArrowLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getSourceUrl } from '@/data/sources';
 
 export function generateStaticParams() {
   return indicators.map((indicator) => ({
@@ -58,7 +59,19 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
                 <ShieldCheck size={14} /> Donnée officielle auditée
               </span>
               <span>·</span>
-              <span>Source : {indicator.source}</span>
+              <span className="inline-flex items-center gap-1">
+                Source :{' '}
+                <a 
+                  href={getSourceUrl(indicator.source)} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="font-bold text-[#0b4627] hover:underline inline-flex items-center gap-0.5"
+                  title={`Ouvrir le portail officiel de ${indicator.source}`}
+                >
+                  <span>{indicator.source}</span>
+                  <ExternalLink size={10} />
+                </a>
+              </span>
             </div>
           </div>
 
@@ -72,6 +85,23 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
           {/* Main Content (Col 8) */}
           <div className="lg:col-span-8 space-y-8">
             
+            {/* Photographic Sector Evidence */}
+            {indicator.image && (
+              <div className="bg-white border border-[#e6dfd5] overflow-hidden">
+                <div className="aspect-[16/9] w-full bg-neutral-100">
+                  <img 
+                    src={indicator.image} 
+                    alt={indicator.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-3 bg-[#faf8f5] border-t border-[#e6dfd5] text-[11px] font-serif text-[#737373] flex justify-between">
+                  <span>Preuve documentaire de terrain · Secteur {indicator.category}</span>
+                  <span>Code : {indicator.code}</span>
+                </div>
+              </div>
+            )}
+
             {/* Value Display Box */}
             <div className="bg-white border border-[#141414] p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 mb-6 border-b border-[#e6dfd5]">
@@ -164,7 +194,18 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
                       <tr key={h.year} className="hover:bg-[#faf8f5] transition-colors">
                         <td className="py-2.5 px-4 font-mono font-bold text-[#141414]">{h.year}</td>
                         <td className="py-2.5 px-4 font-mono font-bold text-[#0b4627]">{h.value}</td>
-                        <td className="py-2.5 px-4 text-[#555555]">{h.source}</td>
+                        <td className="py-2.5 px-4 text-[#555555]">
+                          <a 
+                            href={getSourceUrl(h.source)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-[#0b4627] hover:underline inline-flex items-center gap-1"
+                            title={`Consulter la source officielle : ${h.source}`}
+                          >
+                            <span>{h.source}</span>
+                            <ExternalLink size={10} />
+                          </a>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -182,7 +223,18 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#e6dfd5]">
                 Source Primaire Certifiée
               </h3>
-              <p className="text-xs font-serif font-bold text-[#141414] mb-1">{indicator.source}</p>
+              <p className="text-xs font-serif font-bold text-[#141414] mb-1">
+                <a 
+                  href={getSourceUrl(indicator.source)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#0b4627] hover:underline inline-flex items-center gap-1"
+                  title={`Ouvrir le portail officiel de ${indicator.source}`}
+                >
+                  <span>{indicator.source}</span>
+                  <ExternalLink size={11} />
+                </a>
+              </p>
               <p className="text-[11px] font-serif text-[#555555] leading-relaxed">
                 Les séries statistiques sont vérifiées et recoupées directement avec les publications officielles du ministère de tutelle et de l'INSD.
               </p>
@@ -196,16 +248,25 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
                 </h3>
                 <div className="space-y-3">
                   {relatedProjects.map(p => (
-                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
-                      <div className="flex justify-between items-center mb-1">
-                        <StatusBadge status={p.currentStatus} size="sm" />
-                        <span className="text-[10px] font-mono text-[#737373]">{p.region}</span>
+                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] flex gap-3 items-start">
+                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <img 
+                          src={p.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
+                          alt={p.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <h4 className="font-serif font-bold text-xs text-[#141414] mb-1">
-                        <Link href={`/fr/tracker/projets/${p.slug}`} className="hover:text-[#0b4627]">
-                          {p.title}
-                        </Link>
-                      </h4>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-1">
+                          <StatusBadge status={p.currentStatus} size="sm" />
+                          <span className="text-[10px] font-mono text-[#737373]">{p.region}</span>
+                        </div>
+                        <h4 className="font-serif font-bold text-xs text-[#141414] leading-snug line-clamp-1">
+                          <Link href={`/fr/tracker/projets/${p.slug}`} className="hover:text-[#0b4627]">
+                            {p.title}
+                          </Link>
+                        </h4>
+                      </div>
                     </div>
                   ))}
                 </div>
