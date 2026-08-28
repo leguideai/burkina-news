@@ -14,21 +14,21 @@ export const briefs: Brief[] = [
         text: 'Le Conseil des ministres approuve le cadre réglementaire pour les zones économiques spéciales.', 
         source: 'Présidence du Faso', 
         category: 'economie',
-        image: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=400&q=80'
+        image: 'https://www.presidencedufaso.bf/wp-content/uploads/2026/07/743744345_1058290256661627_7531704759728957473_n-1280x640.jpg'
       },
       { 
         time: '08:30', 
         text: 'La SONABEL annonce un taux d\'électrification rurale de 24,3 %, en hausse de 2 points.', 
         source: 'SONABEL', 
         category: 'chantiers',
-        image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfTHFMtacNzTw-vztKSDdisGXWeq9fXS8jB_y-goP0BOnTPS7QUns0-ZQ&s=10'
       },
       { 
         time: '08:15', 
         text: 'L\'INSD publie les données provisoires du commerce extérieur : excédent de 45 milliards FCFA sur S1 2026.', 
         source: 'INSD', 
         category: 'economie',
-        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=400&q=80'
+        image: 'https://microdata.insd.bf//files/images/INSD.png'
       },
       { 
         time: '08:00', 
@@ -36,42 +36,42 @@ export const briefs: Brief[] = [
         source: 'CONASUR', 
         category: 'securite', 
         whyWatch: 'Première vague de retour significative dans cette région depuis 18 mois.',
-        image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=400&q=80'
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0NXfk-4ZSPp7HVPnv7SAmLhHzCBwrySGzRnAsbbb9Eg&s=10'
       },
       { 
         time: '07:45', 
         text: 'La DGPV confirme un taux de couverture semencière de 55 % pour la campagne 2026.', 
         source: 'DGPV', 
         category: 'agriculture',
-        image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=400&q=80'
+        image: 'https://lefaso.net/IMG/jpg/690828336_1455436459952509_7351871740454381150_n.jpg'
       },
       { 
         time: '07:30', 
         text: 'Le ministre de la Santé inaugure 3 nouveaux CSPS dans la Boucle du Mouhoun.', 
         source: 'Ministère de la Santé', 
         category: 'societe',
-        image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80'
+        image: 'https://lefaso.net/local/cache-vignettes/L600xH337/5-2927-c6d0f.jpg?1787057136'
       },
       { 
         time: '07:15', 
         text: 'La BAD approuve un financement de 18 milliards FCFA pour l\'assainissement de Ouagadougou.', 
         source: 'BAD', 
         category: 'chantiers',
-        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80'
+        image: 'https://burkina24.com/wp-content/uploads/2025/04/BAD-PM-scaled.jpg'
       },
       { 
         time: '07:00', 
         text: 'L\'AES tient sa troisième réunion ministérielle à Bamako : communiqué conjoint sur la sécurité transfrontalière.', 
         source: 'AES / Présidence Mali', 
         category: 'securite',
-        image: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=400&q=80'
+        image: 'https://tchadinfos.com/wp-content/uploads/2025/10/exxtats-aes-1200x654.jpg'
       },
       { 
         time: '06:45', 
         text: 'L\'INERA annonce la certification de deux nouvelles variétés de niébé résistantes à la sécheresse.', 
         source: 'INERA', 
         category: 'agriculture',
-        image: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=400&q=80'
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo789lOPItu6jtRH8iV6CqV29MMAXO_GTzCQUgC4tEcWBN-elHpOqHnIo&s=10'
       },
       { 
         time: '06:30', 
@@ -79,7 +79,7 @@ export const briefs: Brief[] = [
         source: 'FMI', 
         category: 'economie', 
         whyWatch: 'Chiffre en hausse par rapport à la projection de mars (4,9 %).',
-        image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=400&q=80'
+        image: 'https://image.seneweb.com/content/news/2026-06-04//thumb_1260x800_69838148aee61_Hub4mfuUiP.jpeg'
       },
     ],
   },
@@ -91,16 +91,16 @@ export const briefs: Brief[] = [
     weekNumber: 33,
     image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80',
     facts: [
-      { time: '09:00', text: 'Le Trésor public annonce un taux de recouvrement fiscal de 92 % au 30 juin 2026.', source: 'DGI', category: 'economie', image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=400&q=80' },
-      { time: '08:40', text: 'Ouverture du tronçon RN4 Koudougou–Dédougou après réhabilitation.', source: 'DGIR', category: 'chantiers', image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f156f?auto=format&fit=crop&w=400&q=80' },
+      { time: '09:00', text: 'Le Trésor public annonce un taux de recouvrement fiscal de 92 % au 30 juin 2026.', source: 'DGI', category: 'economie', image: 'https://www.aib.media/wp-content/uploads/2025/09/d975b634-66c2-4e0c-872d-290609f0abc1.jpeg' },
+      { time: '08:40', text: 'Ouverture du tronçon RN4 Koudougou–Dédougou après réhabilitation.', source: 'DGIR', category: 'chantiers', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQegRfC-a1CALnl4FOcYKIoWcTfa31RcPTZ35SHEYfZ0p-x0HTwQlepFzTj&s=10' },
       { time: '08:20', text: 'La centrale solaire de Zina atteint 14,2 GWh de production cumulée sur 5 mois.', source: 'SONABEL', category: 'chantiers', image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80' },
-      { time: '08:00', text: 'Le MENAPLN confirme la réouverture de 480 écoles sur les 1 200 prévues.', source: 'MENAPLN', category: 'societe', image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=400&q=80' },
-      { time: '07:40', text: 'Signature d\'un accord de coopération agricole avec la Turquie.', source: 'Ministère des Affaires étrangères', category: 'agriculture', image: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=400&q=80' },
-      { time: '07:20', text: 'Le taux d\'inflation se stabilise à 2,8 % en juillet 2026.', source: 'INSD', category: 'economie', image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=400&q=80' },
-      { time: '07:00', text: 'Les VDP comptent désormais 90 000 membres actifs selon le ministère de la Défense.', source: 'Ministère de la Défense', category: 'securite', image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=400&q=80' },
-      { time: '06:40', text: 'Endeavour Mining publie ses résultats Q1 : 4,2 tonnes d\'or produites à Kiéré.', source: 'Endeavour Mining', category: 'economie', image: 'https://images.unsplash.com/photo-1605792657660-596af9009e82?auto=format&fit=crop&w=400&q=80' },
-      { time: '06:20', text: 'Le PNUD lance un programme de formation professionnelle pour 5 000 jeunes déplacés.', source: 'PNUD', category: 'societe', image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80' },
-      { time: '06:00', text: 'La Confédération AES annonce un exercice militaire conjoint pour septembre 2026.', source: 'État-major AES', category: 'securite', image: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=400&q=80' },
+      { time: '08:00', text: 'Le MENAPLN confirme la réouverture de 480 écoles sur les 1 200 prévues.', source: 'MENAPLN', category: 'societe', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQayP8Ww23ah4com9T3_CWvc-UbBF_4wq2MxMLZbujJu8GbFJrq3NfpbCw&s=10' },
+      { time: '07:40', text: 'Signature d\'un accord de coopération agricole avec la Turquie.', source: 'Ministère des Affaires étrangères', category: 'agriculture', image: '/images/accord-turquie.png' },
+      { time: '07:20', text: 'Le taux d\'inflation se stabilise à 2,8 % en juillet 2026.', source: 'INSD', category: 'economie', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6i0FKWjuMznbG7MAYAv_T2Vnn3OSu8HtA4cMw9ZBfAR08diUYgXLlkFo&s=10' },
+      { time: '07:00', text: 'Les VDP comptent désormais 90 000 membres actifs selon le ministère de la Défense.', source: 'Ministère de la Défense', category: 'securite', image: 'https://burkina24.com/wp-content/uploads/2025/10/VDP-scaled.jpg' },
+      { time: '06:40', text: 'Endeavour Mining publie ses résultats Q1 : 4,2 tonnes d\'or produites à Kiéré.', source: 'Endeavour Mining', category: 'economie', image: 'https://kessiya.com/wp-content/uploads/2024/01/OIP-5.jpeg' },
+      { time: '06:20', text: 'Le PNUD lance un programme de formation professionnelle pour 5 000 jeunes déplacés.', source: 'PNUD', category: 'societe', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQpoIHBvZSwMMdBXWUt3kbDtUkcEkXLBWnQM6TN_BR3A&s=10' },
+      { time: '06:00', text: 'La Confédération AES annonce un exercice militaire conjoint pour septembre 2026.', source: 'État-major AES', category: 'securite', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_8kWdjQfDac6ZDLpXXY2i40IMH79QMZmwC0ao-TZwMzLjErWCCHO7R0rs&s=10' },
     ],
   },
   {
@@ -109,7 +109,7 @@ export const briefs: Brief[] = [
     slug: '2026-semaine-32',
     date: '2026-08-10',
     weekNumber: 32,
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://www.sidwaya.info/wp-content/uploads/2025/09/2-31.jpg',
     facts: [
       { time: '09:15', text: 'Le gouvernement adopte la stratégie nationale de transformation numérique 2026-2030.', source: 'Conseil des ministres', category: 'economie', image: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=400&q=80' },
       { time: '08:50', text: 'L\'OMS valide le Burkina comme pays prioritaire pour la campagne de vaccination antipaludique.', source: 'OMS', category: 'societe', image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80' },

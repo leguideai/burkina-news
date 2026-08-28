@@ -32,6 +32,10 @@ export default function HomePage() {
   const featuredProjects = projects.slice(0, 3);
   const terrainArticle = articles.find(a => a.type === 'terrain') || articles[5];
   const factCheckArticle = articles.find(a => a.type === 'vrai-ou-faux') || articles[4];
+  const issueArticles = latestIssue ? articles.filter(a => a.issueId === latestIssue.id) : [];
+  const issueSourcesCount = issueArticles.length > 0 
+    ? issueArticles.reduce((acc, curr) => acc + curr.sourceCount, 0)
+    : leadArticle.sourceCount;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#faf8f5]">
@@ -45,7 +49,9 @@ export default function HomePage() {
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 mb-8 border-b border-[#141414]">
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#0b4627]">
-              Numéro 03 · Août 2026
+              {latestIssue 
+                ? `Numéro 0${latestIssue.number} · ${new Date(latestIssue.publicationDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}` 
+                : 'Numéro 03 · Août 2026'}
             </span>
             <span className="text-[#d4cece]">|</span>
             <span className="font-serif text-xs text-[#555555]">
@@ -54,11 +60,9 @@ export default function HomePage() {
           </div>
 
           <div className="text-xs font-serif text-[#555555] flex items-center gap-3">
-            <span>7 500 mots</span>
+            <span className="text-[#0b4627] font-semibold">{issueSourcesCount} sources documentées</span>
             <span>·</span>
-            <span>13 sources documentées</span>
-            <span>·</span>
-            <Link href="/fr/numeros/2027-03" className="font-bold text-[#0b4627] hover:underline">
+            <Link href={`/fr/numeros/${latestIssue?.slug || '2027-03'}`} className="font-bold text-[#0b4627] hover:underline">
               Feuilleter le numéro complet →
             </Link>
           </div>
@@ -376,8 +380,8 @@ export default function HomePage() {
 
               <div className="px-6 pb-6 pt-0">
                 <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-serif text-[#555555]">
-                  <span>9 sources confrontées</span>
-                  <Link href={`/fr/securite/${factCheckArticle.slug}`} className="font-mono font-bold text-xs text-[#0b4627] hover:underline">
+                  <span className="text-[#0b4627] font-semibold">{factCheckArticle.sourceCount} sources confrontées</span>
+                  <Link href={`/fr/${factCheckArticle.category}/${factCheckArticle.slug}`} className="font-mono font-bold text-xs text-[#0b4627] hover:underline">
                     Voir l'analyse des chiffres →
                   </Link>
                 </div>
