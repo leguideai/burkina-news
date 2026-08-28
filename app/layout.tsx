@@ -1,18 +1,32 @@
-import { Analytics } from '@vercel/analytics/next'
-import type { Metadata, Viewport } from 'next'
-import './globals.css'
+import type { Metadata, Viewport } from 'next';
+import { Inter, Source_Serif_4 } from 'next/font/google';
+import './globals.css';
+import { Analytics } from '@vercel/analytics/react';
 
-export const metadata: Metadata = {
-  title: 'Burkina News — L’info juste, l’info vraie',
-  description: 'Burkina News, votre média de référence pour comprendre l’actualité du Burkina Faso et de l’Afrique.',
-  generator: 'Burkina News',
-}
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const serif = Source_Serif_4({ subsets: ['latin'], variable: '--font-serif' });
 
 export const viewport: Viewport = {
   colorScheme: 'light',
-  themeColor: '#f8f7f3',
-}
+  themeColor: '#F8F7F3',
+};
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="fr" className="bg-background"><body className="antialiased">{children}{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
+export const metadata: Metadata = {
+  title: 'Burkina News — L\'info juste, l\'info vraie',
+  description: 'Actualités du Burkina Faso et du monde. Économie, Sécurité, Société, Agriculture.',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="fr" className={`${inter.variable} ${serif.variable} bg-[var(--paper)]`}>
+      <body className="antialiased font-[family-name:var(--font-inter)]">
+        {children}
+        <Analytics />
+      </body>
+    </html>
+  );
 }
