@@ -7,7 +7,7 @@ export const briefs: Brief[] = [
     slug: '2026-semaine-34',
     date: '2026-08-24',
     weekNumber: 34,
-    image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f156f?auto=format&fit=crop&w=800&q=85',
+    image: '/images/lead.jpeg',
     facts: [
       { 
         time: '08:45', 
@@ -36,7 +36,7 @@ export const briefs: Brief[] = [
         source: 'CONASUR', 
         category: 'securite', 
         whyWatch: 'Première vague de retour significative dans cette région depuis 18 mois.',
-        image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=400&q=80'
+        image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=400&q=80'
       },
       { 
         time: '07:45', 
@@ -89,7 +89,7 @@ export const briefs: Brief[] = [
     slug: '2026-semaine-33',
     date: '2026-08-17',
     weekNumber: 33,
-    image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=85',
+    image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80',
     facts: [
       { time: '09:00', text: 'Le Trésor public annonce un taux de recouvrement fiscal de 92 % au 30 juin 2026.', source: 'DGI', category: 'economie', image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=400&q=80' },
       { time: '08:40', text: 'Ouverture du tronçon RN4 Koudougou–Dédougou après réhabilitation.', source: 'DGIR', category: 'chantiers', image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f156f?auto=format&fit=crop&w=400&q=80' },
@@ -109,7 +109,7 @@ export const briefs: Brief[] = [
     slug: '2026-semaine-32',
     date: '2026-08-10',
     weekNumber: 32,
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=85',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80',
     facts: [
       { time: '09:15', text: 'Le gouvernement adopte la stratégie nationale de transformation numérique 2026-2030.', source: 'Conseil des ministres', category: 'economie', image: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=400&q=80' },
       { time: '08:50', text: 'L\'OMS valide le Burkina comme pays prioritaire pour la campagne de vaccination antipaludique.', source: 'OMS', category: 'societe', image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80' },

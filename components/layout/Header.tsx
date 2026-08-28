@@ -113,7 +113,7 @@ export default function Header() {
             href="/fr/tracker" 
             className="bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider px-3 py-1.5 transition-colors"
           >
-            Tracker (60)
+            Le Tracker
           </Link>
 
           <Link 
@@ -221,7 +221,7 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 text-[#0b4627] font-bold uppercase tracking-wider"
             >
-              → Accéder au Tracker (60 projets)
+              → Accéder au Tracker des Chantiers
             </Link>
             <Link 
               href="/fr/numeros" 

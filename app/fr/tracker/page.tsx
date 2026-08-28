@@ -229,7 +229,7 @@ export default function TrackerPage() {
         {/* Counter Bar */}
         <div className="flex justify-between items-center text-xs font-serif text-[#555555] mb-6 pb-2 border-b border-[#e6dfd5]">
           <span>
-            Affichage de <strong>{filteredProjects.length}</strong> projet{filteredProjects.length > 1 ? 's' : ''} audité{filteredProjects.length > 1 ? 's' : ''} sur 60
+            Affichage de <strong>{filteredProjects.length}</strong> projet{filteredProjects.length > 1 ? 's' : ''} sur <strong>{projects.length}</strong> documenté{projects.length > 1 ? 's' : ''} (Objectif cible : 60 chantiers majeurs)
           </span>
           <span className="font-mono text-[11px] text-[#737373] hidden sm:inline">
             Sources : DGMG, SONABEL, Ministères techniques & Terrain
@@ -319,7 +319,7 @@ export default function TrackerPage() {
                 <Compass size={32} className="mx-auto text-[#888888]" />
                 <h3 className="text-base font-bold font-serif text-[#141414]">Aucun chantier ne correspond aux filtres sélectionnés</h3>
                 <p className="text-xs font-serif text-[#555555] max-w-sm mx-auto">
-                  Ajustez les critères de recherche ou réinitialisez les filtres pour afficher l'ensemble des 60 projets audités.
+                  Ajustez les critères de recherche ou réinitialisez les filtres pour afficher l'ensemble des {projects.length} projets documentés.
                 </p>
                 <button 
                   onClick={resetFilters}
@@ -337,7 +337,7 @@ export default function TrackerPage() {
                   Protocole d'audit documentaire
                 </span>
                 <h4 className="text-sm font-bold font-serif text-[#141414] mb-1">
-                  Comment sont vérifiés les 60 chantiers ?
+                  Comment sont audités les chantiers du Tracker ?
                 </h4>
                 <p className="text-xs font-serif text-[#555555]">
                   Chaque transition de statut requiert un document contractuel officiel ou une observation directe de terrain à Ouagadougou et dans les 13 régions.

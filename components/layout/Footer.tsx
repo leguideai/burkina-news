@@ -47,7 +47,7 @@ export default function Footer() {
               Produits & Outils
             </h4>
             <ul className="space-y-2 text-xs font-serif text-[#d1e3d9]">
-              <li><Link href="/fr/tracker" className="hover:text-white transition-colors font-bold text-white">Le Tracker des Projets (60)</Link></li>
+              <li><Link href="/fr/tracker" className="hover:text-white transition-colors font-bold text-white">Le Tracker des Grands Chantiers</Link></li>
               <li><Link href="/fr/tracker/indicateurs" className="hover:text-white transition-colors">Baromètre RELANCE 2026–2030</Link></li>
               <li><Link href="/fr/numeros" className="hover:text-white transition-colors">Les Numéros Mensuels</Link></li>
               <li><Link href="/fr/fil" className="hover:text-white transition-colors">Le Fil Hebdomadaire</Link></li>

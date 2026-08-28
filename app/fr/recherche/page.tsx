@@ -148,7 +148,7 @@ export default function SearchPage() {
             <Search className="w-10 h-10 text-[#888888] mx-auto mb-3" />
             <h3 className="text-base font-bold font-serif text-[#141414] mb-1">Explorez les archives de Burkina News</h3>
             <p className="text-xs font-serif text-[#555555] max-w-sm mx-auto">
-              Saisissez un terme de recherche pour interroger simultanément les enquêtes, les 60 projets du Tracker et les séries statistiques officielles.
+              Saisissez un terme de recherche pour interroger simultanément les enquêtes, les chantiers documentés du Tracker et les séries statistiques officielles.
             </p>
           </div>
         )}

@@ -47,7 +47,7 @@ export default function AProposPage() {
             <div className="bg-white p-5 border border-[#e6dfd5]">
               <h3 className="font-serif font-bold text-base text-[#141414] mb-2">Le Tracker</h3>
               <p className="text-xs text-[#555555] font-serif leading-relaxed">
-                Notre registre public des 60 grands chantiers nationaux, audités physiquement et documentairement selon 6 statuts vérifiés.
+                Notre registre public des grands chantiers nationaux (objectif : 60 projets majeurs audités), suivis physiquement et documentairement selon 6 statuts vérifiés.
               </p>
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function AProposPage() {
                 Le Desk Données & Tracker
               </div>
               <p className="text-xs text-[#555555] font-serif leading-relaxed">
-                Audite les rapports institutionnels (DGMG, SONABEL, INSD, ministères techniques), met à jour les 60 fiches de chantiers et actualise le Baromètre RELANCE.
+                Audite les rapports institutionnels (DGMG, SONABEL, INSD, ministères techniques), met à jour les fiches de chantiers et actualise le Baromètre RELANCE.
               </p>
             </div>
 

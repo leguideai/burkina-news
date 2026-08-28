@@ -269,7 +269,7 @@ export default function HomePage() {
 
           <div className="flex items-center gap-3">
             <span className="text-xs font-serif text-[#555555] hidden sm:inline">
-              60 projets audités selon 6 statuts stricts
+              {projects.length} chantiers documentés · Objectif : 60 projets
             </span>
             <Link 
               href="/fr/tracker"
