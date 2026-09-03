@@ -4,21 +4,34 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Search, Menu, X, Globe, ArrowRight } from 'lucide-react';
-
-const CATEGORIES = [
-  { label: 'Économie', href: '/fr/economie' },
-  { label: 'Sécurité', href: '/fr/securite' },
-  { label: 'Chantiers', href: '/fr/chantiers' },
-  { label: 'Agriculture', href: '/fr/agriculture' },
-  { label: 'Société', href: '/fr/societe' },
-  { label: 'Idées', href: '/fr/idees' },
-];
+import { NAV_CATEGORIES, UI_STRINGS } from '@/data/mock/translations';
 
 export default function Header() {
-  const pathname = usePathname();
+  const pathname = usePathname() || '/fr';
+  const isEn = pathname.startsWith('/en');
+  const lang = isEn ? 'en' : 'fr';
+  const strings = isEn ? UI_STRINGS.en : UI_STRINGS.fr;
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Target links for language toggle
+  const frUrl = isEn ? pathname.replace(/^\/en/, '/fr') : pathname;
+  const enUrl = isEn ? pathname : pathname.replace(/^\/fr/, '/en');
+
+  const categories = NAV_CATEGORIES.map(cat => ({
+    label: isEn ? cat.labelEn : cat.labelFr,
+    href: isEn ? cat.hrefEn : cat.hrefFr
+  }));
+
+  const homeHref = isEn ? '/en' : '/fr';
+  const trackerHref = isEn ? '/en/tracker' : '/fr/tracker';
+  const numerosHref = isEn ? '/en/numeros' : '/fr/numeros';
+  const filHref = isEn ? '/en/fil' : '/fr/fil';
+  const indicateursHref = isEn ? '/en/tracker/indicateurs' : '/fr/tracker/indicateurs';
+  const methodeHref = isEn ? '/en/methode' : '/fr/methode';
+  const rechercheHref = isEn ? '/en/recherche' : '/fr/recherche';
 
   return (
     <header className="w-full bg-[#faf8f5] border-b border-[#e6dfd5]">
@@ -27,24 +40,34 @@ export default function Header() {
       <div className="border-b border-[#e6dfd5] text-[11px] font-serif text-[#555555] py-1.5 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <span className="font-semibold uppercase tracking-wider text-[#141414]">Jeudi 28 août 2026</span>
-            <span className="text-[#d4cece]">·</span>
-            <span>Ouagadougou & Bobo-Dioulasso</span>
+            <span className="font-semibold uppercase tracking-wider text-[#141414]">
+              {strings.dateline}
+            </span>
           </div>
 
           <div className="hidden md:block italic text-[#737373]">
-            « L'information juste, la preuve vérifiée, la trajectoire du pays »
+            {strings.siteSlogan}
           </div>
 
           <div className="flex items-center gap-4 text-xs">
-            <Link href="/fr/methode" className="hover:text-[#141414] transition-colors hidden sm:inline">
-              Charte & Sources
+            <Link href={methodeHref} className="hover:text-[#141414] transition-colors hidden sm:inline">
+              {strings.methodLink}
             </Link>
             <span className="text-[#d4cece] hidden sm:inline">·</span>
             <div className="flex items-center gap-1 font-mono font-bold text-[#141414] text-[11px]">
-              <span className="text-[#0b4627]">FR</span>
+              <Link 
+                href={frUrl} 
+                className={`transition-colors ${!isEn ? 'text-[#0b4627] underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+              >
+                FR
+              </Link>
               <span className="text-neutral-300">/</span>
-              <span className="text-neutral-400 hover:text-neutral-700 cursor-pointer">EN</span>
+              <Link 
+                href={enUrl} 
+                className={`transition-colors ${isEn ? 'text-[#0b4627] underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+              >
+                EN
+              </Link>
             </div>
           </div>
         </div>
@@ -63,7 +86,7 @@ export default function Header() {
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
           
-          <Link href="/fr">
+          <Link href={homeHref}>
             <img src="/images/logo.png" alt="Burkina News" className="h-9 w-auto object-contain" />
           </Link>
 
@@ -76,9 +99,9 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Desktop Brand Centered or Left */}
+        {/* Desktop Brand */}
         <div className="hidden md:flex items-center gap-6">
-          <Link href="/fr" className="block">
+          <Link href={homeHref} className="block">
             <img 
               src="/images/logo.png" 
               alt="Burkina News" 
@@ -86,8 +109,12 @@ export default function Header() {
             />
           </Link>
           <div className="border-l border-[#e6dfd5] pl-4 py-1 text-xs text-[#555555] font-serif">
-            <p className="font-semibold text-[#141414]">Revue mensuelle & base documentaire</p>
-            <p className="text-[#737373] text-[11px]">Faits vérifiés · Indicateurs · Projets du Faso</p>
+            <p className="font-semibold text-[#141414]">
+              {isEn ? "Monthly journal & documentary registry" : "Revue mensuelle & base documentaire"}
+            </p>
+            <p className="text-[#737373] text-[11px]">
+              {isEn ? "Verified facts · Indicators · National projects" : "Faits vérifiés · Indicateurs · Projets du Faso"}
+            </p>
           </div>
         </div>
 
@@ -96,12 +123,12 @@ export default function Header() {
           <div className="relative">
             <input 
               type="text" 
-              placeholder="Rechercher..." 
+              placeholder={strings.searchPlaceholder} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && searchQuery) {
-                  window.location.href = `/fr/recherche?q=${encodeURIComponent(searchQuery)}`;
+                  window.location.href = `${rechercheHref}?q=${encodeURIComponent(searchQuery)}`;
                 }
               }}
               className="w-56 lg:w-64 pl-8 pr-3 py-1.5 bg-white border border-[#e6dfd5] text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
@@ -110,17 +137,17 @@ export default function Header() {
           </div>
 
           <Link 
-            href="/fr/tracker" 
+            href={trackerHref} 
             className="bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider px-3 py-1.5 transition-colors"
           >
-            Le Tracker
+            {strings.trackerBtn}
           </Link>
 
           <Link 
             href="#newsletter"
             className="border border-[#141414] hover:bg-[#141414] hover:text-white text-[#141414] text-xs font-semibold px-3 py-1.5 transition-colors"
           >
-            S'abonner
+            {strings.subscribeBtn}
           </Link>
         </div>
 
@@ -132,15 +159,15 @@ export default function Header() {
           
           <div className="flex items-center">
             <Link 
-              href="/fr" 
+              href={homeHref} 
               className={`py-2.5 px-4 text-xs font-bold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] ${
-                pathname === '/fr' ? 'text-[#0b4627] bg-[#f4eee3]' : 'text-[#141414] hover:bg-neutral-50'
+                pathname === homeHref ? 'text-[#0b4627] bg-[#f4eee3]' : 'text-[#141414] hover:bg-neutral-50'
               }`}
             >
-              À la une
+              {isEn ? "Front Page" : "À la une"}
             </Link>
 
-            {CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const active = pathname.startsWith(cat.href);
               return (
                 <Link
@@ -156,26 +183,26 @@ export default function Header() {
             })}
 
             <Link 
-              href="/fr/tracker" 
+              href={trackerHref} 
               className={`py-2.5 px-4 text-xs font-bold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] ${
-                pathname.startsWith('/fr/tracker') ? 'text-[#0b4627] bg-[#f4eee3]' : 'text-[#0b4627] hover:bg-neutral-50'
+                pathname.startsWith(trackerHref) ? 'text-[#0b4627] bg-[#f4eee3]' : 'text-[#0b4627] hover:bg-neutral-50'
               }`}
             >
-              Le Tracker
+              {strings.trackerBtn}
             </Link>
           </div>
 
           <div className="flex items-center text-xs font-serif text-[#555555]">
-            <Link href="/fr/numeros" className="py-2.5 px-3 hover:text-[#141414] transition-colors">
-              Les Numéros
+            <Link href={numerosHref} className="py-2.5 px-3 hover:text-[#141414] transition-colors">
+              {isEn ? "Issues" : "Les Numéros"}
             </Link>
             <span className="text-neutral-300">/</span>
-            <Link href="/fr/fil" className="py-2.5 px-3 hover:text-[#141414] transition-colors">
-              Le Fil
+            <Link href={filHref} className="py-2.5 px-3 hover:text-[#141414] transition-colors">
+              {isEn ? "The Brief" : "Le Fil"}
             </Link>
             <span className="text-neutral-300">/</span>
-            <Link href="/fr/tracker/indicateurs" className="py-2.5 px-3 hover:text-[#0b4627] font-semibold transition-colors">
-              Baromètre RELANCE
+            <Link href={indicateursHref} className="py-2.5 px-3 hover:text-[#0b4627] font-semibold transition-colors">
+              {isEn ? "RELANCE Barometer" : "Baromètre RELANCE"}
             </Link>
           </div>
 
@@ -188,12 +215,12 @@ export default function Header() {
           <div className="relative mb-4">
             <input 
               type="text" 
-              placeholder="Rechercher un sujet, un projet..." 
+              placeholder={strings.searchPlaceholder} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && searchQuery) {
-                  window.location.href = `/fr/recherche?q=${encodeURIComponent(searchQuery)}`;
+                  window.location.href = `${rechercheHref}?q=${encodeURIComponent(searchQuery)}`;
                   setMobileMenuOpen(false);
                 }
               }}
@@ -203,7 +230,7 @@ export default function Header() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 border-t border-b border-[#e6dfd5] py-4">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={cat.href}
                 href={cat.href}
@@ -217,32 +244,32 @@ export default function Header() {
 
           <div className="space-y-2 pt-2 text-xs font-semibold">
             <Link 
-              href="/fr/tracker" 
+              href={trackerHref} 
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 text-[#0b4627] font-bold uppercase tracking-wider"
             >
-              → Accéder au Tracker des Chantiers
+              → {isEn ? "Open Major Projects Tracker" : "Accéder au Tracker des Chantiers"}
             </Link>
             <Link 
-              href="/fr/numeros" 
+              href={numerosHref} 
               onClick={() => setMobileMenuOpen(false)}
               className="block py-1.5 text-[#555555]"
             >
-              Les Numéros Mensuels
+              {isEn ? "Monthly Issues" : "Les Numéros Mensuels"}
             </Link>
             <Link 
-              href="/fr/fil" 
+              href={filHref} 
               onClick={() => setMobileMenuOpen(false)}
               className="block py-1.5 text-[#555555]"
             >
-              Le Fil Hebdomadaire
+              {isEn ? "The Brief (Weekly)" : "Le Fil Hebdomadaire"}
             </Link>
             <Link 
-              href="/fr/methode" 
+              href={methodeHref} 
               onClick={() => setMobileMenuOpen(false)}
               className="block py-1.5 text-[#555555]"
             >
-              Notre Méthode & Sources
+              {isEn ? "Methodology & Primary Sources" : "Notre Méthode & Sources"}
             </Link>
           </div>
         </div>

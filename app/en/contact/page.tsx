@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AlertCircle, Send, MapPin, Mail, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
-export default function ContactPage() {
+export default function ContactPageEn() {
   const [errorForm, setErrorForm] = useState({ url: '', desc: '', source: '', email: '' });
   const [genForm, setGenForm] = useState({ name: '', email: '', category: 'question', message: '' });
   
@@ -29,13 +29,13 @@ export default function ContactPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur lors de l\'envoi');
+      if (!res.ok) throw new Error(data.error || 'Failed to submit report');
 
       setErrorStatus('success');
       setErrorForm({ url: '', desc: '', source: '', email: '' });
     } catch (err: any) {
       setErrorStatus('error');
-      setErrorMessage(err.message || 'Une erreur est survenue lors de l\'envoi.');
+      setErrorMessage(err.message || 'An error occurred while submitting your report.');
     }
   };
 
@@ -55,13 +55,13 @@ export default function ContactPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur lors de l\'envoi');
+      if (!res.ok) throw new Error(data.error || 'Failed to send message');
 
       setGenStatus('success');
       setGenForm({ name: '', email: '', category: 'question', message: '' });
     } catch (err: any) {
       setGenStatus('error');
-      setGenMessage(err.message || 'Une erreur est survenue lors de l\'envoi.');
+      setGenMessage(err.message || 'An error occurred while sending your message.');
     }
   };
 
@@ -73,20 +73,20 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto">
           
           <nav className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#737373] mb-4" aria-label="Breadcrumb">
-            <Link href="/fr" className="hover:text-[#0b4627]">Accueil</Link>
+            <Link href="/en" className="hover:text-[#0b4627]">Home</Link>
             <span>/</span>
-            <span className="text-[#141414] font-bold">Contact & Signalement</span>
+            <span className="text-[#141414] font-bold">Contact & Feedback</span>
           </nav>
 
           <div className="pb-6 border-b border-[#141414]">
             <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] block mb-1">
-              Dialogue & Droit de Rectification
+              Dialogue & Right of Rectification
             </span>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight mb-3">
-              Contacter la Rédaction
+              Contact the Newsroom
             </h1>
             <p className="text-sm sm:text-base font-serif text-[#555555] max-w-2xl leading-relaxed">
-              Pour soumettre un document officiel, apporter une précision sur un chantier du Tracker ou joindre le comité éditorial.
+              To submit an official primary document, provide on-site precision on a Tracker project, or reach our editorial desk.
             </p>
           </div>
 
@@ -103,29 +103,30 @@ export default function ContactPage() {
             <section className="bg-white border-2 border-[#141414] p-6 sm:p-8">
               <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
                 <AlertCircle size={14} />
-                <span>Canal Prioritaire</span>
+                <span>Priority Channel</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold font-serif text-[#141414] mb-2">
-                Signaler une erreur ou apporter une source
+                Report an Error or Provide a Source
               </h2>
               <p className="text-xs sm:text-sm font-serif text-[#555555] leading-relaxed mb-6">
-                Si vous constatez une divergence factuelle dans une enquête ou dans une fiche du Tracker, transmettez-nous la source primaire contradictoire. Toute rectification avérée est publiée dans notre <Link href="/fr/corrections" className="text-[#0b4627] font-bold underline">registre des corrections</Link>.
+                If you notice a factual discrepancy in an investigation or in a Tracker file, submit the contradictory primary source. Any substantiated correction is logged in our <Link href="/en/corrections" className="text-[#0b4627] font-bold underline">Correction Registry</Link>.
               </p>
 
               {errorStatus === 'success' ? (
                 <div className="bg-[#f0fdf4] border border-green-300 p-4 text-xs font-serif text-[#0b4627] flex items-center gap-2">
                   <CheckCircle size={16} />
-                  <span>Votre signalement a été transmis au comité éditorial. Il sera instruit dans les 48 heures.</span>
+                  <span>Your report has been forwarded to the editorial committee. It will be reviewed within 48 hours.</span>
                 </div>
               ) : (
                 <form onSubmit={handleErrorSubmit} className="space-y-4 text-xs font-serif">
                   <div>
                     <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">
-                      URL ou titre de l'article / de la fiche chantier *
+                      URL or Title of the Article / Project File *
                     </label>
                     <input 
                       required 
                       type="text" 
+                      placeholder="e.g. /en/tracker/projets/centrale-solaire-koudougou"
                       className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" 
                       value={errorForm.url} 
                       onChange={e => setErrorForm({...errorForm, url: e.target.value})} 
@@ -134,11 +135,12 @@ export default function ContactPage() {
 
                   <div>
                     <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">
-                      Description précise du point factuel *
+                      Precise Description of the Factual Issue *
                     </label>
                     <textarea 
                       required 
                       rows={3} 
+                      placeholder="Describe the discrepancy, figure, or statement in question..."
                       className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" 
                       value={errorForm.desc} 
                       onChange={e => setErrorForm({...errorForm, desc: e.target.value})} 
@@ -147,13 +149,13 @@ export default function ContactPage() {
 
                   <div>
                     <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">
-                      Source primaire justifiant la correction *
+                      Contradictory Primary Source *
                     </label>
                     <input 
                       required 
                       type="text" 
-                      placeholder="Lien vers le document officiel, rapport, compte-rendu du Conseil des ministres..." 
-                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]" 
+                      placeholder="Name and reference of official document, decree, or auditable report..."
+                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" 
                       value={errorForm.source} 
                       onChange={e => setErrorForm({...errorForm, source: e.target.value})} 
                     />
@@ -161,10 +163,12 @@ export default function ContactPage() {
 
                   <div>
                     <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">
-                      Votre adresse email (pour suivi confidentiel)
+                      Your Email (for follow-up and confirmation) *
                     </label>
                     <input 
+                      required 
                       type="email" 
+                      placeholder="name@organization.com"
                       className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" 
                       value={errorForm.email} 
                       onChange={e => setErrorForm({...errorForm, email: e.target.value})} 
@@ -183,7 +187,7 @@ export default function ContactPage() {
                     className="px-6 py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
                   >
                     <Send size={12} />
-                    {errorStatus === 'submitting' ? 'Transmission...' : 'Envoyer le signalement'}
+                    {errorStatus === 'submitting' ? 'Submitting...' : 'Submit Report'}
                   </button>
                 </form>
               )}
@@ -192,19 +196,19 @@ export default function ContactPage() {
             {/* Form 2: General Contact */}
             <section className="bg-white border border-[#e6dfd5] p-6 sm:p-8">
               <h2 className="text-xl font-bold font-serif text-[#141414] mb-4 pb-2 border-b border-[#e6dfd5]">
-                Courrier Général & Partenariats
+                General Inquiries & Partnerships
               </h2>
 
               {genStatus === 'success' ? (
                 <div className="bg-[#f0fdf4] border border-green-300 p-4 text-xs font-serif text-[#0b4627] flex items-center gap-2">
                   <CheckCircle size={16} />
-                  <span>Votre message a bien été envoyé.</span>
+                  <span>Your message has been sent successfully.</span>
                 </div>
               ) : (
                 <form onSubmit={handleGenSubmit} className="space-y-4 text-xs font-serif">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Nom / Organisation *</label>
+                      <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Name / Organization *</label>
                       <input required type="text" className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.name} onChange={e => setGenForm({...genForm, name: e.target.value})} />
                     </div>
                     <div>
@@ -214,12 +218,12 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Objet de la demande *</label>
+                    <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Purpose of Inquiry *</label>
                     <select required className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.category} onChange={e => setGenForm({...genForm, category: e.target.value})}>
-                      <option value="question">Question à la rédaction</option>
-                      <option value="partenariat">Proposition de partenariat académique ou institutionnel</option>
-                      <option value="presse">Demande presse / médias</option>
-                      <option value="autre">Autre demande</option>
+                      <option value="question">Question for the Newsroom</option>
+                      <option value="partenariat">Academic or Institutional Partnership</option>
+                      <option value="presse">Press / Media Request</option>
+                      <option value="autre">Other Inquiry</option>
                     </select>
                   </div>
 
@@ -236,7 +240,7 @@ export default function ContactPage() {
 
                   <button type="submit" disabled={genStatus === 'submitting'} className="px-6 py-2.5 bg-[#141414] hover:bg-[#0b4627] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2">
                     <Send size={12} />
-                    {genStatus === 'submitting' ? 'Envoi...' : 'Transmettre le message'}
+                    {genStatus === 'submitting' ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>
               )}
@@ -249,32 +253,44 @@ export default function ContactPage() {
             
             <div className="bg-white border border-[#141414] p-6">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-4 border-b border-[#141414]">
-                Correspondance & Bureaux
+                Offices & Correspondence
               </h3>
 
-              <div className="space-y-4 text-xs font-serif">
-                <div>
-                  <span className="font-mono text-[10px] uppercase text-[#737373] block mb-0.5">Courriel de Rédaction</span>
-                  <a href="mailto:contact@burkinanews.bf" className="font-bold text-[#0b4627] hover:underline font-mono">
-                    contact@burkinanews.bf
-                  </a>
+              <div className="space-y-4 text-xs font-serif text-[#333333]">
+                <div className="flex gap-3 items-start">
+                  <MapPin size={16} className="text-[#0b4627] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-[#141414]">Bobo-Dioulasso Desk</strong>
+                    <span className="text-[#555555]">Hauts-Bassins, Burkina Faso</span>
+                    <span className="text-[11px] text-[#737373] block mt-0.5">Field investigations & western economic basin</span>
+                  </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#e6dfd5]">
-                  <span className="font-mono text-[10px] uppercase text-[#737373] block mb-0.5">Siège & Ancrage</span>
-                  <p className="text-[#141414]">
-                    Bobo-Dioulasso & Ouagadougou<br />
-                    Burkina Faso
-                  </p>
+                <div className="flex gap-3 items-start">
+                  <MapPin size={16} className="text-[#0b4627] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-[#141414]">Ouagadougou Desk</strong>
+                    <span className="text-[#555555]">Centre, Burkina Faso</span>
+                    <span className="text-[11px] text-[#737373] block mt-0.5">Institutions, ministerial decrees & data records</span>
+                  </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#e6dfd5]">
-                  <span className="font-mono text-[10px] uppercase text-[#737373] block mb-0.5">Protection des Sources</span>
-                  <p className="text-[11px] text-[#555555] leading-relaxed">
-                    Les communications transmises pour transmission de documents confidentiels ou alertes documentaires sont traitées sous le secret déontologique le plus strict.
-                  </p>
+                <div className="flex gap-3 items-start pt-2 border-t border-[#e6dfd5]">
+                  <Mail size={16} className="text-[#0b4627] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-[#141414]">Encrypted Channel</strong>
+                    <span className="text-[#555555] font-mono text-[11px]">redaction@burkina-news.com</span>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            <div className="bg-[#f4eee3] border border-[#e6dfd5] p-5">
+              <span className="font-mono text-[10px] uppercase text-[#737373] block mb-0.5">Source Protection</span>
+              <h4 className="font-serif font-bold text-sm text-[#141414] mb-2">Confidentiality Guarantee</h4>
+              <p className="text-xs font-serif text-[#555555] leading-relaxed">
+                Burkina News strictly protects sources who transmit non-public documentary audits or regulatory decrees. Encrypted communication available upon request.
+              </p>
             </div>
 
           </div>

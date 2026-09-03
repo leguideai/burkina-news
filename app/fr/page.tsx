@@ -6,6 +6,7 @@ import { getKeyIndicators } from '@/data/mock/indicators';
 import { projects, getProjectStats } from '@/data/mock/projects';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
+import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
 import { 
   ArrowRight, 
   Clock, 
@@ -408,20 +409,7 @@ export default function HomePage() {
             Chaque dimanche matin à 8h00, l'essentiel de l'actualité politique, économique et sécuritaire du Burkina Faso, sourcé et sans commentaire.
           </p>
 
-          <form action="#" className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-            <input 
-              type="email" 
-              placeholder="Votre adresse email"
-              required
-              className="px-4 py-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] flex-1"
-            />
-            <button 
-              type="submit"
-              className="px-6 py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors"
-            >
-              S'inscrire
-            </button>
-          </form>
+          <InteractiveNewsletter lang="fr" />
           
           <p className="text-[10px] font-serif text-[#737373] mt-3">
             Gratuit au lancement · Zéro publicité · Vos données ne sont jamais partagées

@@ -5,10 +5,14 @@ import { ArrowRight, ShieldCheck } from 'lucide-react';
 interface ArticleCardProps {
   article: Article;
   variant?: 'default' | 'compact' | 'horizontal' | 'lead';
+  lang?: 'fr' | 'en';
 }
 
-export default function ArticleCard({ article, variant = 'default' }: ArticleCardProps) {
+export default function ArticleCard({ article, variant = 'default', lang = 'fr' }: ArticleCardProps) {
   const imageSrc = article.image || article.imageUrl || '/images/lead.jpeg';
+  const isEn = lang === 'en';
+  const articleHref = `/${isEn ? 'en' : 'fr'}/${article.category}/${article.slug}`;
+  const verifiedSourcesLabel = isEn ? `${article.sourceCount} verified sources` : `${article.sourceCount} sources vérifiées`;
 
   // 1. LEAD VARIANT (Main centerpiece story)
   if (variant === 'lead') {
@@ -27,12 +31,12 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
           <span>·</span>
           <span className="text-[#0b4627] font-semibold flex items-center gap-1">
             <ShieldCheck size={13} />
-            {article.sourceCount} sources vérifiées
+            {verifiedSourcesLabel}
           </span>
         </div>
 
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] leading-[1.18] mb-4 group-hover:text-[#0b4627] transition-colors">
-          <Link href={`/fr/${article.category}/${article.slug}`}>
+          <Link href={articleHref}>
             {article.title}
           </Link>
         </h2>
@@ -42,9 +46,11 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
         </p>
 
         <div className="pt-4 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-serif">
-          <span className="text-[#555555] italic">Enquête Rédactionnelle · Bobo-Dioulasso</span>
-          <Link href={`/fr/${article.category}/${article.slug}`} className="font-bold text-[#0b4627] hover:underline flex items-center gap-1">
-            <span>Lire l'enquête</span>
+          <span className="text-[#555555] italic">
+            {isEn ? "Newsroom Investigation · Bobo-Dioulasso" : "Enquête Rédactionnelle · Bobo-Dioulasso"}
+          </span>
+          <Link href={articleHref} className="font-bold text-[#0b4627] hover:underline flex items-center gap-1">
+            <span>{isEn ? "Read investigation" : "Lire l'enquête"}</span>
             <ArrowRight size={13} />
           </Link>
         </div>
@@ -69,7 +75,7 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
               {article.category}
             </div>
             <h3 className="text-base font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">
-              <Link href={`/fr/${article.category}/${article.slug}`}>
+              <Link href={articleHref}>
                 {article.title}
               </Link>
             </h3>
@@ -78,8 +84,10 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
             </p>
           </div>
           <div className="text-[11px] text-[#0b4627] flex justify-between items-center pt-2 border-t border-neutral-100 font-mono">
-            <span className="font-semibold">{article.sourceCount} sources vérifiées</span>
-            <span className="text-[#737373] group-hover:text-[#0b4627] font-bold">Lire →</span>
+            <span className="font-semibold">{verifiedSourcesLabel}</span>
+            <span className="text-[#737373] group-hover:text-[#0b4627] font-bold">
+              {isEn ? "Read →" : "Lire →"}
+            </span>
           </div>
         </div>
       </article>
@@ -102,11 +110,11 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
             {article.category}
           </div>
           <h4 className="text-xs font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-1">
-            <Link href={`/fr/${article.category}/${article.slug}`}>
+            <Link href={articleHref}>
               {article.title}
             </Link>
           </h4>
-          <span className="text-[10px] font-mono text-[#0b4627] font-semibold">{article.sourceCount} sources</span>
+          <span className="text-[10px] font-mono text-[#0b4627] font-semibold">{verifiedSourcesLabel}</span>
         </div>
       </article>
     );
@@ -130,7 +138,7 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
           </div>
 
           <h3 className="text-lg font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">
-            <Link href={`/fr/${article.category}/${article.slug}`}>
+            <Link href={articleHref}>
               {article.title}
             </Link>
           </h3>
@@ -141,8 +149,10 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
         </div>
 
         <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-mono text-[#737373]">
-          <span className="font-semibold text-[#0b4627]">{article.sourceCount} sources vérifiées</span>
-          <span className="font-serif font-bold text-[#0b4627] group-hover:underline">Lire →</span>
+          <span className="font-semibold text-[#0b4627]">{verifiedSourcesLabel}</span>
+          <span className="font-serif font-bold text-[#0b4627] group-hover:underline">
+            {isEn ? "Read →" : "Lire →"}
+          </span>
         </div>
       </div>
     </article>

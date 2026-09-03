@@ -64,6 +64,15 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   'impact-mesure': 'Impact mesuré',
 }
 
+export const PROJECT_STATUS_LABELS_EN: Record<ProjectStatus, string> = {
+  'annonce': 'Announced',
+  'engage': 'Committed',
+  'en-construction': 'Under Construction',
+  'inaugure': 'Inaugurated',
+  'operationnel': 'Operational',
+  'impact-mesure': 'Impact Measured',
+}
+
 export const PROJECT_STATUS_COLORS: Record<ProjectStatus, string> = {
   'annonce': '#9CA3AF',
   'engage': '#3B82F6',

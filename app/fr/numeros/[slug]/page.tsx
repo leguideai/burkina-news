@@ -163,6 +163,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
               {issue.pdfUrl ? (
                 <a 
                   href={issue.pdfUrl}
+                  download={`Burkina-News-Numero-0${issue.number}.pdf`}
                   className="w-full py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center block transition-colors"
                 >
                   Télécharger le PDF

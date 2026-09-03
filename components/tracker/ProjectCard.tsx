@@ -5,11 +5,14 @@ import Link from 'next/link';
 
 interface ProjectCardProps {
   project: Project;
+  lang?: 'fr' | 'en';
 }
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) {
   const currentIndex = PROJECT_STATUS_ORDER.indexOf(project.currentStatus);
   const imageSrc = project.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=85';
+  const isEn = lang === 'en';
+  const projectHref = `/${isEn ? 'en' : 'fr'}/tracker/projets/${project.slug}`;
 
   return (
     <div className="group bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between h-full">
@@ -22,7 +25,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute top-2.5 left-2.5">
-            <StatusBadge status={project.currentStatus} size="sm" />
+            <StatusBadge status={project.currentStatus} size="sm" lang={lang} />
           </div>
           <div className="absolute bottom-2.5 right-2.5 bg-[#141414]/90 text-white px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider">
             {project.region}
@@ -37,7 +40,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
           {/* Title */}
           <h3 className="font-bold text-base sm:text-lg font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-2">
-            <Link href={`/fr/tracker/projets/${project.slug}`}>
+            <Link href={projectHref}>
               {project.title}
             </Link>
           </h3>
@@ -88,12 +91,12 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-[11px] font-serif text-[#737373]">
-          <span>Vérifié le {new Date(project.lastVerifiedAt).toLocaleDateString('fr-FR')}</span>
+          <span>{isEn ? 'Verified on ' : 'Vérifié le '}{new Date(project.lastVerifiedAt).toLocaleDateString(isEn ? 'en-US' : 'fr-FR')}</span>
           <Link 
-            href={`/fr/tracker/projets/${project.slug}`}
+            href={projectHref}
             className="font-mono font-bold text-xs text-[#0b4627] hover:underline inline-flex items-center gap-1"
           >
-            Fiche <ArrowRight size={12} />
+            {isEn ? 'Dossier' : 'Fiche'} <ArrowRight size={12} />
           </Link>
         </div>
       </div>

@@ -11,7 +11,7 @@ export const issues: Issue[] = [
     summary: 'Notre troisième numéro plonge dans le secteur aurifère burkinabè : production réelle, revenus pour l\'État, et ce que les chiffres officiels ne disent pas. Également : bilan opérationnel de l\'AES à un an, reportage terrain à Kodéni, et l\'éditorial de la rédaction sur la mesure.',
     articleCount: 7,
     articleIds: ['art-01', 'art-02', 'art-04', 'art-06', 'art-12', 'art-13', 'art-05'],
-    pdfUrl: '#',
+    pdfUrl: '/documents/burkina-news-numero-03.pdf',
   },
   {
     id: 'issue-02',
