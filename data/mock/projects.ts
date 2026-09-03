@@ -121,7 +121,7 @@ export const projects: Project[] = [
       { title: 'Rapport d\'avancement DGRE', url: '#', date: '2026-06-30', institution: 'DGRE' },
     ],
     linkedArticleIds: [],
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=85',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSaeBmNKsMlT-g1tcyIZN9rCHfQ3Eadn5_2WSb4IAv-nQ&s=10',
   },
   {
     id: 'proj-05',
@@ -152,7 +152,7 @@ export const projects: Project[] = [
       { title: 'Discours d\'inauguration', url: '#', date: '2026-05-18', institution: 'Primature' },
     ],
     linkedArticleIds: ['art-11'],
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=85',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSv0EhICXYFiNB30C75iaatLafkZHTpla-d6qObKHPRUA&s=10',
   },
   {
     id: 'proj-06',
@@ -179,7 +179,7 @@ export const projects: Project[] = [
       { title: 'Note UNICEF Burkina', url: '#', date: '2026-06-15', institution: 'UNICEF' },
     ],
     linkedArticleIds: ['art-10'],
-    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=85',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzwS0pPzb4d4OqMYCrQ3GnfJhy_DFiQeL33Meg1DI6Wg&s=105',
   },
   {
     id: 'proj-07',
@@ -239,7 +239,7 @@ export const projects: Project[] = [
       { title: 'Données DGMG Q1 2026', url: '#', date: '2026-04-30', institution: 'DGMG' },
     ],
     linkedArticleIds: ['art-01'],
-    image: 'https://images.unsplash.com/photo-1605792657660-596af9009e82?auto=format&fit=crop&w=900&q=85',
+    image: 'https://www.sikafinance.com/api/image/ImageNewsGet?id=DA5D943B-644D-49BD-965B-79413A1E9D01',
   },
   {
     id: 'proj-09',

@@ -29,7 +29,7 @@ export const issues: Issue[] = [
     number: 1,
     title: 'Comprendre la trajectoire du Burkina Faso',
     slug: '2027-01',
-    coverImage: 'https://images.unsplash.com/photo-1494522358652-f30e61a60313?auto=format&fit=crop&w=900&q=85',
+    coverImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTelXSr6UnegMbp-8KAw4Ryh5xo63Rrdw0UOv0yuzp5zkcPdTLx54_DtGOI&s=10',
     publicationDate: '2026-06-01',
     summary: 'Premier numéro de Burkina News. Nous posons les bases : pourquoi un Tracker de projets ? Quelle méthode pour mesurer les promesses ? Et un tour d\'horizon des six rubriques qui structureront notre couverture.',
     articleCount: 5,

@@ -14,7 +14,7 @@ export const briefs: Brief[] = [
         text: 'Le Conseil des ministres approuve le cadre réglementaire pour les zones économiques spéciales.', 
         source: 'Présidence du Faso', 
         category: 'economie',
-        image: 'https://www.presidencedufaso.bf/wp-content/uploads/2026/07/743744345_1058290256661627_7531704759728957473_n-1280x640.jpg'
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE7pSJKoIGpARFCaR6s4iBYUiLaPenvxIP6eg_ivTUbg&s=10'
       },
       { 
         time: '08:30', 
@@ -111,16 +111,16 @@ export const briefs: Brief[] = [
     weekNumber: 32,
     image: 'https://www.sidwaya.info/wp-content/uploads/2025/09/2-31.jpg',
     facts: [
-      { time: '09:15', text: 'Le gouvernement adopte la stratégie nationale de transformation numérique 2026-2030.', source: 'Conseil des ministres', category: 'economie', image: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=400&q=80' },
-      { time: '08:50', text: 'L\'OMS valide le Burkina comme pays prioritaire pour la campagne de vaccination antipaludique.', source: 'OMS', category: 'societe', image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80' },
-      { time: '08:30', text: 'La production de coton estimée à 350 000 tonnes pour la campagne 2025-2026.', source: 'SOFITEX', category: 'agriculture', image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=400&q=80' },
-      { time: '08:10', text: 'Le barrage de Bassiéri atteint 60 % d\'avancement des travaux.', source: 'DGRE', category: 'chantiers', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80' },
-      { time: '07:50', text: 'L\'ambassade de Chine annonce un don de 200 bus pour le transport urbain.', source: 'Ambassade de Chine', category: 'chantiers', image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f156f?auto=format&fit=crop&w=400&q=80' },
-      { time: '07:30', text: 'Les recettes minières atteignent 180 milliards FCFA au S1 2026, +15 % vs S1 2025.', source: 'DGMG', category: 'economie', image: 'https://images.unsplash.com/photo-1605792657660-596af9009e82?auto=format&fit=crop&w=400&q=80' },
-      { time: '07:10', text: 'L\'université Thomas-Sankara ouvre trois nouveaux masters en sciences appliquées.', source: 'MESRSI', category: 'societe', image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=400&q=80' },
-      { time: '06:50', text: 'Le CILSS alerte sur un déficit pluviométrique de 15 % dans le Nord.', source: 'CILSS', category: 'agriculture', image: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=400&q=80' },
-      { time: '06:30', text: 'Les forces armées reprennent le contrôle de deux localités dans l\'Est.', source: 'État-major', category: 'securite', image: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=400&q=80' },
-      { time: '06:10', text: 'Thomas Sankara fait l\'objet d\'un colloque international à Dakar.', source: 'UCAD / CODESRIA', category: 'idees', image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=400&q=80' },
+      { time: '09:15', text: 'Le gouvernement adopte la stratégie nationale de transformation numérique 2026-2030.', source: 'Conseil des ministres', category: 'economie', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBd21h3FfnMFj35xGtsOUvglG5W_o0qDk0E94_nVqh_Q&s=10' },
+      { time: '08:50', text: 'L\'OMS valide le Burkina comme pays prioritaire pour la campagne de vaccination antipaludique.', source: 'OMS', category: 'societe', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQytGqd2MXUECDUuZ34RsvGmr3BYv-7b8dYS4hJ5T3PQQ&s=10' },
+      { time: '08:30', text: 'La production de coton estimée à 350 000 tonnes pour la campagne 2025-2026.', source: 'SOFITEX', category: 'agriculture', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgksWVhtio1nEb-29S9Lvco5tSw2v9Mm4KpxuKAsV7FQ&s=10' },
+      { time: '08:10', text: 'Le barrage de Bassiéri atteint 60 % d\'avancement des travaux.', source: 'DGRE', category: 'chantiers', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5fl4uMQhzrEgKL_fRhd4UcCq-vJc22zfk9_ecODi_sw&s=10' },
+      { time: '07:50', text: 'L\'ambassade de Chine annonce un don de 200 bus pour le transport urbain.', source: 'Ambassade de Chine', category: 'chantiers', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWkobnGdQwhKk-HPwtX5LO7-lqXD8iqDVbK6cUuOvhWA&s=10' },
+      { time: '07:30', text: 'Les recettes minières atteignent 180 milliards FCFA au S1 2026, +15 % vs S1 2025.', source: 'DGMG', category: 'economie', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQan6U3iPEpAgAN0Akf5s6zWCsIIohKoeQuEcdPkoF16Q&s=10' },
+      { time: '07:10', text: 'L\'université Thomas-Sankara ouvre trois nouveaux masters en sciences appliquées.', source: 'MESRSI', category: 'societe', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7JcE1piVp4EVhuRHWDhQ66uOQjZXjS-8g2vbDGYSWOA&s=10' },
+      { time: '06:50', text: 'Le CILSS alerte sur un déficit pluviométrique de 15 % dans le Nord.', source: 'CILSS', category: 'agriculture', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOL2rHT0dTjH6wfGZy6QrxsYb53-_7XKzaDHiIzWv50g&s=10' },
+      { time: '06:30', text: 'Les forces armées reprennent le contrôle de deux localités dans l\'Est.', source: 'État-major', category: 'securite', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFqFA0zN3cN0YxIjDC-kOQo6RpmX4wdHqKhiTLf2ONrA&s=10' },
+      { time: '06:10', text: 'Thomas Sankara fait l\'objet d\'un colloque international à Dakar.', source: 'UCAD / CODESRIA', category: 'idees', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeYP8DctklaathBpL5M7ilvG1HpUu3YknAeniv9ioGcw&s=10' },
     ],
   },
 ]
