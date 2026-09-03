@@ -44,20 +44,20 @@ export default function HomePageEn() {
       <section className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-8 pb-12 border-b border-[#e6dfd5]">
         
         {/* Magazine Issue Identifier Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 mb-8 border-b border-[#141414]">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 sm:mb-8 border-b border-[#141414]">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#0b4627]">
               {latestIssue 
                 ? `Issue 0${latestIssue.number} · ${new Date(latestIssue.publicationDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` 
                 : 'Issue 03 · August 2026'}
             </span>
-            <span className="text-[#d4cece]">|</span>
+            <span className="text-[#d4cece] hidden sm:inline">|</span>
             <span className="font-serif text-xs text-[#555555]">
               Monthly Investigative Journal & Fact Registry
             </span>
           </div>
 
-          <div className="text-xs font-serif text-[#555555] flex items-center gap-3">
+          <div className="text-xs font-serif text-[#555555] flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0 border-t sm:border-t-0 border-neutral-200">
             <span className="text-[#0b4627] font-semibold">{issueSourcesCount} documented sources</span>
             <span>·</span>
             <Link href={`/en/numeros/${latestIssue?.slug || '2027-03'}`} className="font-bold text-[#0b4627] hover:underline">
@@ -66,11 +66,11 @@ export default function HomePageEn() {
           </div>
         </div>
 
-        {/* 3-Column Asymmetric Layout */}
+        {/* 3-Column Asymmetric Layout (On mobile: Hero lead first, then Brief, then Analyses) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* COLUMN 1 (Col 3 / 25%) : THE BRIEF */}
-          <div className="lg:col-span-3 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
+          {/* COLUMN 1 (Col 3 / 25%) : THE BRIEF (Order 2 on mobile, Order 1 on desktop) */}
+          <div className="order-2 lg:order-1 lg:col-span-3 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
             <div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-[#141414]">
               <Link href={`/en/fil/${latestBrief?.slug || '2026-semaine-34'}`} className="hover:text-[#0b4627] transition-colors">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] hover:text-[#0b4627] flex items-center gap-1.5">
@@ -120,8 +120,8 @@ export default function HomePageEn() {
             </Link>
           </div>
 
-          {/* COLUMN 2 (Col 6 / 50%) : THE DEEP DIVE */}
-          <div className="lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
+          {/* COLUMN 2 (Col 6 / 50%) : THE DEEP DIVE (THE HERO) (Order 1 on mobile, Order 2 on desktop) */}
+          <div className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
             <div className="mb-3">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">
                 The Deep Dive · Economy
@@ -160,8 +160,8 @@ export default function HomePageEn() {
             </Link>
           </div>
 
-          {/* COLUMN 3 (Col 3 / 25%) : ANALYSES & QUOTE */}
-          <div className="lg:col-span-3 flex flex-col space-y-6">
+          {/* COLUMN 3 (Col 3 / 25%) : ANALYSES & QUOTE (Order 3 on mobile and desktop) */}
+          <div className="order-3 lg:col-span-3 flex flex-col space-y-6">
             <div className="pb-3 border-b-2 border-[#141414]">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
                 Analysis & Debate

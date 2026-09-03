@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Search, Menu, X, Globe, ArrowRight } from 'lucide-react';
+import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper } from 'lucide-react';
 import { NAV_CATEGORIES, UI_STRINGS } from '@/data/mock/translations';
 
 export default function Header() {
@@ -37,10 +37,10 @@ export default function Header() {
     <header className="w-full bg-[#faf8f5] border-b border-[#e6dfd5]">
       
       {/* 1. TOPLINE : Dateline & Edition information */}
-      <div className="border-b border-[#e6dfd5] text-[11px] font-serif text-[#555555] py-1.5 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <span className="font-semibold uppercase tracking-wider text-[#141414]">
+      <div className="border-b border-[#e6dfd5] text-[11px] font-serif text-[#555555] py-1.5 px-3 sm:px-8">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-semibold uppercase tracking-wider text-[#141414] text-[10px] sm:text-[11px] truncate">
               {strings.dateline}
             </span>
           </div>
@@ -49,22 +49,24 @@ export default function Header() {
             {strings.siteSlogan}
           </div>
 
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-3 sm:gap-4 text-xs shrink-0">
             <Link href={methodeHref} className="hover:text-[#141414] transition-colors hidden sm:inline">
               {strings.methodLink}
             </Link>
             <span className="text-[#d4cece] hidden sm:inline">·</span>
+            
+            {/* Language Switcher */}
             <div className="flex items-center gap-1 font-mono font-bold text-[#141414] text-[11px]">
               <Link 
                 href={frUrl} 
-                className={`transition-colors ${!isEn ? 'text-[#0b4627] underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+                className={`py-0.5 px-1 rounded transition-colors ${!isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
               >
                 FR
               </Link>
               <span className="text-neutral-300">/</span>
               <Link 
                 href={enUrl} 
-                className={`transition-colors ${isEn ? 'text-[#0b4627] underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+                className={`py-0.5 px-1 rounded transition-colors ${isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
               >
                 EN
               </Link>
@@ -73,31 +75,68 @@ export default function Header() {
         </div>
       </div>
 
-      {/* 2. MASTHEAD PRINCIPAL : Large, dignified brand logo */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-5 sm:py-7 flex flex-col md:flex-row justify-between items-center gap-4">
+      {/* 2. MASTHEAD PRINCIPAL : Brand logo and tools */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 py-3.5 sm:py-7 flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4">
         
-        {/* Mobile top tools */}
+        {/* Mobile top navigation strip */}
         <div className="w-full md:hidden flex justify-between items-center">
           <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 text-[#141414] hover:bg-[#f4eee3] rounded"
-            aria-label="Menu"
+            onClick={() => {
+              setMobileMenuOpen(!mobileMenuOpen);
+              if (!mobileMenuOpen) setSearchOpen(false);
+            }}
+            className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded"
+            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           
-          <Link href={homeHref}>
-            <img src="/images/logo.png" alt="Burkina News" className="h-9 w-auto object-contain" />
+          <Link href={homeHref} className="block py-1">
+            <img src="/images/logo.png" alt="Burkina News" className="h-8 sm:h-9 w-auto object-contain" />
           </Link>
 
           <button 
-            onClick={() => setSearchOpen(!searchOpen)}
-            className="p-1.5 text-[#141414] hover:bg-[#f4eee3] rounded"
-            aria-label="Recherche"
+            onClick={() => {
+              setSearchOpen(!searchOpen);
+              if (!searchOpen) setMobileMenuOpen(false);
+            }}
+            className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded"
+            aria-label={searchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
           >
-            <Search size={20} />
+            {searchOpen ? <X size={22} /> : <Search size={22} />}
           </button>
         </div>
+
+        {/* Mobile quick search drawer when searchOpen is active */}
+        {searchOpen && (
+          <div className="w-full md:hidden pt-2 pb-1 border-t border-[#e6dfd5]">
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder={strings.searchPlaceholder} 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery) {
+                    window.location.href = `${rechercheHref}?q=${encodeURIComponent(searchQuery)}`;
+                    setSearchOpen(false);
+                  }
+                }}
+                autoFocus
+                className="w-full pl-9 pr-9 py-2.5 bg-white border-2 border-[#141414] text-xs text-[#141414] placeholder:text-[#777] focus:outline-none"
+              />
+              <Search size={16} className="absolute left-3 top-3 text-[#777]" />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-3 text-[#777] hover:text-[#141414]"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Desktop Brand */}
         <div className="hidden md:flex items-center gap-6">
@@ -153,7 +192,7 @@ export default function Header() {
 
       </div>
 
-      {/* 3. NAVIGATION BAR : Classic double border rules */}
+      {/* 3. NAVIGATION BAR : Classic double border rules on Desktop */}
       <nav className="hidden md:block border-t-2 border-b border-[#141414] bg-white">
         <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
           
@@ -209,10 +248,12 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* 4. MOBILE DRAWER */}
+      {/* 4. MOBILE DRAWER WITH RICH NAVIGATION & LANGUAGE PICKER */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-[#141414] px-6 py-6 space-y-4">
-          <div className="relative mb-4">
+        <div className="md:hidden bg-white border-b-2 border-[#141414] px-4 py-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-150">
+          
+          {/* Mobile Search inside drawer */}
+          <div className="relative">
             <input 
               type="text" 
               placeholder={strings.searchPlaceholder} 
@@ -224,54 +265,116 @@ export default function Header() {
                   setMobileMenuOpen(false);
                 }
               }}
-              className="w-full pl-8 pr-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414]"
+              className="w-full pl-9 pr-3 py-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414]"
             />
-            <Search size={14} className="absolute left-2.5 top-2.5 text-[#888888]" />
+            <Search size={16} className="absolute left-3 top-3 text-[#888888]" />
           </div>
 
-          <div className="grid grid-cols-2 gap-2 border-t border-b border-[#e6dfd5] py-4">
-            {categories.map((cat) => (
-              <Link
-                key={cat.href}
-                href={cat.href}
+          {/* Dedicated Language Selector inside mobile menu */}
+          <div className="flex items-center justify-between p-2.5 bg-[#faf8f5] border border-[#e6dfd5]">
+            <span className="font-mono text-xs text-[#737373] uppercase font-semibold">
+              {isEn ? "Language / Langue" : "Langue / Language"} :
+            </span>
+            <div className="flex items-center gap-1.5 font-mono text-xs">
+              <Link 
+                href={frUrl} 
                 onClick={() => setMobileMenuOpen(false)}
-                className="py-2 text-xs font-bold uppercase tracking-wider text-[#141414] hover:text-[#0b4627]"
+                className={`px-3 py-1.5 font-bold transition-colors ${!isEn ? 'bg-[#0b4627] text-white' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
               >
-                {cat.label}
+                FR
               </Link>
-            ))}
+              <Link 
+                href={enUrl} 
+                onClick={() => setMobileMenuOpen(false)}
+                className={`px-3 py-1.5 font-bold transition-colors ${isEn ? 'bg-[#0b4627] text-white' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
+              >
+                EN
+              </Link>
+            </div>
           </div>
 
-          <div className="space-y-2 pt-2 text-xs font-semibold">
+          {/* Core Products / Main Sections on mobile */}
+          <div className="grid grid-cols-2 gap-2 pt-1">
             <Link 
               href={trackerHref} 
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-[#0b4627] font-bold uppercase tracking-wider"
+              className="flex items-center gap-2 p-3 bg-[#f4eee3] border border-[#0b4627]/30 text-[#0b4627] font-mono font-bold text-xs uppercase"
             >
-              → {isEn ? "Open Major Projects Tracker" : "Accéder au Tracker des Chantiers"}
+              <SlidersHorizontal size={14} />
+              <span>{isEn ? "The Tracker" : "Le Tracker"}</span>
             </Link>
+
             <Link 
               href={numerosHref} 
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-1.5 text-[#555555]"
+              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50"
             >
-              {isEn ? "Monthly Issues" : "Les Numéros Mensuels"}
+              <BookOpen size={14} />
+              <span>{isEn ? "Monthly Issues" : "Les Numéros"}</span>
             </Link>
+
             <Link 
               href={filHref} 
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-1.5 text-[#555555]"
+              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50"
             >
-              {isEn ? "The Brief (Weekly)" : "Le Fil Hebdomadaire"}
+              <Newspaper size={14} />
+              <span>{isEn ? "The Brief (Weekly)" : "Le Fil Hebdo"}</span>
             </Link>
+
+            <Link 
+              href={indicateursHref} 
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50"
+            >
+              <span className="text-[#0b4627] font-bold">RELANCE</span>
+            </Link>
+          </div>
+
+          {/* Editorial Categories List */}
+          <div className="border-t border-[#e6dfd5] pt-3">
+            <div className="font-mono text-[10px] uppercase font-bold text-[#737373] mb-2 tracking-wider">
+              {isEn ? "Investigative Sections" : "Rubriques de la Rédaction"}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.href}
+                  href={cat.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="min-h-[44px] flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#141414] hover:bg-[#faf8f5] active:bg-[#f4eee3] transition-colors rounded-sm"
+                >
+                  {cat.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Institutional links */}
+          <div className="border-t border-[#e6dfd5] pt-3 space-y-1 text-xs font-serif text-[#555555]">
             <Link 
               href={methodeHref} 
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-1.5 text-[#555555]"
+              className="min-h-[40px] flex items-center px-1 text-[#141414] font-semibold hover:text-[#0b4627]"
             >
-              {isEn ? "Methodology & Primary Sources" : "Notre Méthode & Sources"}
+              → {isEn ? "Verification Methodology & Sources" : "Notre Méthode & Hiérarchie des Sources"}
+            </Link>
+            <Link 
+              href={isEn ? "/en/corrections" : "/fr/corrections"} 
+              onClick={() => setMobileMenuOpen(false)}
+              className="min-h-[40px] flex items-center px-1 text-[#141414] font-semibold hover:text-[#0b4627]"
+            >
+              → {isEn ? "Correction Registry" : "Registre Public des Corrections"}
+            </Link>
+            <Link 
+              href={isEn ? "/en/contact" : "/fr/contact"} 
+              onClick={() => setMobileMenuOpen(false)}
+              className="min-h-[40px] flex items-center px-1 text-[#c2410c] font-bold"
+            >
+              → {isEn ? "Report an error or submit a primary source" : "Signaler une erreur ou apporter une source"}
             </Link>
           </div>
+
         </div>
       )}
     </header>

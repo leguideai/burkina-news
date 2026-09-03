@@ -47,20 +47,20 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-8 pb-12 border-b border-[#e6dfd5]">
         
         {/* Magazine Issue Identifier Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 mb-8 border-b border-[#141414]">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 sm:mb-8 border-b border-[#141414]">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#0b4627]">
               {latestIssue 
                 ? `Numéro 0${latestIssue.number} · ${new Date(latestIssue.publicationDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}` 
                 : 'Numéro 03 · Août 2026'}
             </span>
-            <span className="text-[#d4cece]">|</span>
+            <span className="text-[#d4cece] hidden sm:inline">|</span>
             <span className="font-serif text-xs text-[#555555]">
               Revue Mensuelle d'Enquête & Veille Documentaire
             </span>
           </div>
 
-          <div className="text-xs font-serif text-[#555555] flex items-center gap-3">
+          <div className="text-xs font-serif text-[#555555] flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0 border-t sm:border-t-0 border-neutral-200">
             <span className="text-[#0b4627] font-semibold">{issueSourcesCount} sources documentées</span>
             <span>·</span>
             <Link href={`/fr/numeros/${latestIssue?.slug || '2027-03'}`} className="font-bold text-[#0b4627] hover:underline">
@@ -69,11 +69,11 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 3-Column Asymmetric Layout */}
+        {/* 3-Column Asymmetric Layout (On mobile: Hero lead first, then Fil, then Analyses) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* COLUMN 1 (Col 3 / 25%) : LE FIL DE LA SEMAINE */}
-          <div className="lg:col-span-3 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
+          {/* COLUMN 1 (Col 3 / 25%) : LE FIL DE LA SEMAINE (Order 2 on mobile, Order 1 on desktop) */}
+          <div className="order-2 lg:order-1 lg:col-span-3 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
             <div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-[#141414]">
               <Link href={`/fr/fil/${latestBrief?.slug || '2026-semaine-34'}`} className="hover:text-[#0b4627] transition-colors">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] hover:text-[#0b4627] flex items-center gap-1.5">
@@ -123,8 +123,8 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* COLUMN 2 (Col 6 / 50%) : LE GRAND DÉCRYPTAGE (THE HERO) */}
-          <div className="lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
+          {/* COLUMN 2 (Col 6 / 50%) : LE GRAND DÉCRYPTAGE (THE HERO) (Order 1 on mobile, Order 2 on desktop) */}
+          <div className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
             <div className="mb-3">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">
                 Grand Décryptage · Économie
@@ -155,8 +155,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* COLUMN 3 (Col 3 / 25%) : ANALYSES & DÉBATS */}
-          <div className="lg:col-span-3 flex flex-col gap-6">
+          {/* COLUMN 3 (Col 3 / 25%) : ANALYSES & DÉBATS (Order 3 on mobile and desktop) */}
+          <div className="order-3 lg:col-span-3 flex flex-col gap-6">
             <div className="pb-3 border-b-2 border-[#141414]">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
                 Analyses & Points de vue

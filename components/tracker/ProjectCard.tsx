@@ -80,8 +80,8 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
       <div className="px-5 pb-5 pt-0">
         <div className="pt-2 pb-3 border-t border-[#e6dfd5]">
           <div className="flex justify-between text-[10px] font-mono text-[#737373] uppercase mb-1">
-            <span>{isEn ? `Stage: ${currentIndex + 1}/6` : `Avancement : ${currentIndex + 1}/6`}</span>
-            <span className="text-[#141414] font-semibold">{statusLabel}</span>
+            <span className="shrink-0">{isEn ? `Stage: ${currentIndex + 1}/6` : `Avancement : ${currentIndex + 1}/6`}</span>
+            <span className="text-[#141414] font-semibold truncate pl-2">{statusLabel}</span>
           </div>
           <div className="grid grid-cols-6 gap-1">
             {PROJECT_STATUS_ORDER.map((s, idx) => (

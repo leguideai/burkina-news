@@ -67,6 +67,19 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
               <span>·</span>
               <span className="text-[#0b4627] font-semibold">{sourcesCount} documented sources</span>
             </div>
+
+            {issue.pdfUrl && (
+              <div className="lg:hidden mt-5 pt-4 border-t border-[#e6dfd5]">
+                <a 
+                  href={issue.pdfUrl}
+                  download={`Burkina-News-Issue-0${issue.number}.pdf`}
+                  className="w-full py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Download size={15} />
+                  <span>Download Issue 0{issue.number} (PDF)</span>
+                </a>
+              </div>
+            )}
           </div>
 
         </div>

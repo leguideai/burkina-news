@@ -336,8 +336,12 @@ export default function TrackerPageEn() {
               </div>
             ) : (
               /* Table View */
-              <div className="bg-white border border-[#e6dfd5] overflow-x-auto">
-                <table className="w-full text-left text-xs font-serif">
+              <div className="mb-6">
+                <div className="sm:hidden text-[10px] font-mono text-[#737373] text-right mb-1">
+                  ↔ Swipe table horizontally to see all columns
+                </div>
+                <div className="bg-white border border-[#e6dfd5] overflow-x-auto">
+                  <table className="w-full min-w-[700px] text-left text-xs font-serif">
                   <thead>
                     <tr className="bg-[#faf8f5] border-b border-[#141414] font-mono text-[10px] uppercase text-[#737373]">
                       <th className="py-3 px-4">Project</th>
@@ -383,7 +387,8 @@ export default function TrackerPageEn() {
                   </tbody>
                 </table>
               </div>
-            )}
+            </div>
+          )}
 
           </div>
 

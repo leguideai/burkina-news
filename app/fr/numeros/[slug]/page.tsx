@@ -60,13 +60,26 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
             <p className="text-sm sm:text-base font-serif text-[#444444] max-w-3xl leading-relaxed">
               {issue.summary}
             </p>
+
+            {issue.pdfUrl && (
+              <div className="lg:hidden mt-5 pt-4 border-t border-[#e6dfd5]">
+                <a 
+                  href={issue.pdfUrl}
+                  download={`Burkina-News-Numero-0${issue.number}.pdf`}
+                  className="w-full py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Download size={15} />
+                  <span>Télécharger le Numéro 0{issue.number} (PDF)</span>
+                </a>
+              </div>
+            )}
           </div>
 
         </div>
       </header>
 
       {/* 2. Sommaire & Sidebar Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Main Articles List (Col 8) */}
@@ -80,12 +93,12 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
 
             <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5]">
               {issueArticles.map((art, idx) => (
-                <article key={art.id} className="p-6 hover:bg-[#faf8f5] transition-colors group flex flex-col sm:flex-row gap-5 items-start">
-                  <div className="flex items-center gap-3 sm:block shrink-0">
-                    <span className="font-mono text-xl font-bold text-[#0b4627] block mb-2">
+                <article key={art.id} className="p-4 sm:p-6 hover:bg-[#faf8f5] transition-colors group flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
+                  <div className="flex sm:flex-col items-center sm:items-start gap-3 w-full sm:w-36 shrink-0">
+                    <span className="font-mono text-lg sm:text-xl font-bold text-[#0b4627] block sm:mb-2">
                       0{idx + 1}
                     </span>
-                    <div className="w-28 sm:w-36 aspect-[16/10] overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                    <div className="w-full sm:w-36 aspect-[16/10] overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
                       <img 
                         src={art.image || '/images/lead.jpeg'} 
                         alt={art.title}
