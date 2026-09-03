@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { projects, getProjectStats } from '@/data/mock/projects';
+import { getProjects, getProjectStats } from '@/data/mock/projects';
 import { getKeyIndicators } from '@/data/mock/indicators';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import StatusBadge from '@/components/tracker/StatusBadge';
@@ -33,14 +33,15 @@ export default function TrackerPageEn() {
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
+  const enProjects = useMemo(() => getProjects('en'), []);
   const stats = getProjectStats();
-  const keyIndicators = getKeyIndicators();
+  const keyIndicators = useMemo(() => getKeyIndicators('en'), []);
 
-  const sectors = useMemo(() => Array.from(new Set(projects.map(p => p.sector))), []);
-  const regions = useMemo(() => Array.from(new Set(projects.map(p => p.region))), []);
+  const sectors = useMemo(() => Array.from(new Set(enProjects.map(p => p.sector))), [enProjects]);
+  const regions = useMemo(() => Array.from(new Set(enProjects.map(p => p.region))), [enProjects]);
 
   const filteredProjects = useMemo(() => {
-    return projects.filter(p => {
+    return enProjects.filter(p => {
       if (search && !p.title.toLowerCase().includes(search.toLowerCase()) && !p.description.toLowerCase().includes(search.toLowerCase())) {
         return false;
       }
@@ -55,7 +56,7 @@ export default function TrackerPageEn() {
       }
       return true;
     });
-  }, [search, selectedStatus, selectedSector, selectedRegion]);
+  }, [enProjects, search, selectedStatus, selectedSector, selectedRegion]);
 
   const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all';
 
@@ -97,7 +98,7 @@ export default function TrackerPageEn() {
             <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
               <div className="bg-[#faf8f5] border border-[#e6dfd5] px-4 py-2 text-xs font-mono">
                 <span className="text-[#737373] block text-[10px] uppercase">Registry Status</span>
-                <span className="font-bold text-[#0b4627]">Active Monitoring</span> · {projects.length} documented projects
+                <span className="font-bold text-[#0b4627]">Active Monitoring</span> · {enProjects.length} documented projects
               </div>
               
               <Link
@@ -144,7 +145,7 @@ export default function TrackerPageEn() {
                     <div className={`h-1 w-full rounded-full ${isSelected ? 'bg-white/30' : 'bg-neutral-200'}`}>
                       <div 
                         className={`h-full rounded-full ${isSelected ? 'bg-white' : 'bg-[#0b4627]'}`}
-                        style={{ width: `${Math.min(100, (count / (projects.length || 1)) * 100 * 3)}%` }}
+                        style={{ width: `${Math.min(100, (count / (enProjects.length || 1)) * 100 * 3)}%` }}
                       />
                     </div>
                   </button>
@@ -303,7 +304,7 @@ export default function TrackerPageEn() {
             {/* Results Count Strip */}
             <div className="flex items-center justify-between text-xs font-mono text-[#555555] px-1">
               <span>
-                Showing <strong className="text-[#141414]">{filteredProjects.length}</strong> project{filteredProjects.length !== 1 ? 's' : ''} out of <strong className="text-[#141414]">{projects.length}</strong> documented (Target: 60)
+                Showing <strong className="text-[#141414]">{filteredProjects.length}</strong> project{filteredProjects.length !== 1 ? 's' : ''} out of <strong className="text-[#141414]">{enProjects.length}</strong> documented (Target: 60)
               </span>
               <span className="text-[#737373] text-[11px]">
                 Updated weekly

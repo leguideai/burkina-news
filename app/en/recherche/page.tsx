@@ -3,9 +3,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, FileText, Construction, BarChart3, ChevronRight, X } from 'lucide-react';
-import { articles } from '@/data/mock/articles';
-import { projects } from '@/data/mock/projects';
-import { indicators } from '@/data/mock/indicators';
+import { getArticles } from '@/data/mock/articles';
+import { getProjects } from '@/data/mock/projects';
+import { getIndicators } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import StatusBadge from '@/components/tracker/StatusBadge';
@@ -16,25 +16,29 @@ export default function SearchPageEn() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
 
+  const enArticles = useMemo(() => getArticles('en'), []);
+  const enProjects = useMemo(() => getProjects('en'), []);
+  const enIndicators = useMemo(() => getIndicators('en'), []);
+
   const searchResults = useMemo(() => {
     if (!query.trim()) return { articles: [], projects: [], indicators: [] };
 
     const lowerQuery = query.toLowerCase();
 
-    const filteredArticles = articles.filter(a => 
+    const filteredArticles = enArticles.filter(a => 
       a.title.toLowerCase().includes(lowerQuery) || 
       a.excerpt.toLowerCase().includes(lowerQuery) ||
       a.category.toLowerCase().includes(lowerQuery)
     );
 
-    const filteredProjects = projects.filter(p => 
+    const filteredProjects = enProjects.filter(p => 
       p.title.toLowerCase().includes(lowerQuery) || 
       p.description.toLowerCase().includes(lowerQuery) ||
       p.region.toLowerCase().includes(lowerQuery) ||
       p.sector.toLowerCase().includes(lowerQuery)
     );
 
-    const filteredIndicators = indicators.filter(i => 
+    const filteredIndicators = enIndicators.filter(i => 
       i.name.toLowerCase().includes(lowerQuery) || 
       i.definition.toLowerCase().includes(lowerQuery) ||
       i.code.toLowerCase().includes(lowerQuery)

@@ -1,5 +1,5 @@
 import { projects, getProjectBySlug } from '@/data/mock/projects';
-import { articles } from '@/data/mock/articles';
+import { getArticles } from '@/data/mock/articles';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { PROJECT_STATUS_LABELS_EN, PROJECT_STATUS_ORDER } from '@/data/types';
 import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight } from 'lucide-react';
@@ -15,15 +15,16 @@ export function generateStaticParams() {
 
 export default async function ProjectDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
+  const project = getProjectBySlug(slug, 'en');
 
   if (!project) {
     notFound();
   }
 
   const currentIndex = PROJECT_STATUS_ORDER.indexOf(project.currentStatus);
+  const enArticles = getArticles('en');
   const linkedArticles = project.linkedArticleIds
-    .map(id => articles.find(a => a.id === id))
+    .map(id => enArticles.find(a => a.id === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
   return (

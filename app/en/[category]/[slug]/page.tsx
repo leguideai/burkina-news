@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { articles, getArticleBySlug } from '@/data/mock/articles';
+import { articles, getArticleBySlug, getArticles } from '@/data/mock/articles';
 import { categories, getCategoryByCode } from '@/data/mock/categories';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
@@ -19,15 +19,15 @@ export default async function ArticleDetailPageEn({
   params: Promise<{ category: string; slug: string }> 
 }) {
   const { category: categoryCode, slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = getArticleBySlug(slug, 'en');
   const category = getCategoryByCode(categoryCode as any);
 
   if (!article) {
     notFound();
   }
 
-  const relatedProjects = getProjectsByCategory(article.category).slice(0, 2);
-  const relatedArticles = articles
+  const relatedProjects = getProjectsByCategory(article.category, 'en').slice(0, 2);
+  const relatedArticles = getArticles('en')
     .filter(a => a.category === article.category && a.id !== article.id)
     .slice(0, 2);
 

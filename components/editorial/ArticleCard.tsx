@@ -9,8 +9,10 @@ interface ArticleCardProps {
 }
 
 export default function ArticleCard({ article, variant = 'default', lang = 'fr' }: ArticleCardProps) {
-  const imageSrc = article.image || article.imageUrl || '/images/lead.jpeg';
   const isEn = lang === 'en';
+  const title = isEn && article.titleEn ? article.titleEn : article.title;
+  const excerpt = isEn && article.excerptEn ? article.excerptEn : article.excerpt;
+  const imageSrc = article.image || article.imageUrl || '/images/lead.jpeg';
   const articleHref = `/${isEn ? 'en' : 'fr'}/${article.category}/${article.slug}`;
   const verifiedSourcesLabel = isEn ? `${article.sourceCount} verified sources` : `${article.sourceCount} sources vérifiées`;
 
@@ -21,7 +23,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100 mb-6">
           <img 
             src={imageSrc} 
-            alt={article.title}
+            alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
           />
         </div>
@@ -37,12 +39,12 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
 
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] leading-[1.18] mb-4 group-hover:text-[#0b4627] transition-colors">
           <Link href={articleHref}>
-            {article.title}
+            {title}
           </Link>
         </h2>
 
         <p className="text-sm sm:text-base font-serif text-[#444444] leading-relaxed mb-6">
-          {article.excerpt}
+          {excerpt}
         </p>
 
         <div className="pt-4 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-serif">
@@ -65,7 +67,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
         <div className="sm:w-1/3 aspect-[4/3] overflow-hidden bg-neutral-100 shrink-0">
           <img 
             src={imageSrc} 
-            alt={article.title}
+            alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
@@ -76,11 +78,11 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
             </div>
             <h3 className="text-base font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">
               <Link href={articleHref}>
-                {article.title}
+                {title}
               </Link>
             </h3>
             <p className="text-xs font-serif text-[#555555] line-clamp-2 mb-2">
-              {article.excerpt}
+              {excerpt}
             </p>
           </div>
           <div className="text-[11px] text-[#0b4627] flex justify-between items-center pt-2 border-t border-neutral-100 font-mono">
@@ -101,7 +103,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
         <div className="w-20 h-16 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
           <img 
             src={imageSrc} 
-            alt={article.title}
+            alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
@@ -111,7 +113,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           </div>
           <h4 className="text-xs font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-1">
             <Link href={articleHref}>
-              {article.title}
+              {title}
             </Link>
           </h4>
           <span className="text-[10px] font-mono text-[#0b4627] font-semibold">{verifiedSourcesLabel}</span>
@@ -126,7 +128,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
       <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4">
         <img 
           src={imageSrc} 
-          alt={article.title}
+          alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>
@@ -139,12 +141,12 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
 
           <h3 className="text-lg font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">
             <Link href={articleHref}>
-              {article.title}
+              {title}
             </Link>
           </h3>
 
           <p className="text-xs font-serif text-[#555555] leading-relaxed line-clamp-3 mb-4">
-            {article.excerpt}
+            {excerpt}
           </p>
         </div>
 

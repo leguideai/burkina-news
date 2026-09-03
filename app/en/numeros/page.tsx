@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Download } from 'lucide-react';
-import { issues } from '@/data/mock/issues';
+import { getIssues } from '@/data/mock/issues';
 
 export const metadata = {
   title: 'Monthly Issues | Burkina News',
@@ -8,6 +8,8 @@ export const metadata = {
 };
 
 export default function IssuesPageEn() {
+  const enIssues = getIssues('en');
+
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
       
@@ -40,7 +42,7 @@ export default function IssuesPageEn() {
       {/* Issues Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {issues.map((issue) => {
+          {enIssues.map((issue) => {
             const date = new Date(issue.publicationDate);
             const formattedDate = date.toLocaleDateString('en-US', {
               month: 'long',

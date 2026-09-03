@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { indicators } from '@/data/mock/indicators';
+import { getIndicators } from '@/data/mock/indicators';
 import IndicatorCard from '@/components/tracker/IndicatorCard';
 import { ArrowLeft, BarChart2 } from 'lucide-react';
 
@@ -9,13 +9,14 @@ export const metadata = {
 };
 
 export default function IndicatorsPageEn() {
-  const groupedIndicators = indicators.reduce((acc, indicator) => {
+  const enIndicators = getIndicators('en');
+  const groupedIndicators = enIndicators.reduce((acc, indicator) => {
     if (!acc[indicator.category]) {
       acc[indicator.category] = [];
     }
     acc[indicator.category].push(indicator);
     return acc;
-  }, {} as Record<string, typeof indicators>);
+  }, {} as Record<string, typeof enIndicators>);
 
   const categoryNamesEn: Record<string, string> = {
     economie: 'Economy & Public Finances',

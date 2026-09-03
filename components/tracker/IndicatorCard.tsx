@@ -58,7 +58,7 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
 
           <h4 className="text-xs font-serif font-bold text-[#141414] leading-snug mb-4 line-clamp-2">
             <Link href={indicatorHref} className="hover:text-[#0b4627] transition-colors">
-              {indicator.name}
+              {isEn && indicator.nameEn ? indicator.nameEn : indicator.name}
             </Link>
           </h4>
         </div>

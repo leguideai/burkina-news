@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Clock, ShieldCheck } from 'lucide-react';
-import { briefs } from '@/data/mock/briefs';
+import { getBriefs } from '@/data/mock/briefs';
 
 export const metadata = {
   title: 'The Brief | Burkina News',
@@ -8,6 +8,7 @@ export const metadata = {
 };
 
 export default function FilPageEn() {
+  const briefs = getBriefs('en');
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
       

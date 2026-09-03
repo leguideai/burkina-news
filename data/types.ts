@@ -28,9 +28,12 @@ export interface Article {
   id: string
   type: ContentType
   title: string
+  titleEn?: string
   slug: string
   excerpt: string
+  excerptEn?: string
   body: string
+  bodyEn?: string
   category: CategoryCode
   image: string
   author: string
@@ -91,10 +94,12 @@ export interface ProjectStatusEntry {
   date: string
   source: string
   note?: string
+  noteEn?: string
 }
 
 export interface ProjectActor {
   role: string
+  roleEn?: string
   name: string
 }
 
@@ -108,8 +113,10 @@ export interface ProjectSource {
 export interface Project {
   id: string
   title: string
+  titleEn?: string
   slug: string
   description: string
+  descriptionEn?: string
   category: CategoryCode
   region: string
   sector: string
@@ -136,7 +143,9 @@ export interface Indicator {
   id: string
   code: string
   name: string
+  nameEn?: string
   definition: string
+  definitionEn?: string
   unit: string
   baselineValue: number
   baselineYear: number
@@ -148,6 +157,7 @@ export interface Indicator {
   source: string
   category: CategoryCode
   program?: string
+  programEn?: string
   image?: string
   history: DataPoint[]
 }
@@ -157,10 +167,12 @@ export interface Issue {
   id: string
   number: number
   title: string
+  titleEn?: string
   slug: string
   coverImage: string
   publicationDate: string
   summary: string
+  summaryEn?: string
   articleCount: number
   articleIds: string[]
   pdfUrl?: string
@@ -170,20 +182,25 @@ export interface Issue {
 export interface BriefFact {
   time: string
   text: string
+  textEn?: string
   source: string
   sourceUrl?: string
   category?: CategoryCode
   whyWatch?: string
+  whyWatchEn?: string
   image?: string
 }
 
 export interface Brief {
   id: string
   title: string
+  titleEn?: string
   slug: string
   date: string
   weekNumber: number
   image?: string
+  summary?: string
+  summaryEn?: string
   facts: BriefFact[]
 }
 

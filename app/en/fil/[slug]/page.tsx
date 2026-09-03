@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ExternalLink, ShieldCheck, Camera, Calendar, Clock, ChevronRight, Hash } from 'lucide-react';
-import { briefs, getBriefBySlug } from '@/data/mock/briefs';
+import { briefs, getBriefs, getBriefBySlug } from '@/data/mock/briefs';
 import { categories } from '@/data/mock/categories';
 import { getSourceUrl } from '@/data/sources';
 
@@ -13,15 +13,16 @@ export function generateStaticParams() {
 
 export default async function BriefDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const brief = getBriefBySlug(slug);
+  const brief = getBriefBySlug(slug, 'en');
+  const enBriefs = getBriefs('en');
   
   if (!brief) {
     notFound();
   }
 
-  const currentIndex = briefs.findIndex((b) => b.slug === slug);
-  const prevBrief = currentIndex < briefs.length - 1 ? briefs[currentIndex + 1] : null;
-  const nextBrief = currentIndex > 0 ? briefs[currentIndex - 1] : null;
+  const currentIndex = enBriefs.findIndex((b) => b.slug === slug);
+  const prevBrief = currentIndex < enBriefs.length - 1 ? enBriefs[currentIndex + 1] : null;
+  const nextBrief = currentIndex > 0 ? enBriefs[currentIndex - 1] : null;
 
   const date = new Date(brief.date);
   const formattedDate = date.toLocaleDateString('en-US', {
@@ -245,7 +246,7 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
               </p>
 
               <div className="space-y-3">
-                {briefs.map((b) => {
+                {enBriefs.map((b) => {
                   const isCurrent = b.slug === brief.slug;
                   const bDate = new Date(b.date).toLocaleDateString('en-US', {
                     month: 'short',

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { getLatestIssue } from '@/data/mock/issues';
 import { getLatestBrief } from '@/data/mock/briefs';
-import { articles } from '@/data/mock/articles';
+import { getArticles } from '@/data/mock/articles';
 import { getKeyIndicators } from '@/data/mock/indicators';
-import { projects, getProjectStats } from '@/data/mock/projects';
+import { getProjects, getProjectStats } from '@/data/mock/projects';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
@@ -20,16 +20,17 @@ import {
 } from 'lucide-react';
 
 export default function HomePageEn() {
-  const latestIssue = getLatestIssue();
-  const latestBrief = getLatestBrief();
-  const indicators = getKeyIndicators();
+  const latestIssue = getLatestIssue('en');
+  const latestBrief = getLatestBrief('en');
+  const indicators = getKeyIndicators('en');
   const projectStats = getProjectStats();
-  const leadArticle = articles.find(a => a.type === 'decryptage') || articles[0];
-  const secondaryArticles = articles.filter(a => a.id !== leadArticle.id).slice(0, 4);
-  const featuredProjects = projects.slice(0, 3);
-  const terrainArticle = articles.find(a => a.type === 'terrain') || articles[5];
-  const factCheckArticle = articles.find(a => a.type === 'vrai-ou-faux') || articles[4];
-  const issueArticles = latestIssue ? articles.filter(a => a.issueId === latestIssue.id) : [];
+  const enArticles = getArticles('en');
+  const leadArticle = enArticles.find(a => a.type === 'decryptage') || enArticles[0];
+  const secondaryArticles = enArticles.filter(a => a.id !== leadArticle.id).slice(0, 4);
+  const featuredProjects = getProjects('en').slice(0, 3);
+  const terrainArticle = enArticles.find(a => a.type === 'terrain') || enArticles[5];
+  const factCheckArticle = enArticles.find(a => a.type === 'vrai-ou-faux') || enArticles[4];
+  const issueArticles = latestIssue ? enArticles.filter(a => a.issueId === latestIssue.id) : [];
   const issueSourcesCount = issueArticles.length > 0 
     ? issueArticles.reduce((acc, curr) => acc + curr.sourceCount, 0)
     : leadArticle.sourceCount;
@@ -286,7 +287,7 @@ export default function HomePageEn() {
 
           <div className="flex items-center gap-4">
             <span className="text-xs font-mono text-[#737373] hidden sm:inline">
-              {projects.length} documented projects · Target: 60 projects
+              {projectStats.total} documented projects · Target: 60 projects
             </span>
             <Link 
               href="/en/tracker"

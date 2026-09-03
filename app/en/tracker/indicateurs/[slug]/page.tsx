@@ -14,13 +14,13 @@ export function generateStaticParams() {
 
 export default async function IndicatorDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const indicator = getIndicatorByCode(slug);
+  const indicator = getIndicatorByCode(slug, 'en');
 
   if (!indicator) {
     notFound();
   }
 
-  const relatedProjects = getProjectsByCategory(indicator.category).slice(0, 3);
+  const relatedProjects = getProjectsByCategory(indicator.category, 'en').slice(0, 3);
   
   const progressPercent = indicator.target2030 && indicator.baselineValue
     ? Math.min(100, Math.max(0, ((indicator.currentValue - indicator.baselineValue) / (indicator.target2030 - indicator.baselineValue)) * 100))

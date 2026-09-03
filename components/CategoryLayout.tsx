@@ -21,13 +21,13 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
     return <div>{isEn ? "Category not found" : "Catégorie introuvable"}</div>;
   }
 
-  let articles = getArticlesByCategory(categoryCode);
+  let articles = getArticlesByCategory(categoryCode, lang);
   if (articles.length === 0) {
     articles = allArticles.slice(0, 4);
   }
 
-  const projects = getProjectsByCategory(categoryCode).slice(0, 2);
-  const indicators = getIndicatorsByCategory(categoryCode).slice(0, 2);
+  const projects = getProjectsByCategory(categoryCode, lang).slice(0, 2);
+  const indicators = getIndicatorsByCategory(categoryCode, lang).slice(0, 2);
   const leadArticle = articles[0];
   const otherArticles = articles.slice(1);
 
