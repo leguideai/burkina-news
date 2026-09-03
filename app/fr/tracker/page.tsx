@@ -111,7 +111,7 @@ export default function TrackerPage() {
                   onClick={() => setSelectedStatus(selectedStatus === status ? 'all' : status)}
                   className={`p-2.5 border text-left transition-colors flex flex-col justify-between ${
                     isSelected 
-                      ? 'bg-[#0b4627] text-white border-[#0b4627]' 
+                      ? 'bg-[#0b4627] text-white border-[#0b4627] shadow-xs' 
                       : 'bg-[#faf8f5] border-[#e6dfd5] hover:border-[#141414] text-[#141414]'
                   }`}
                 >
@@ -121,7 +121,7 @@ export default function TrackerPage() {
                     </span>
                     <span className="font-bold">{count} projet{count > 1 ? 's' : ''}</span>
                   </div>
-                  <div className="text-[11px] font-mono font-bold uppercase tracking-wider truncate">
+                  <div className="text-[11px] font-mono font-bold uppercase tracking-wider leading-tight">
                     {PROJECT_STATUS_LABELS[status]}
                   </div>
                 </button>
@@ -147,26 +147,26 @@ export default function TrackerPage() {
               placeholder="Rechercher par nom de chantier, région, bailleur, maître d'ouvrage..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
+              className="w-full pl-8 pr-3 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
             />
-            <Search size={14} className="absolute left-2.5 top-2 text-[#888888]" />
+            <Search size={14} className="absolute left-2.5 top-2.5 sm:top-2 text-[#888888]" />
             {search && (
               <button 
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-2.5 sm:top-2 text-gray-400 hover:text-gray-600 p-0.5"
               >
                 <X size={14} />
               </button>
             )}
           </div>
 
-          {/* Faceted Dropdowns */}
-          <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+          {/* Faceted Dropdowns (Full-width grid on mobile, inline on desktop) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:items-center gap-2 text-xs font-mono w-full lg:w-auto">
             
             <select 
               value={selectedSector}
               onChange={(e) => setSelectedSector(e.target.value)}
-              className="px-2.5 py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
             >
               <option value="all">Tous les secteurs</option>
               {sectors.map(s => <option key={s} value={s}>{s}</option>)}
@@ -175,7 +175,7 @@ export default function TrackerPage() {
             <select 
               value={selectedRegion}
               onChange={(e) => setSelectedRegion(e.target.value)}
-              className="px-2.5 py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
             >
               <option value="all">Toutes les régions</option>
               {regions.map(r => <option key={r} value={r}>{r}</option>)}
@@ -184,7 +184,7 @@ export default function TrackerPage() {
             <select 
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
             >
               <option value="all">Tous les statuts (6)</option>
               {PROJECT_STATUS_ORDER.map(st => (
@@ -215,7 +215,7 @@ export default function TrackerPage() {
             {hasActiveFilters && (
               <button 
                 onClick={resetFilters}
-                className="px-2 py-1.5 text-[11px] font-mono text-[#c2410c] hover:underline flex items-center gap-1 font-semibold"
+                className="px-2 py-2 sm:py-1.5 text-[11px] font-mono text-[#c2410c] hover:underline flex items-center justify-center gap-1 font-semibold"
               >
                 <RotateCcw size={11} />
                 <span>Réinitialiser</span>
@@ -226,34 +226,38 @@ export default function TrackerPage() {
 
         </div>
 
-        {/* Counter Bar */}
-        <div className="flex justify-between items-center text-xs font-serif text-[#555555] mb-6 pb-2 border-b border-[#e6dfd5]">
-          <span>
-            Affichage de <strong>{filteredProjects.length}</strong> projet{filteredProjects.length > 1 ? 's' : ''} sur <strong>{projects.length}</strong> documenté{projects.length > 1 ? 's' : ''} (Objectif cible : 60 chantiers majeurs)
-          </span>
-          <span className="font-mono text-[11px] text-[#737373] hidden sm:inline">
-            Sources : DGMG, SONABEL, Ministères techniques & Terrain
-          </span>
-        </div>
-
-        {/* 2-COLUMN LAYOUT : Projects (Col 8/9) + STICKY BAROMÈTRE (Col 4/3) */}
+        {/* Layout : Left Projects + Right Sticky Baromètre */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Main Projects Column (Col 8 on desktop, Col 9 on XL) */}
-          <div className="lg:col-span-8 xl:col-span-9">
+          {/* Main Projects Section (Col 8) */}
+          <div className="lg:col-span-8">
+            
+            {/* Results Count Strip */}
+            <div className="flex items-center justify-between text-xs font-mono text-[#555555] mb-4 px-1">
+              <span>
+                <strong className="text-[#141414]">{filteredProjects.length}</strong> chantier{filteredProjects.length > 1 ? 's' : ''} documenté{filteredProjects.length > 1 ? 's' : ''}
+              </span>
+              <span className="text-[#737373] text-[11px]">
+                Audité le 18 août 2026
+              </span>
+            </div>
             
             {filteredProjects.length > 0 ? (
               viewMode === 'grid' ? (
                 /* 2 or 3 Columns of Project Cards with Miniature Images */
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                   {filteredProjects.map((project) => (
                     <ProjectCard key={project.id} project={project} />
                   ))}
                 </div>
               ) : (
-                /* TABLE AUDIT VIEW */
-                <div className="bg-white border border-[#e6dfd5] overflow-x-auto mb-12">
-                  <table className="w-full text-left border-collapse text-xs font-serif">
+                /* TABLE AUDIT VIEW WITH SCROLL SAFETY */
+                <div className="mb-12">
+                  <div className="sm:hidden text-[10px] font-mono text-[#737373] text-right mb-1">
+                    ↔ Faites glisser le tableau pour voir toutes les colonnes
+                  </div>
+                  <div className="bg-white border border-[#e6dfd5] overflow-x-auto">
+                    <table className="w-full min-w-[720px] text-left border-collapse text-xs font-serif">
                     <thead>
                       <tr className="border-b border-[#141414] bg-[#faf8f5] text-[10px] font-mono uppercase text-[#737373]">
                         <th className="py-2.5 px-3">Statut</th>
@@ -313,8 +317,8 @@ export default function TrackerPage() {
                     </tbody>
                   </table>
                 </div>
-              )
-            ) : (
+              </div>
+            )) : (
               <div className="p-12 text-center bg-white border border-[#e6dfd5] mb-12 space-y-3">
                 <Compass size={32} className="mx-auto text-[#888888]" />
                 <h3 className="text-base font-bold font-serif text-[#141414]">Aucun chantier ne correspond aux filtres sélectionnés</h3>

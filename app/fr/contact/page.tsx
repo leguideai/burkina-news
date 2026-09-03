@@ -8,20 +8,61 @@ export default function ContactPage() {
   const [errorForm, setErrorForm] = useState({ url: '', desc: '', source: '', email: '' });
   const [genForm, setGenForm] = useState({ name: '', email: '', category: 'question', message: '' });
   
-  const [errorStatus, setErrorStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
-  const [genStatus, setGenStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [errorStatus, setErrorStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [genStatus, setGenStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [genMessage, setGenMessage] = useState('');
 
-  const handleErrorSubmit = (e: React.FormEvent) => {
+  const handleErrorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorStatus('submitting');
-    setTimeout(() => { setErrorStatus('success'); }, 800);
+    setErrorMessage('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'error_report',
+          ...errorForm
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur lors de l\'envoi');
+
+      setErrorStatus('success');
+      setErrorForm({ url: '', desc: '', source: '', email: '' });
+    } catch (err: any) {
+      setErrorStatus('error');
+      setErrorMessage(err.message || 'Une erreur est survenue lors de l\'envoi.');
+    }
   };
 
-  const handleGenSubmit = (e: React.FormEvent) => {
+  const handleGenSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorStatus('idle');
     setGenStatus('submitting');
-    setTimeout(() => { setGenStatus('success'); }, 800);
+    setGenMessage('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'general',
+          ...genForm
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur lors de l\'envoi');
+
+      setGenStatus('success');
+      setGenForm({ name: '', email: '', category: 'question', message: '' });
+    } catch (err: any) {
+      setGenStatus('error');
+      setGenMessage(err.message || 'Une erreur est survenue lors de l\'envoi.');
+    }
   };
 
   return (
@@ -130,6 +171,12 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  {errorStatus === 'error' && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs">
+                      {errorMessage}
+                    </div>
+                  )}
+
                   <button 
                     type="submit" 
                     disabled={errorStatus === 'submitting'} 
@@ -180,6 +227,12 @@ export default function ContactPage() {
                     <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Message *</label>
                     <textarea required rows={4} className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.message} onChange={e => setGenForm({...genForm, message: e.target.value})} />
                   </div>
+
+                  {genStatus === 'error' && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs">
+                      {genMessage}
+                    </div>
+                  )}
 
                   <button type="submit" disabled={genStatus === 'submitting'} className="px-6 py-2.5 bg-[#141414] hover:bg-[#0b4627] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2">
                     <Send size={12} />

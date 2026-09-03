@@ -1,11 +1,14 @@
 import type { Indicator } from '../types'
+import { localizeIndicator } from '../localize'
 
 export const indicators: Indicator[] = [
   {
     id: 'ind-01',
     code: 'PIB-CROISSANCE',
     name: 'Taux de croissance du PIB réel',
+    nameEn: 'Real GDP Growth Rate',
     definition: 'Variation annuelle du produit intérieur brut réel en pourcentage.',
+    definitionEn: 'Annual percentage change in real Gross Domestic Product at constant prices.',
     unit: '%',
     baselineValue: 3.6,
     baselineYear: 2024,
@@ -17,6 +20,7 @@ export const indicators: Indicator[] = [
     source: 'FMI / INSD',
     category: 'economie',
     program: 'Programme 4.4 — Développement du commerce',
+    programEn: 'Program 4.4 — Trade & Macroeconomic Expansion',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyCcxg1qoIcaR4KuGS9ZXaHgA6mhYKzmSsrdsydcolKA5F9lJxE6qtOWo&s=10',
     history: [
       { year: 2022, value: 1.5, source: 'INSD' },
@@ -30,7 +34,9 @@ export const indicators: Indicator[] = [
     id: 'ind-02',
     code: 'ELEC-CAPACITE',
     name: 'Capacité électrique installée',
+    nameEn: 'Installed Power Generation Capacity',
     definition: 'Puissance totale installée en mégawatts (toutes sources confondues : thermique, solaire, hydraulique).',
+    definitionEn: 'Total grid-connected generating capacity in megawatts (all sources: thermal baseload, utility solar, hydro).',
     unit: 'MW',
     baselineValue: 475,
     baselineYear: 2024,
@@ -42,6 +48,7 @@ export const indicators: Indicator[] = [
     source: 'SONABEL / Ministère de l\'Énergie',
     category: 'chantiers',
     program: 'Programme 4.2 — Souveraineté énergétique',
+    programEn: 'Program 4.2 — National Energy Sovereignty',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVB4DulX6wVRhMEzd9fOmj5BoTaj8T-A8XDEpH9w1UGTlQ8zy52uYk3bw&s=10',
     history: [
       { year: 2022, value: 380, source: 'SONABEL' },
@@ -55,7 +62,9 @@ export const indicators: Indicator[] = [
     id: 'ind-03',
     code: 'OR-PRODUCTION',
     name: 'Production d\'or',
+    nameEn: 'National Gold Production',
     definition: 'Production annuelle d\'or en tonnes (mines industrielles et artisanales déclarées).',
+    definitionEn: 'Total annual physical gold extraction in metric tonnes (commercial mines and declared artisanal sites).',
     unit: 'tonnes',
     baselineValue: 51.2,
     baselineYear: 2024,
@@ -66,6 +75,8 @@ export const indicators: Indicator[] = [
     trend: 'up',
     source: 'DGMG / Chambre des mines',
     category: 'economie',
+    program: 'Programme 4.3 — Valorisation des ressources minières',
+    programEn: 'Program 4.3 — Mineral Resource Value Addition',
     image: 'https://www.afrik.com/wp-content/uploads/2024/03/lingot-d-or.jpg',
     history: [
       { year: 2022, value: 45.8, source: 'DGMG' },
@@ -79,7 +90,9 @@ export const indicators: Indicator[] = [
     id: 'ind-04',
     code: 'PAUVRETE',
     name: 'Taux de pauvreté',
+    nameEn: 'National Poverty Rate',
     definition: 'Proportion de la population vivant en dessous du seuil national de pauvreté.',
+    definitionEn: 'Percentage of the population living below the official national poverty threshold.',
     unit: '%',
     baselineValue: 43.2,
     baselineYear: 2024,
@@ -91,6 +104,7 @@ export const indicators: Indicator[] = [
     source: 'INSD / Banque mondiale',
     category: 'societe',
     program: 'Programme 3.4 — Travail, emploi et protection sociale',
+    programEn: 'Program 3.4 — Employment & Social Safety Nets',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYDYIqsuva8bv_GsGw8FYP_AA19ymxBlzb06gkqg0QAQ&s=10',
     history: [
       { year: 2022, value: 45.1, source: 'INSD' },
@@ -104,7 +118,9 @@ export const indicators: Indicator[] = [
     id: 'ind-05',
     code: 'SCOLARISATION',
     name: 'Taux brut de scolarisation primaire',
+    nameEn: 'Gross Primary School Enrollment Rate',
     definition: 'Ratio entre les effectifs scolarisés au primaire et la population d\'âge scolaire correspondant.',
+    definitionEn: 'Ratio of total enrolled primary students to the official primary school-age demographic population.',
     unit: '%',
     baselineValue: 78.4,
     baselineYear: 2024,
@@ -116,6 +132,7 @@ export const indicators: Indicator[] = [
     source: 'MENAPLN / UNICEF',
     category: 'societe',
     program: 'Programme 3.2 — Éducation et formation',
+    programEn: 'Program 3.2 — Quality Universal Education',
     image: 'https://www.togofirst.com/media/k2/items/cache/57a563bcafe5adb5a476933fe298e364_L.jpg',
     history: [
       { year: 2022, value: 74.6, source: 'MENAPLN' },
@@ -129,7 +146,9 @@ export const indicators: Indicator[] = [
     id: 'ind-06',
     code: 'PDI',
     name: 'Personnes déplacées internes',
+    nameEn: 'Internally Displaced Persons (IDPs)',
     definition: 'Nombre de personnes déplacées internes enregistrées par le CONASUR.',
+    definitionEn: 'Number of internally displaced persons registered in the official biometric registry by CONASUR.',
     unit: 'millions',
     baselineValue: 2.06,
     baselineYear: 2024,
@@ -141,6 +160,7 @@ export const indicators: Indicator[] = [
     source: 'CONASUR / OCHA',
     category: 'securite',
     program: 'Programme 1.2 — Cohésion sociale et paix',
+    programEn: 'Program 1.2 — Social Cohesion & Resettlement',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNQDUbCURt_tAlswRcXmBVun33-CXIs8UeJKU9uKk2nw&s=10',
     history: [
       { year: 2022, value: 1.88, source: 'CONASUR' },
@@ -154,7 +174,9 @@ export const indicators: Indicator[] = [
     id: 'ind-07',
     code: 'CEREAL-PROD',
     name: 'Production céréalière',
+    nameEn: 'Annual Grain & Cereal Harvest',
     definition: 'Production totale de céréales (mil, sorgho, maïs, riz) en millions de tonnes.',
+    definitionEn: 'Total domestic harvest of key staple grains (millet, sorghum, maize, rice) in millions of metric tonnes.',
     unit: 'M tonnes',
     baselineValue: 4.8,
     baselineYear: 2024,
@@ -166,6 +188,7 @@ export const indicators: Indicator[] = [
     source: 'DGPV / FAO',
     category: 'agriculture',
     program: 'Programme 4.1 — Développement agro-sylvo-pastoral',
+    programEn: 'Program 4.1 — Food Security & Agro-Pastoral Development',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSjjPOMoZrOPLLVZYMhqWgrxDeoRuzVlYqJKiszLv3LA&s=10',
     history: [
       { year: 2022, value: 4.2, source: 'DGPV' },
@@ -179,7 +202,9 @@ export const indicators: Indicator[] = [
     id: 'ind-08',
     code: 'ACCES-EAU',
     name: 'Taux d\'accès à l\'eau potable',
+    nameEn: 'Potable Drinking Water Access Rate',
     definition: 'Proportion de la population ayant accès à un point d\'eau potable amélioré.',
+    definitionEn: 'Percentage of the population having sustained access to an improved, treated drinking water supply point.',
     unit: '%',
     baselineValue: 72.5,
     baselineYear: 2024,
@@ -191,6 +216,7 @@ export const indicators: Indicator[] = [
     source: 'DGRE / ONEA',
     category: 'chantiers',
     program: 'Programme 3.5 — Environnement, eau et cadre de vie',
+    programEn: 'Program 3.5 — Water Infrastructure & Sanitation',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqnVTjbmIdrCZKjBErRTpNrVjC_4ae8V-66nirOI6baiX6-xOS6MFlNndJ&s=10',
     history: [
       { year: 2022, value: 69.1, source: 'DGRE' },
@@ -202,11 +228,18 @@ export const indicators: Indicator[] = [
   },
 ]
 
-export const getIndicatorByCode = (code: string): Indicator | undefined =>
-  indicators.find(i => i.code === code)
+export const getIndicators = (lang: 'fr' | 'en' = 'fr'): Indicator[] =>
+  indicators.map(i => localizeIndicator(i, lang))
 
-export const getIndicatorsByCategory = (code: string): Indicator[] =>
-  indicators.filter(i => i.category === code)
+export const getIndicatorByCode = (code: string, lang: 'fr' | 'en' = 'fr'): Indicator | undefined => {
+  const ind = indicators.find(i => i.code === code)
+  return ind ? localizeIndicator(ind, lang) : undefined
+}
 
-export const getKeyIndicators = (): Indicator[] =>
-  indicators.filter(i => ['PIB-CROISSANCE', 'ELEC-CAPACITE', 'OR-PRODUCTION', 'PAUVRETE'].includes(i.code))
+export const getIndicatorsByCategory = (code: string, lang: 'fr' | 'en' = 'fr'): Indicator[] =>
+  indicators.filter(i => i.category === code).map(i => localizeIndicator(i, lang))
+
+export const getKeyIndicators = (lang: 'fr' | 'en' = 'fr'): Indicator[] =>
+  indicators
+    .filter(i => ['PIB-CROISSANCE', 'ELEC-CAPACITE', 'OR-PRODUCTION', 'PAUVRETE'].includes(i.code))
+    .map(i => localizeIndicator(i, lang))

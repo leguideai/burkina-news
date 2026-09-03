@@ -1,4 +1,4 @@
-import { ProjectStatus, PROJECT_STATUS_LABELS } from '@/data/types';
+import { ProjectStatus, PROJECT_STATUS_LABELS, PROJECT_STATUS_LABELS_EN } from '@/data/types';
 
 const STATUS_CONFIG: Record<ProjectStatus, { dot: string; bg: string; text: string; border: string }> = {
   'annonce': { dot: 'bg-neutral-400', bg: 'bg-neutral-100', text: 'text-neutral-700', border: 'border-neutral-200' },
@@ -9,8 +9,9 @@ const STATUS_CONFIG: Record<ProjectStatus, { dot: string; bg: string; text: stri
   'impact-mesure': { dot: 'bg-neutral-900', bg: 'bg-neutral-900 text-white', text: 'text-white', border: 'border-neutral-900' },
 };
 
-export default function StatusBadge({ status, size = 'sm' }: { status: ProjectStatus; size?: 'sm' | 'md' }) {
-  const label = PROJECT_STATUS_LABELS[status] || status;
+export default function StatusBadge({ status, size = 'sm', lang = 'fr' }: { status: ProjectStatus; size?: 'sm' | 'md'; lang?: 'fr' | 'en' }) {
+  const labelMap = lang === 'en' ? PROJECT_STATUS_LABELS_EN : PROJECT_STATUS_LABELS;
+  const label = labelMap[status] || status;
   const config = STATUS_CONFIG[status] || STATUS_CONFIG['annonce'];
 
   return (

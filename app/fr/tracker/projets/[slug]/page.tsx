@@ -109,15 +109,21 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </div>
 
               {/* Step indicator bar */}
-              <div className="grid grid-cols-6 gap-1 mb-8">
-                {PROJECT_STATUS_ORDER.map((s, idx) => (
-                  <div key={s} className="space-y-1">
-                    <div className={`h-1.5 ${idx <= currentIndex ? 'bg-[#0b4627]' : 'bg-neutral-200'}`} />
-                    <span className="text-[9px] font-mono uppercase text-[#737373] block truncate">
-                      {PROJECT_STATUS_LABELS[s]}
-                    </span>
-                  </div>
-                ))}
+              <div className="mb-8">
+                <div className="grid grid-cols-6 gap-1 mb-2">
+                  {PROJECT_STATUS_ORDER.map((s, idx) => (
+                    <div key={s} className="space-y-1">
+                      <div className={`h-2 ${idx <= currentIndex ? 'bg-[#0b4627]' : 'bg-neutral-200'}`} />
+                      <span className="text-[9px] font-mono uppercase text-[#737373] hidden sm:block truncate">
+                        {PROJECT_STATUS_LABELS[s]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="sm:hidden flex justify-between items-center text-[10px] font-mono text-[#555555] bg-[#faf8f5] p-2 border border-[#e6dfd5]">
+                  <span>Statut actuel :</span>
+                  <span className="font-bold text-[#0b4627]">{PROJECT_STATUS_LABELS[project.currentStatus]}</span>
+                </div>
               </div>
 
               {/* Status Entries */}

@@ -122,7 +122,7 @@ export default async function ArticleDetailPage({
             </div>
 
             {/* Article Body Content */}
-            <div className="bg-white border border-[#e6dfd5] p-6 sm:p-10 font-serif text-base sm:text-lg text-[#222222] leading-[1.8] space-y-6">
+            <div className="bg-white border border-[#e6dfd5] p-5 sm:p-10 font-serif text-base sm:text-lg text-[#222222] leading-[1.8] space-y-6">
               {article.body ? (
                 article.body.split('\n\n').map((paragraph, idx) => {
                   if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
@@ -140,7 +140,7 @@ export default async function ArticleDetailPage({
                     );
                   }
                   return (
-                    <p key={idx} className={idx === 0 ? "first-letter:float-left first-letter:text-5xl first-letter:pr-3 first-letter:font-bold first-letter:text-[#141414] first-letter:font-serif" : ""}>
+                    <p key={idx} className={idx === 0 ? "first-letter:float-left first-letter:text-4xl sm:first-letter:text-5xl first-letter:pr-2.5 sm:first-letter:pr-3 first-letter:font-bold first-letter:text-[#141414] first-letter:font-serif first-letter:leading-none" : ""}>
                       {paragraph}
                     </p>
                   );
