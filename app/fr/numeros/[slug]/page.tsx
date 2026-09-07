@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Download, BookOpen, Clock, ShieldCheck } from 'lucide-react';
 import { issues, getIssueBySlug } from '@/data/mock/issues';
-import { articles } from '@/data/mock/articles';
+import { getArticles } from '@/data/mock/articles';
 import { categories } from '@/data/mock/categories';
 
 export function generateStaticParams() {
@@ -19,8 +19,9 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
     notFound();
   }
 
+  const allArticles = getArticles('fr');
   const issueArticles = issue.articleIds
-    .map(id => articles.find(a => a.id === id))
+    .map(id => allArticles.find(a => a.id === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
   const date = new Date(issue.publicationDate);

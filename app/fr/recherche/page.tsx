@@ -3,9 +3,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, FileText, Construction, BarChart3, ChevronRight, X } from 'lucide-react';
-import { articles } from '@/data/mock/articles';
-import { projects } from '@/data/mock/projects';
-import { indicators } from '@/data/mock/indicators';
+import { getArticles } from '@/data/mock/articles';
+import { getProjects } from '@/data/mock/projects';
+import { getIndicators } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import StatusBadge from '@/components/tracker/StatusBadge';
@@ -15,6 +15,10 @@ type FilterType = 'all' | 'articles' | 'projects' | 'indicators';
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
+
+  const articles = useMemo(() => getArticles('fr'), []);
+  const projects = useMemo(() => getProjects('fr'), []);
+  const indicators = useMemo(() => getIndicators('fr'), []);
 
   const searchResults = useMemo(() => {
     if (!query.trim()) return { articles: [], projects: [], indicators: [] };

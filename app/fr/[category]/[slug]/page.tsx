@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { articles, getArticleBySlug } from '@/data/mock/articles';
+import { articles, getArticleBySlug, getArticles } from '@/data/mock/articles';
 import { categories, getCategoryByCode } from '@/data/mock/categories';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
+import ArticleBodyRenderer from '@/components/editorial/ArticleBodyRenderer';
 import { ArrowLeft, Clock, ShieldCheck, FileText, Share2, Printer, ChevronRight, Bookmark } from 'lucide-react';
 
 export function generateStaticParams() {
@@ -27,7 +28,7 @@ export default async function ArticleDetailPage({
   }
 
   const relatedProjects = getProjectsByCategory(article.category).slice(0, 2);
-  const relatedArticles = articles
+  const relatedArticles = getArticles('fr')
     .filter(a => a.category === article.category && a.id !== article.id)
     .slice(0, 2);
 
@@ -122,32 +123,8 @@ export default async function ArticleDetailPage({
             </div>
 
             {/* Article Body Content */}
-            <div className="bg-white border border-[#e6dfd5] p-5 sm:p-10 font-serif text-base sm:text-lg text-[#222222] leading-[1.8] space-y-6">
-              {article.body ? (
-                article.body.split('\n\n').map((paragraph, idx) => {
-                  if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
-                    return (
-                      <h3 key={idx} className="font-bold text-xl sm:text-2xl text-[#141414] font-serif pt-4 pb-2 border-b border-[#e6dfd5]">
-                        {paragraph.replace(/\*\*/g, '')}
-                      </h3>
-                    );
-                  }
-                  if (paragraph.startsWith('«') && paragraph.includes('»')) {
-                    return (
-                      <blockquote key={idx} className="border-l-4 border-[#0b4627] pl-4 my-6 italic text-[#141414] bg-[#faf8f5] p-4">
-                        {paragraph}
-                      </blockquote>
-                    );
-                  }
-                  return (
-                    <p key={idx} className={idx === 0 ? "first-letter:float-left first-letter:text-4xl sm:first-letter:text-5xl first-letter:pr-2.5 sm:first-letter:pr-3 first-letter:font-bold first-letter:text-[#141414] first-letter:font-serif first-letter:leading-none" : ""}>
-                      {paragraph}
-                    </p>
-                  );
-                })
-              ) : (
-                <p>Contenu documentaire complet en cours d'archivage.</p>
-              )}
+            <div className="bg-white border border-[#e6dfd5] p-5 sm:p-10">
+              <ArticleBodyRenderer content={article.body} lang="fr" />
 
               {/* Red Team & Methodology Stamp */}
               <div className="mt-10 pt-6 border-t-2 border-[#141414] bg-[#faf8f5] p-5 text-xs font-serif">

@@ -7,6 +7,7 @@ import { getProjects, getProjectStats } from '@/data/mock/projects';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
+import { getAdminStore } from '@/data/admin-store';
 import { 
   ArrowRight, 
   Clock, 
@@ -20,16 +21,34 @@ import {
 } from 'lucide-react';
 
 export default function HomePageEn() {
+  const store = getAdminStore();
+  const config = store.homepageConfig;
   const latestIssue = getLatestIssue('en');
   const latestBrief = getLatestBrief('en');
   const indicators = getKeyIndicators('en');
   const projectStats = getProjectStats();
   const enArticles = getArticles('en');
-  const leadArticle = enArticles.find(a => a.type === 'decryptage') || enArticles[0];
-  const secondaryArticles = enArticles.filter(a => a.id !== leadArticle.id).slice(0, 4);
+
+  const normalizeId = (id?: string) => (id || '').replace(/^art-0*/, 'art-');
+  const matchId = (aId: string, targetId?: string) => 
+    !targetId ? false : aId === targetId || normalizeId(aId) === normalizeId(targetId);
+
+  const leadArticle = enArticles.find(a => matchId(a.id, config.leadArticleId)) 
+    || enArticles.find(a => a.type === 'decryptage') 
+    || enArticles[0];
+
+  const configuredSecondaries = (config.secondaryArticleIds || [])
+    .map(id => enArticles.find(a => matchId(a.id, id)))
+    .filter(Boolean) as typeof enArticles;
+
+  const fallbackSecondaries = enArticles.filter(a => a.id !== leadArticle.id);
+  const secondaryArticles = configuredSecondaries.length > 0 ? configuredSecondaries : fallbackSecondaries.slice(0, 4);
+
   const featuredProjects = getProjects('en').slice(0, 3);
-  const terrainArticle = enArticles.find(a => a.type === 'terrain') || enArticles[5];
-  const factCheckArticle = enArticles.find(a => a.type === 'vrai-ou-faux') || enArticles[4];
+  const terrainArticle = enArticles.find(a => matchId(a.id, config.terrainArticleId)) || enArticles[5];
+  const factCheckArticle = enArticles.find(a => matchId(a.id, config.factCheckArticleId)) || enArticles[4];
+  const featuredQuote = config.featuredQuote;
+
   const issueArticles = latestIssue ? enArticles.filter(a => a.issueId === latestIssue.id) : [];
   const issueSourcesCount = issueArticles.length > 0 
     ? issueArticles.reduce((acc, curr) => acc + curr.sourceCount, 0)
@@ -209,10 +228,10 @@ export default function HomePageEn() {
                 Editorial Note
               </span>
               <p className="font-serif italic text-xs leading-relaxed text-[#141414] mb-3">
-                “The challenge of public policy is not the ambition of the decree, but the verifiable physical reality on the ground.”
+                {featuredQuote?.quoteEn || "“What we measure is the gap between the public pledge and the verifiable reality on Burkinabè soil.”"}
               </p>
               <span className="text-[10px] font-mono text-[#737373] block">
-                Burkina Newsroom · Bobo-Dioulasso
+                — {featuredQuote?.author ? `${featuredQuote.author} · ${featuredQuote.contextEn || 'Burkina News'}` : 'Burkina Newsroom · Bobo-Dioulasso'}
               </span>
             </div>
 

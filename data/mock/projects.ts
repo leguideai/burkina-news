@@ -394,23 +394,31 @@ export const projects: Project[] = [
   },
 ]
 
+const getProjectList = (): Project[] => {
+  if (typeof globalThis !== 'undefined' && globalThis.__burkinaAdminStore?.projects && globalThis.__burkinaAdminStore.projects.length > 0) {
+    return globalThis.__burkinaAdminStore.projects;
+  }
+  return projects;
+}
+
 export const getProjects = (lang: 'fr' | 'en' = 'fr'): Project[] =>
-  projects.map(p => localizeProject(p, lang))
+  getProjectList().map(p => localizeProject(p, lang))
 
 export const getProjectBySlug = (slug: string, lang: 'fr' | 'en' = 'fr'): Project | undefined => {
-  const project = projects.find(p => p.slug === slug)
+  const project = getProjectList().find(p => p.slug === slug)
   return project ? localizeProject(project, lang) : undefined
 }
 
 export const getProjectsByCategory = (code: string, lang: 'fr' | 'en' = 'fr'): Project[] =>
-  projects.filter(p => p.category === code).map(p => localizeProject(p, lang))
+  getProjectList().filter(p => p.category === code).map(p => localizeProject(p, lang))
 
 export const getProjectsByStatus = (status: string, lang: 'fr' | 'en' = 'fr'): Project[] =>
-  projects.filter(p => p.currentStatus === status).map(p => localizeProject(p, lang))
+  getProjectList().filter(p => p.currentStatus === status).map(p => localizeProject(p, lang))
 
 export const getProjectStats = () => {
-  const total = projects.length
-  const byStatus = projects.reduce((acc, p) => {
+  const list = getProjectList();
+  const total = list.length
+  const byStatus = list.reduce((acc, p) => {
     acc[p.currentStatus] = (acc[p.currentStatus] || 0) + 1
     return acc
   }, {} as Record<string, number>)

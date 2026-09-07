@@ -1,5 +1,6 @@
 import { AlertTriangle, Check } from 'lucide-react';
 import Link from 'next/link';
+import { getAdminStore } from '@/data/admin-store';
 
 export const metadata = {
   title: 'Correction Registry | Burkina News',
@@ -7,24 +8,8 @@ export const metadata = {
 };
 
 export default function CorrectionsPageEn() {
-  const corrections = [
-    { 
-      date: '2026-08-15', 
-      articleTitle: 'Is Burkina Faso producing more gold than before?', 
-      previousText: 'Production of 59 tonnes in 2025', 
-      correctedText: 'Production of 57.6 tonnes in 2025', 
-      reason: 'Correction following release of definitive statistical figures by DGMG', 
-      validatedBy: 'Editorial Committee' 
-    },
-    { 
-      date: '2026-07-28', 
-      articleTitle: 'Zina Solar Power Plant', 
-      previousText: 'Connected to grid in May 2026', 
-      correctedText: 'Connected to grid in June 2026', 
-      reason: 'Commissioning date adjusted based on statutory SONABEL technical report', 
-      validatedBy: 'Data & Tracker Desk' 
-    }
-  ];
+  const store = getAdminStore();
+  const corrections = store.corrections;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 font-serif">

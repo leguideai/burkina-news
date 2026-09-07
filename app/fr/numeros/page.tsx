@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Download } from 'lucide-react';
-import { issues } from '@/data/mock/issues';
+import { getIssues } from '@/data/mock/issues';
 
 export const metadata = {
   title: 'Les Numéros | Burkina News',
@@ -8,6 +8,7 @@ export const metadata = {
 };
 
 export default function IssuesPage() {
+  const issues = getIssues('fr');
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
       

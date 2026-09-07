@@ -1,5 +1,5 @@
 import { projects, getProjectBySlug } from '@/data/mock/projects';
-import { articles } from '@/data/mock/articles';
+import { getArticles } from '@/data/mock/articles';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_ORDER } from '@/data/types';
 import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight } from 'lucide-react';
@@ -22,8 +22,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   }
 
   const currentIndex = PROJECT_STATUS_ORDER.indexOf(project.currentStatus);
+  const allArticles = getArticles('fr');
   const linkedArticles = project.linkedArticleIds
-    .map(id => articles.find(a => a.id === id))
+    .map(id => allArticles.find(a => a.id === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
   return (

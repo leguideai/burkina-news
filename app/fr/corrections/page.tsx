@@ -1,4 +1,5 @@
 import { AlertTriangle, Check } from 'lucide-react';
+import { getAdminStore } from '@/data/admin-store';
 
 export const metadata = {
   title: 'Registre des corrections | Burkina News',
@@ -6,24 +7,8 @@ export const metadata = {
 };
 
 export default function CorrectionsPage() {
-  const corrections = [
-    { 
-      date: '2026-08-15', 
-      articleTitle: 'Le Burkina produit-il plus d\'or?', 
-      previousText: 'Production de 59 tonnes en 2025', 
-      correctedText: 'Production de 57,6 tonnes en 2025', 
-      reason: 'Correction suite à la publication des chiffres définitifs DGMG', 
-      validatedBy: 'Comité Éditorial' 
-    },
-    { 
-      date: '2026-07-28', 
-      articleTitle: 'Centrale solaire de Zina', 
-      previousText: 'Raccordée en mai 2026', 
-      correctedText: 'Raccordée en juin 2026', 
-      reason: 'Date corrigée sur la base du rapport officiel SONABEL', 
-      validatedBy: 'Desk Données & Tracker' 
-    }
-  ];
+  const store = getAdminStore();
+  const corrections = store.corrections;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 font-serif">

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "usr-diop",
+    "email": "diop@burkinanews.bf",
+    "name": "Samba Diop",
+    "role": "Superadmin",
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    "status": "active",
+    "title": "Superadministrateur & Architecte des Données",
+    "password": "admin",
+    "lastLogin": "2026-09-07T18:57:04.716Z",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  {
+    "id": "usr-alfred",
+    "email": "alfred@burkinanews.bf",
+    "name": "Alfred Ouédraogo",
+    "role": "Directeur éditorial",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    "status": "active",
+    "title": "Directeur de la Publication & des Enquêtes",
+    "password": "admin",
+    "lastLogin": "2026-09-07T18:50:13.508Z",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  {
+    "id": "usr-micum",
+    "email": "micum@burkinanews.bf",
+    "name": "Desk IA Burkina News",
+    "role": "Desk IA & Veille",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    "status": "active",
+    "title": "Intelligence Artificielle & Veille Documentaire",
+    "password": "admin",
+    "lastLogin": "2026-09-07T08:15:00Z",
+    "createdAt": "2026-01-15T00:00:00Z"
+  },
+  {
+    "id": "usr-mariam",
+    "email": "mariam@burkinanews.bf",
+    "name": "Mariam Kaboré",
+    "role": "Rédacteur / Enquêteur",
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
+    "status": "active",
+    "title": "Grand Reporter Mines, Économie & Industrie",
+    "password": "admin",
+    "lastLogin": "2026-09-05T14:20:00Z",
+    "createdAt": "2026-02-01T00:00:00Z"
+  },
+  {
+    "id": "usr-issa",
+    "email": "issa@burkinanews.bf",
+    "name": "Issa Sawadogo",
+    "role": "Desk Données & Tracker",
+    "avatar": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80",
+    "status": "active",
+    "title": "Analyste Tracker Projets & Infrastructures PND",
+    "password": "admin",
+    "lastLogin": "2026-09-07T10:45:00Z",
+    "createdAt": "2026-02-15T00:00:00Z"
+  }
+]

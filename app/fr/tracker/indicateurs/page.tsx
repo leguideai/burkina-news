@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { indicators } from '@/data/mock/indicators';
+import { getIndicators } from '@/data/mock/indicators';
 import IndicatorCard from '@/components/tracker/IndicatorCard';
 import { ArrowLeft, BarChart2 } from 'lucide-react';
 
@@ -9,6 +9,7 @@ export const metadata = {
 };
 
 export default function IndicatorsPage() {
+  const indicators = getIndicators('fr');
   const groupedIndicators = indicators.reduce((acc, indicator) => {
     if (!acc[indicator.category]) {
       acc[indicator.category] = [];

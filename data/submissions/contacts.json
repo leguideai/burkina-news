@@ -1,0 +1,40 @@
+[
+  {
+    "id": "sub-101",
+    "createdAt": "2026-08-25T14:32:00Z",
+    "type": "error_report",
+    "email": "dr.kabora@univ-ouaga.bf",
+    "url": "/fr/economie/burkina-faso-production-or-analyse",
+    "description": "Dans le deuxième paragraphe, le tonnage de la mine d'Essakane pour le premier semestre est indiqué à 4,2 tonnes, or selon le rapport IAMGOLD Q2 il s'agit de 4,75 tonnes.",
+    "source": "Rapport trimestriel IAMGOLD Corporation Q2 2026, page 14",
+    "status": "pending"
+  },
+  {
+    "id": "sub-102",
+    "createdAt": "2026-08-24T09:15:00Z",
+    "type": "error_report",
+    "email": "traore.m@sonabel.bf",
+    "url": "/fr/tracker/projets/centrale-solaire-koudougou",
+    "description": "La date de raccordement réseau indiquée est mai 2026, mais les tests de mise en tension n'ont été validés que le 12 juin 2026.",
+    "source": "Procès-verbal de synchronisation SONABEL n°2026-084",
+    "status": "resolved"
+  },
+  {
+    "id": "sub-103",
+    "createdAt": "2026-08-22T17:40:00Z",
+    "type": "general",
+    "email": "contact@institut-pasteur.fr",
+    "name": "Dr. Laurence V.",
+    "category": "partenariat",
+    "message": "Bonjour, nous suivons avec un grand intérêt votre Baromètre RELANCE sur les indicateurs de santé. Serait-il envisageable d'échanger avec votre desk recherche pour partager nos données de veille épidémiologique ?"
+  },
+  {
+    "id": "sub-104",
+    "createdAt": "2026-08-20T11:05:00Z",
+    "type": "general",
+    "email": "yacouba.z@gmail.com",
+    "name": "Yacouba Zongo",
+    "category": "question",
+    "message": "Félicitations pour le Tracker des chantiers. Est-il prévu d'ajouter le tronçon routier Bobo-Banfora dans les prochaines mises à jour ?"
+  }
+]

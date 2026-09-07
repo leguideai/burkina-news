@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { CategoryCode } from '@/data/types';
 import { getCategoryByCode } from '@/data/mock/categories';
-import { getArticlesByCategory, articles as allArticles } from '@/data/mock/articles';
+import { getArticlesByCategory } from '@/data/mock/articles';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import { getIndicatorsByCategory } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
@@ -21,10 +21,7 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
     return <div>{isEn ? "Category not found" : "Catégorie introuvable"}</div>;
   }
 
-  let articles = getArticlesByCategory(categoryCode, lang);
-  if (articles.length === 0) {
-    articles = allArticles.slice(0, 4);
-  }
+  const articles = getArticlesByCategory(categoryCode, lang);
 
   const projects = getProjectsByCategory(categoryCode, lang).slice(0, 2);
   const indicators = getIndicatorsByCategory(categoryCode, lang).slice(0, 2);
@@ -75,23 +72,41 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
           {/* Main Editorial Articles (Col 8) */}
           <div className="lg:col-span-8 flex flex-col gap-6">
             
-            {/* Lead Article */}
-            {leadArticle && (
-              <ArticleCard article={leadArticle} variant="lead" lang={lang} />
-            )}
-
-            {/* Sub-grid of other articles */}
-            {otherArticles.length > 0 && (
-              <div className="space-y-4 pt-4">
-                <h3 className="text-lg font-bold font-serif text-[#141414] pb-2 border-b border-[#e6dfd5]">
-                  {isEn ? `All investigations · ${categoryName}` : `Toutes les publications · ${categoryName}`}
+            {articles.length === 0 ? (
+              <div className="bg-white border border-[#e6dfd5] p-10 sm:p-14 text-center my-4">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#be185d] block mb-2">
+                  {isEn ? "Editorial Archive" : "Archives Éditoriales"}
+                </span>
+                <h3 className="font-serif font-bold text-xl text-[#141414] mb-3">
+                  {isEn ? `No published investigations in ${categoryName} yet` : `Aucune publication pour le moment dans la rubrique ${categoryName}`}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {otherArticles.map(art => (
-                    <ArticleCard key={art.id} article={art} variant="default" lang={lang} />
-                  ))}
-                </div>
+                <p className="text-xs font-serif text-[#555555] max-w-md mx-auto leading-relaxed">
+                  {isEn 
+                    ? "Our investigative desk is currently finalizing new cross-checked reports for this section. Check back shortly."
+                    : "Notre pôle d'enquête finalise actuellement de nouveaux dossiers et analyses pour cette rubrique. Les prochaines publications apparaîtront ici."}
+                </p>
               </div>
+            ) : (
+              <>
+                {/* Lead Article */}
+                {leadArticle && (
+                  <ArticleCard article={leadArticle} variant="lead" lang={lang} />
+                )}
+
+                {/* Sub-grid of other articles */}
+                {otherArticles.length > 0 && (
+                  <div className="space-y-4 pt-4">
+                    <h3 className="text-lg font-bold font-serif text-[#141414] pb-2 border-b border-[#e6dfd5]">
+                      {isEn ? `All investigations · ${categoryName}` : `Toutes les publications · ${categoryName}`}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {otherArticles.map(art => (
+                        <ArticleCard key={art.id} article={art} variant="default" lang={lang} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
           </div>
