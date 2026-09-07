@@ -44,7 +44,7 @@ export function getActiveProviderInfo(): ProviderInfo {
   }
 
   // 3. Fallback: Internal deterministic engine
-  return { provider: 'simulation', modelName: 'Micum Desk IA (Moteur local)', isLive: false };
+  return { provider: 'simulation', modelName: 'Micum Desk IA', isLive: false };
 }
 
 // -------------------------------------------------------------

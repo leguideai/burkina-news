@@ -343,11 +343,11 @@ export default function AdminUnePage() {
 
           {/* Right Col: Quote of the Editorial Board */}
           <div className="space-y-6">
-            <div className="bg-[#072e1a] text-white p-5 border-t-4 border-[#ffd8a8] shadow-sm space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1b4d32] pb-3">
+            <div className="bg-white border border-[#e6dfd5] p-5 shadow-sm space-y-4 rounded">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e6dfd5] pb-3">
                 <div className="flex items-center gap-2">
-                  <Quote size={16} className="text-[#ffd8a8]" />
-                  <h3 className="font-serif font-bold text-base">
+                  <Quote size={16} className="text-[#087443]" />
+                  <h3 className="font-serif font-bold text-base text-[#141414]">
                     Citation de la Rédaction
                   </h3>
                 </div>
@@ -356,18 +356,18 @@ export default function AdminUnePage() {
                   <button
                     type="button"
                     onClick={handleSuggestQuote}
-                    className="px-2 py-1 bg-white/10 hover:bg-white/20 text-[#ffd8a8] text-[10px] font-mono font-bold rounded border border-white/10 transition-colors flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-[#087443] text-[10px] font-mono font-bold rounded border border-emerald-200 transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Sparkles size={11} className="text-amber-300" />
-                    <span>✨ Suggérer avec Micum</span>
+                    <Sparkles size={12} className="text-emerald-600" />
+                    <span>Suggérer avec Micum</span>
                   </button>
 
-                  <div className="flex bg-[#0b4627] p-0.5 rounded">
+                  <div className="flex border border-[#e6dfd5] rounded overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setQuoteTab('fr')}
-                      className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
-                        quoteTab === 'fr' ? 'bg-[#ffd8a8] text-[#072e1a]' : 'text-[#a7c5b6]'
+                      className={`px-2.5 py-1 text-[10px] font-mono font-bold cursor-pointer transition-colors ${
+                        quoteTab === 'fr' ? 'bg-[#087443] text-white' : 'text-[#736c62] hover:bg-[#faf8f5]'
                       }`}
                     >
                       FR
@@ -375,8 +375,8 @@ export default function AdminUnePage() {
                     <button
                       type="button"
                       onClick={() => setQuoteTab('en')}
-                      className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
-                        quoteTab === 'en' ? 'bg-[#ffd8a8] text-[#072e1a]' : 'text-[#a7c5b6]'
+                      className={`px-2.5 py-1 text-[10px] font-mono font-bold cursor-pointer transition-colors ${
+                        quoteTab === 'en' ? 'bg-[#1e3a5f] text-white' : 'text-[#736c62] hover:bg-[#faf8f5]'
                       }`}
                     >
                       EN
@@ -388,7 +388,7 @@ export default function AdminUnePage() {
               {quoteTab === 'fr' ? (
                 <div className="space-y-3 text-xs font-mono">
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-[#ffd8a8] mb-1">
+                    <label className="block text-[10px] uppercase font-bold text-[#736c62] mb-1">
                       Citation (Français) :
                     </label>
                     <textarea
@@ -401,12 +401,12 @@ export default function AdminUnePage() {
                           featuredQuote: { ...prev.featuredQuote, quoteFr: val }
                         }) : null);
                       }}
-                      className="w-full px-2.5 py-1.5 bg-[#052213] border border-[#1b4d32] rounded text-white font-serif text-sm focus:outline-none focus:border-[#ffd8a8]"
+                      className="w-full px-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded text-[#141414] font-serif text-sm focus:outline-none focus:border-[#087443] focus:bg-white transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-[#a7c5b6] mb-1">
+                    <label className="block text-[10px] uppercase font-bold text-[#736c62] mb-1">
                       Auteur :
                     </label>
                     <input
@@ -419,12 +419,12 @@ export default function AdminUnePage() {
                           featuredQuote: { ...prev.featuredQuote, author: val }
                         }) : null);
                       }}
-                      className="w-full px-2.5 py-1.5 bg-[#052213] border border-[#1b4d32] rounded text-white focus:outline-none focus:border-[#ffd8a8]"
+                      className="w-full px-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded text-[#141414] text-xs font-mono focus:outline-none focus:border-[#087443] focus:bg-white transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-[#a7c5b6] mb-1">
+                    <label className="block text-[10px] uppercase font-bold text-[#736c62] mb-1">
                       Contexte / Fonction (Français) :
                     </label>
                     <input
@@ -437,13 +437,13 @@ export default function AdminUnePage() {
                           featuredQuote: { ...prev.featuredQuote, contextFr: val }
                         }) : null);
                       }}
-                      className="w-full px-2.5 py-1.5 bg-[#052213] border border-[#1b4d32] rounded text-white focus:outline-none focus:border-[#ffd8a8]"
+                      className="w-full px-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded text-[#141414] text-xs font-mono focus:outline-none focus:border-[#087443] focus:bg-white transition-colors"
                     />
                   </div>
                 </div>
               ) : (
                 <div className="space-y-3 text-xs font-mono">
-                  <div className="flex justify-end pb-2 border-b border-[#1b4d32]">
+                  <div className="flex justify-end pb-2 border-b border-[#e6dfd5]">
                     <MicumTranslateButton
                       fieldsToTranslate={{
                         quote: homepageConfig.featuredQuote.quoteFr || '',
@@ -455,7 +455,7 @@ export default function AdminUnePage() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-[#ffd8a8] mb-1">
+                    <label className="block text-[10px] uppercase font-bold text-[#736c62] mb-1">
                       Featured Quote (English) :
                     </label>
                     <textarea
@@ -468,12 +468,12 @@ export default function AdminUnePage() {
                           featuredQuote: { ...prev.featuredQuote, quoteEn: val }
                         }) : null);
                       }}
-                      className="w-full px-2.5 py-1.5 bg-[#052213] border border-[#1b4d32] rounded text-white font-serif text-sm focus:outline-none focus:border-[#ffd8a8]"
+                      className="w-full px-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded text-[#141414] font-serif text-sm focus:outline-none focus:border-[#087443] focus:bg-white transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-[#a7c5b6] mb-1">
+                    <label className="block text-[10px] uppercase font-bold text-[#736c62] mb-1">
                       Context / Title (English) :
                     </label>
                     <input
@@ -486,31 +486,31 @@ export default function AdminUnePage() {
                           featuredQuote: { ...prev.featuredQuote, contextEn: val }
                         }) : null);
                       }}
-                      className="w-full px-2.5 py-1.5 bg-[#052213] border border-[#1b4d32] rounded text-white focus:outline-none focus:border-[#ffd8a8]"
+                      className="w-full px-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded text-[#141414] text-xs font-mono focus:outline-none focus:border-[#087443] focus:bg-white transition-colors"
                     />
                   </div>
                 </div>
               )}
 
               {/* Quote Live Preview Box */}
-              <div className="mt-4 p-4 bg-[#052213] border border-[#1b4d32] rounded">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-[#ffd8a8] mb-1">
+              <div className="mt-4 p-4 bg-[#faf8f5] border border-[#e6dfd5] rounded">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[#736c62] mb-1 font-semibold">
                   Aperçu bloc éditorial
                 </div>
-                <blockquote className="font-serif italic text-sm text-[#ffd8a8]">
+                <blockquote className="font-serif italic text-sm text-[#141414] leading-relaxed">
                   {quoteTab === 'fr' ? homepageConfig.featuredQuote.quoteFr : homepageConfig.featuredQuote.quoteEn}
                 </blockquote>
-                <div className="mt-2 text-xs font-bold text-white">
+                <div className="mt-2 text-xs font-bold font-serif text-[#141414]">
                   — {homepageConfig.featuredQuote.author}
                 </div>
-                <div className="text-[10px] text-[#a7c5b6]">
+                <div className="text-[10px] font-mono text-[#736c62]">
                   {quoteTab === 'fr' ? homepageConfig.featuredQuote.contextFr : homepageConfig.featuredQuote.contextEn}
                 </div>
               </div>
 
               <button
                 onClick={handleSaveConfig}
-                className="w-full py-2.5 bg-[#087443] hover:bg-[#075f37] text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors"
+                className="w-full py-2.5 bg-[#087443] hover:bg-[#075f37] text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm cursor-pointer"
               >
                 Sauvegarder les réglages
               </button>
