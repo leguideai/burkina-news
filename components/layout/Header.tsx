@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper } from 'lucide-react';
 import { NAV_CATEGORIES, UI_STRINGS } from '@/data/mock/translations';
+import Tooltip from '@/components/ui/Tooltip';
 
 export default function Header() {
   const pathname = usePathname() || '/fr';
@@ -57,19 +58,25 @@ export default function Header() {
             
             {/* Language Switcher */}
             <div className="flex items-center gap-1 font-mono font-bold text-[#141414] text-[11px]">
-              <Link 
-                href={frUrl} 
-                className={`py-0.5 px-1 rounded transition-colors ${!isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
-              >
-                FR
-              </Link>
+              <Tooltip position="bottom" content="Passer l'interface en français">
+                <Link 
+                  href={frUrl} 
+                  className={`py-0.5 px-1 rounded transition-colors ${!isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+                  aria-label="Passer en français"
+                >
+                  FR
+                </Link>
+              </Tooltip>
               <span className="text-neutral-300">/</span>
-              <Link 
-                href={enUrl} 
-                className={`py-0.5 px-1 rounded transition-colors ${isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
-              >
-                EN
-              </Link>
+              <Tooltip position="bottom" content="Switch interface to English">
+                <Link 
+                  href={enUrl} 
+                  className={`py-0.5 px-1 rounded transition-colors ${isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+                  aria-label="Switch to English"
+                >
+                  EN
+                </Link>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -80,31 +87,35 @@ export default function Header() {
         
         {/* Mobile top navigation strip */}
         <div className="w-full md:hidden flex justify-between items-center">
-          <button 
-            onClick={() => {
-              setMobileMenuOpen(!mobileMenuOpen);
-              if (!mobileMenuOpen) setSearchOpen(false);
-            }}
-            className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded"
-            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <Tooltip position="bottom" content={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}>
+            <button 
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                if (!mobileMenuOpen) setSearchOpen(false);
+              }}
+              className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded cursor-pointer"
+              aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </Tooltip>
           
           <Link href={homeHref} className="block py-1">
             <img src="/images/logo.png" alt="Burkina News" className="h-8 sm:h-9 w-auto object-contain" />
           </Link>
 
-          <button 
-            onClick={() => {
-              setSearchOpen(!searchOpen);
-              if (!searchOpen) setMobileMenuOpen(false);
-            }}
-            className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded"
-            aria-label={searchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
-          >
-            {searchOpen ? <X size={22} /> : <Search size={22} />}
-          </button>
+          <Tooltip position="bottom" content={searchOpen ? "Fermer la recherche" : "Rechercher sur le site"}>
+            <button 
+              onClick={() => {
+                setSearchOpen(!searchOpen);
+                if (!searchOpen) setMobileMenuOpen(false);
+              }}
+              className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded cursor-pointer"
+              aria-label={searchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
+            >
+              {searchOpen ? <X size={22} /> : <Search size={22} />}
+            </button>
+          </Tooltip>
         </div>
 
         {/* Mobile quick search drawer when searchOpen is active */}
@@ -127,12 +138,15 @@ export default function Header() {
               />
               <Search size={16} className="absolute left-3 top-3 text-[#777]" />
               {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-3 text-[#777] hover:text-[#141414]"
-                >
-                  <X size={16} />
-                </button>
+                <Tooltip position="left" content="Effacer la recherche">
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-3 text-[#777] hover:text-[#141414] cursor-pointer"
+                    aria-label="Effacer la recherche"
+                  >
+                    <X size={16} />
+                  </button>
+                </Tooltip>
               )}
             </div>
           </div>

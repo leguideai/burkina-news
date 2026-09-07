@@ -7,6 +7,7 @@ import { projects, getProjectStats } from '@/data/mock/projects';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
+import { getAdminStore } from '@/data/admin-store';
 import { 
   ArrowRight, 
   Clock, 
@@ -24,16 +25,36 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
+  const store = getAdminStore();
+  const config = store.homepageConfig;
+  const articlesList = store.articles && store.articles.length > 0 ? store.articles : articles;
+
   const latestIssue = getLatestIssue();
   const latestBrief = getLatestBrief();
   const indicators = getKeyIndicators();
   const projectStats = getProjectStats();
-  const leadArticle = articles.find(a => a.type === 'decryptage') || articles[0];
-  const secondaryArticles = articles.filter(a => a.id !== leadArticle.id).slice(0, 4);
+
+  const normalizeId = (id?: string) => (id || '').replace(/^art-0*/, 'art-');
+  const matchId = (aId: string, targetId?: string) => 
+    !targetId ? false : aId === targetId || normalizeId(aId) === normalizeId(targetId);
+
+  const leadArticle = articlesList.find(a => matchId(a.id, config.leadArticleId)) 
+    || articlesList.find(a => a.type === 'decryptage') 
+    || articlesList[0];
+
+  const configuredSecondaries = (config.secondaryArticleIds || [])
+    .map(id => articlesList.find(a => matchId(a.id, id)))
+    .filter(Boolean) as typeof articlesList;
+
+  const fallbackSecondaries = articlesList.filter(a => a.id !== leadArticle.id);
+  const secondaryArticles = configuredSecondaries.length > 0 ? configuredSecondaries : fallbackSecondaries.slice(0, 4);
+
   const featuredProjects = projects.slice(0, 3);
-  const terrainArticle = articles.find(a => a.type === 'terrain') || articles[5];
-  const factCheckArticle = articles.find(a => a.type === 'vrai-ou-faux') || articles[4];
-  const issueArticles = latestIssue ? articles.filter(a => a.issueId === latestIssue.id) : [];
+  const terrainArticle = articlesList.find(a => matchId(a.id, config.terrainArticleId)) || articlesList[5];
+  const factCheckArticle = articlesList.find(a => matchId(a.id, config.factCheckArticleId)) || articlesList[4];
+  const featuredQuote = config.featuredQuote;
+
+  const issueArticles = latestIssue ? articlesList.filter(a => a.issueId === latestIssue.id) : [];
   const issueSourcesCount = issueArticles.length > 0 
     ? issueArticles.reduce((acc, curr) => acc + curr.sourceCount, 0)
     : leadArticle.sourceCount;
@@ -186,10 +207,10 @@ export default function HomePage() {
             <div className="bg-[#f4eee3] border border-[#e6dfd5] p-5">
               <Quote size={20} className="text-[#0b4627] mb-2 opacity-50" />
               <p className="font-serif italic text-xs text-[#141414] leading-relaxed mb-3">
-                « Ce que nous mesurons, c'est l'écart entre la promesse publique et la réalité vérifiable sur le sol burkinabè. »
+                {featuredQuote?.quoteFr || "« Ce que nous mesurons, c'est l'écart entre la promesse publique et la réalité vérifiable sur le sol burkinabè. »"}
               </p>
               <span className="text-[10px] font-mono uppercase font-bold text-[#555555] block">
-                — Charte éditoriale Burkina News
+                — {featuredQuote?.author ? `${featuredQuote.author} · ${featuredQuote.contextFr || 'Burkina News'}` : 'Charte éditoriale Burkina News'}
               </span>
             </div>
           </div>

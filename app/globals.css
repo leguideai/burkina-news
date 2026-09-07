@@ -48,6 +48,32 @@
   }
 }
 
+/* Universal pointer cursor for buttons, icons, clickable elements */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+a,
+label[for],
+select,
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"],
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+button svg,
+[role="button"] svg,
+a svg {
+  pointer-events: none;
+}
+
 /* Classic Newspaper Rules */
 .double-border-b {
   border-bottom: 3px double #141414;
