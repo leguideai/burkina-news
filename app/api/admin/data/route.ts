@@ -126,6 +126,44 @@ export async function POST(request: Request) {
       }
 
       // ── INDICATORS ────────────────────────────────────────
+      case 'create_indicator': {
+        const name = (payload.name || '').trim();
+        const code = (payload.code || '').trim().toUpperCase();
+        if (!name || !code) {
+          return NextResponse.json({ error: 'Le nom et le code de l\'indicateur sont requis.' }, { status: 400 });
+        }
+        if (store.indicators.some(i => i.code === code)) {
+          return NextResponse.json({ error: 'Un indicateur avec ce code existe déjà.' }, { status: 400 });
+        }
+        const newIndicator: Indicator = {
+          id: payload.id || `ind-${Date.now()}`,
+          code,
+          name,
+          nameEn: payload.nameEn?.trim() || '',
+          definition: payload.definition || '',
+          definitionEn: payload.definitionEn || '',
+          unit: payload.unit || '%',
+          baselineValue: Number(payload.baselineValue) || 0,
+          baselineYear: Number(payload.baselineYear) || 2024,
+          currentValue: Number(payload.currentValue) || 0,
+          currentYear: Number(payload.currentYear) || new Date().getFullYear(),
+          target2028: payload.target2028 !== undefined && payload.target2028 !== '' ? Number(payload.target2028) : undefined,
+          target2030: payload.target2030 !== undefined && payload.target2030 !== '' ? Number(payload.target2030) : undefined,
+          trend: (payload.trend === 'up' || payload.trend === 'down' || payload.trend === 'stable') ? payload.trend : 'stable',
+          source: payload.source?.trim() || 'INSD / Ministère de l\'Économie',
+          category: payload.category || 'economie',
+          program: payload.program || '',
+          programEn: payload.programEn || '',
+          image: payload.image || '',
+          history: Array.isArray(payload.history) && payload.history.length > 0 ? payload.history : [
+            { year: Number(payload.baselineYear) || 2024, value: Number(payload.baselineValue) || 0, source: payload.source || 'INSD' },
+            { year: Number(payload.currentYear) || new Date().getFullYear(), value: Number(payload.currentValue) || 0, source: payload.source || 'INSD' }
+          ]
+        };
+        store.indicators.push(newIndicator);
+        return NextResponse.json({ success: true, message: 'Indicateur créé dans le Baromètre RELANCE.', item: newIndicator });
+      }
+
       case 'update_indicator': {
         const index = store.indicators.findIndex(i => i.id === payload.id || i.code === payload.code);
         if (index === -1) {
@@ -133,6 +171,16 @@ export async function POST(request: Request) {
         }
         store.indicators[index] = { ...store.indicators[index], ...payload };
         return NextResponse.json({ success: true, message: 'Indicateur mis à jour.', item: store.indicators[index] });
+      }
+
+      case 'delete_indicator': {
+        const { id, code } = payload;
+        const initialLen = store.indicators.length;
+        store.indicators = store.indicators.filter(i => (id ? i.id !== id : true) && (code ? i.code !== code : true));
+        if (store.indicators.length === initialLen) {
+          return NextResponse.json({ error: 'Indicateur introuvable.' }, { status: 404 });
+        }
+        return NextResponse.json({ success: true, message: 'Indicateur supprimé du Baromètre.' });
       }
 
       // ── HOMEPAGE CURATION ─────────────────────────────────
@@ -169,6 +217,54 @@ export async function POST(request: Request) {
       }
 
       // ── LE FIL HEBDO (BRIEFS) ─────────────────────────────
+      case 'create_brief': {
+        const title = (payload.title || '').trim();
+        if (!title) {
+          return NextResponse.json({ error: 'Le titre de l\'édition est requis.' }, { status: 400 });
+        }
+        const slug = payload.slug?.trim() || title.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
+        if (store.briefs.some(b => b.slug === slug)) {
+          return NextResponse.json({ error: 'Une édition avec cet identifiant URL (slug) existe déjà.' }, { status: 400 });
+        }
+        const newBrief = {
+          id: payload.id || `brief-${Date.now()}`,
+          title,
+          titleEn: payload.titleEn?.trim() || '',
+          slug,
+          date: payload.date || new Date().toISOString().split('T')[0],
+          weekNumber: Number(payload.weekNumber) || 1,
+          image: payload.image || '',
+          summary: payload.summary || '',
+          summaryEn: payload.summaryEn || '',
+          facts: Array.isArray(payload.facts) ? payload.facts : []
+        };
+        store.briefs.unshift(newBrief);
+        return NextResponse.json({ success: true, message: 'Nouvelle édition du Fil créée.', item: newBrief });
+      }
+
+      case 'update_brief': {
+        const index = store.briefs.findIndex(b => b.slug === payload.slug || b.id === payload.id);
+        if (index === -1) {
+          return NextResponse.json({ error: 'Édition du Fil introuvable.' }, { status: 404 });
+        }
+        store.briefs[index] = { 
+          ...store.briefs[index], 
+          ...payload,
+          facts: payload.facts !== undefined ? payload.facts : store.briefs[index].facts
+        };
+        return NextResponse.json({ success: true, message: 'Édition du Fil mise à jour.', item: store.briefs[index] });
+      }
+
+      case 'delete_brief': {
+        const { slug } = payload;
+        const initialLen = store.briefs.length;
+        store.briefs = store.briefs.filter(b => b.slug !== slug);
+        if (store.briefs.length === initialLen) {
+          return NextResponse.json({ error: 'Édition introuvable.' }, { status: 404 });
+        }
+        return NextResponse.json({ success: true, message: 'Édition du Fil supprimée.' });
+      }
+
       case 'update_brief_fact': {
         const { briefSlug, factIndex, fact } = payload;
         const brief = store.briefs.find(b => b.slug === briefSlug);
@@ -189,14 +285,66 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, message: 'Nouveau fait ajouté à l\'édition.' });
       }
 
+      case 'delete_brief_fact': {
+        const { briefSlug, factIndex } = payload;
+        const brief = store.briefs.find(b => b.slug === briefSlug);
+        if (!brief || !brief.facts[factIndex]) {
+          return NextResponse.json({ error: 'Fait introuvable.' }, { status: 404 });
+        }
+        brief.facts.splice(factIndex, 1);
+        return NextResponse.json({ success: true, message: 'Fait supprimé de l\'édition.' });
+      }
+
       // ── ISSUES ────────────────────────────────────────────
+      case 'create_issue': {
+        const title = (payload.title || '').trim();
+        if (!title) {
+          return NextResponse.json({ error: 'Le titre du numéro est requis.' }, { status: 400 });
+        }
+        const number = Number(payload.number) || (store.issues.reduce((max, i) => Math.max(max, i.number || 0), 0) + 1);
+        const slug = payload.slug?.trim() || `numero-${number < 10 ? `0${number}` : number}`;
+        if (store.issues.some(i => i.slug === slug || i.number === number)) {
+          return NextResponse.json({ error: 'Un numéro avec ce chiffre ou cet identifiant (slug) existe déjà.' }, { status: 400 });
+        }
+        const newIssue: Issue = {
+          id: payload.id || `iss-${Date.now()}`,
+          number,
+          title,
+          titleEn: payload.titleEn?.trim() || '',
+          slug,
+          coverImage: payload.coverImage || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+          publicationDate: payload.publicationDate || new Date().toISOString().split('T')[0],
+          summary: payload.summary || '',
+          summaryEn: payload.summaryEn || '',
+          articleCount: Array.isArray(payload.articleIds) ? payload.articleIds.length : (Number(payload.articleCount) || 0),
+          articleIds: Array.isArray(payload.articleIds) ? payload.articleIds : [],
+          pdfUrl: payload.pdfUrl || ''
+        };
+        store.issues.unshift(newIssue);
+        return NextResponse.json({ success: true, message: `Numéro #${newIssue.number} créé avec succès.`, item: newIssue });
+      }
+
       case 'update_issue': {
         const index = store.issues.findIndex(iss => iss.id === payload.id);
         if (index === -1) {
           return NextResponse.json({ error: 'Numéro introuvable.' }, { status: 404 });
         }
-        store.issues[index] = { ...store.issues[index], ...payload };
+        store.issues[index] = { 
+          ...store.issues[index], 
+          ...payload,
+          articleCount: Array.isArray(payload.articleIds) ? payload.articleIds.length : (payload.articleCount ?? store.issues[index].articleCount)
+        };
         return NextResponse.json({ success: true, message: 'Détails du numéro enregistrés.', item: store.issues[index] });
+      }
+
+      case 'delete_issue': {
+        const { id, slug } = payload;
+        const initialLen = store.issues.length;
+        store.issues = store.issues.filter(i => (id ? i.id !== id : true) && (slug ? i.slug !== slug : true));
+        if (store.issues.length === initialLen) {
+          return NextResponse.json({ error: 'Numéro introuvable.' }, { status: 404 });
+        }
+        return NextResponse.json({ success: true, message: 'Numéro supprimé de la collection.' });
       }
 
       // ── USERS & ACCESS MANAGEMENT ──────────────────────────

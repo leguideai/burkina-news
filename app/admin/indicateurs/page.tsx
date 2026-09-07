@@ -9,6 +9,8 @@ import {
   Search, 
   Filter, 
   Edit3, 
+  Trash2,
+  Plus,
   ExternalLink, 
   Check, 
   X, 
@@ -22,6 +24,7 @@ import {
 import { Indicator, CategoryCode } from '@/data/types';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
+import Tooltip from '@/components/ui/Tooltip';
 import MicumCopilot from '@/components/admin/MicumCopilot';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
@@ -46,7 +49,9 @@ export default function AdminIndicatorsPage() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedIndicator, setSelectedIndicator] = useState<Indicator | null>(null);
+  const [isDeletingIndicator, setIsDeletingIndicator] = useState<Indicator | null>(null);
   const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
 
   // Form State
@@ -87,12 +92,69 @@ export default function AdminIndicatorsPage() {
     });
   }, [indicators, searchTerm, categoryFilter, trendFilter]);
 
+  // Open Create Modal
+  const handleOpenCreate = () => {
+    setSelectedIndicator(null);
+    setFormData({
+      code: '',
+      name: '',
+      nameEn: '',
+      definition: '',
+      definitionEn: '',
+      category: 'economie',
+      unit: '%',
+      baselineValue: 0,
+      baselineYear: 2023,
+      currentValue: 0,
+      currentYear: new Date().getFullYear(),
+      target2028: undefined,
+      target2030: undefined,
+      trend: 'stable',
+      source: 'INSD / Ministère de l\'Économie',
+      program: '',
+      programEn: '',
+    });
+    setIsEditing(false);
+    setActiveTab('fr');
+    setIsModalOpen(true);
+  };
+
   // Open Edit Modal
   const handleOpenEdit = (ind: Indicator) => {
     setSelectedIndicator(ind);
     setFormData({ ...ind });
+    setIsEditing(true);
     setActiveTab('fr');
     setIsModalOpen(true);
+  };
+
+  // Delete Indicator
+  const handleDeleteIndicator = async (ind: Indicator) => {
+    try {
+      const res = await fetch('/api/admin/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_indicator', payload: { id: ind.id, code: ind.code } })
+      });
+      const result = await res.json();
+      if (!res.ok || result.error) throw new Error(result.error || 'Erreur de suppression.');
+
+      success('Indicateur supprimé', `L'indicateur ${ind.code} a été retiré du Baromètre.`);
+      setIsDeletingIndicator(null);
+      loadData();
+    } catch (err: any) {
+      error('Erreur', err.message);
+    }
+  };
+
+  // Micum Translation Helper
+  const handleMicumTranslate = (translated: Record<string, string>) => {
+    setFormData(prev => ({
+      ...prev,
+      nameEn: translated.name || prev.nameEn,
+      definitionEn: translated.definition || prev.definitionEn,
+      programEn: translated.program || prev.programEn
+    }));
   };
 
   // Micum Batch Indicators Ingestion
@@ -126,28 +188,34 @@ export default function AdminIndicatorsPage() {
     }
   };
 
-  // Submit edit
+  // Submit create or edit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || formData.currentValue === undefined) {
-      warning('Champs requis', 'Veuillez renseigner le nom et la valeur actuelle de l\'indicateur.');
+    if (!formData.name?.trim() || !formData.code?.trim() || formData.currentValue === undefined) {
+      warning('Champs requis', 'Veuillez renseigner le nom, le code et la valeur actuelle de l\'indicateur.');
       return;
     }
 
     try {
+      const action = isEditing ? 'update_indicator' : 'create_indicator';
+      const payload = {
+        ...formData,
+        code: formData.code?.trim().toUpperCase()
+      };
+
       const res = await fetch('/api/admin/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'update_indicator',
-          payload: formData
-        })
+        body: JSON.stringify({ action, payload })
       });
 
       const result = await res.json();
       if (!res.ok || result.error) throw new Error(result.error || 'Erreur inconnue.');
 
-      success('Indicateur mis à jour', `La métrique "${formData.name}" a été actualisée.`);
+      success(
+        isEditing ? 'Indicateur mis à jour' : 'Nouvel indicateur créé',
+        `La métrique "${formData.name}" (${payload.code}) a été enregistrée.`
+      );
       setIsModalOpen(false);
       loadData();
     } catch (err: any) {
@@ -181,6 +249,13 @@ export default function AdminIndicatorsPage() {
             <ExternalLink size={14} />
             Voir le Baromètre Public
           </Link>
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm cursor-pointer"
+          >
+            <Plus size={16} />
+            Nouvel Indicateur
+          </button>
         </div>
       </div>
 
@@ -379,10 +454,18 @@ export default function AdminIndicatorsPage() {
                         <button
                           onClick={() => handleOpenEdit(ind)}
                           title="Actualiser la valeur"
-                          className="px-2.5 py-1 bg-[#faf8f5] border border-[#e6dfd5] text-xs font-bold hover:bg-[#087443] hover:text-white hover:border-[#087443] rounded transition-colors inline-flex items-center gap-1"
+                          className="px-2.5 py-1 bg-[#faf8f5] border border-[#e6dfd5] text-xs font-bold hover:bg-[#087443] hover:text-white hover:border-[#087443] rounded transition-colors inline-flex items-center gap-1 cursor-pointer"
                         >
                           <Edit3 size={12} />
                           Actualiser
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsDeletingIndicator(ind)}
+                          title="Supprimer cet indicateur"
+                          className="p-1 bg-[#faf8f5] border border-[#e6dfd5] text-[#dc2626] hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] rounded transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={12} />
                         </button>
                       </div>
                     </td>
@@ -394,18 +477,18 @@ export default function AdminIndicatorsPage() {
         </div>
       )}
 
-      {/* Edit Indicator Modal */}
-      {isModalOpen && selectedIndicator && (
+      {/* Edit / Create Indicator Modal */}
+      {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
           <div className="bg-white border border-[#141414] max-w-2xl w-full h-[95vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl rounded-t-xl sm:rounded-none overflow-hidden my-auto">
             {/* Header */}
             <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#087443]">
-                  Indicateur {formData.code}
+                  {isEditing ? `Indicateur ${formData.code}` : 'Nouvel Indicateur RELANCE'}
                 </span>
                 <h3 className="font-serif font-bold text-lg text-[#141414]">
-                  Actualiser la métrique nationale
+                  {isEditing ? 'Actualiser la métrique nationale' : 'Créer un Nouvel Indicateur du Baromètre'}
                 </h3>
               </div>
 
@@ -433,7 +516,7 @@ export default function AdminIndicatorsPage() {
                 </div>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1 text-[#736c62] hover:text-[#141414] shrink-0"
+                  className="p-1 text-[#736c62] hover:text-[#141414] shrink-0 cursor-pointer"
                   aria-label="Fermer"
                 >
                   <X size={18} />
@@ -442,9 +525,57 @@ export default function AdminIndicatorsPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs font-mono">
+            <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
+              {/* Common Identification: Code & Category */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                    Code Technique Unique (MAJUSCULES) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    disabled={isEditing}
+                    value={formData.code || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase().replace(/\s+/g, '_') }))}
+                    placeholder="EX: SOLAIRE_MW, AGRI_CEREALES_T..."
+                    className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded bg-white disabled:bg-gray-100 disabled:cursor-not-allowed font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                    Pilier Thématique / Catégorie *
+                  </label>
+                  <select
+                    value={formData.category || 'economie'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as CategoryCode }))}
+                    className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded bg-white font-mono"
+                  >
+                    {CATEGORIES.map(c => (
+                      <option key={c.code} value={c.code}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {activeTab === 'fr' ? (
-                <div className="space-y-3">
+                <div className="space-y-3 pt-2 border-t border-[#e6dfd5]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#087443] uppercase tracking-wider">
+                      Informations en Français
+                    </span>
+                    <MicumTranslateButton
+                      fieldsToTranslate={{
+                        name: formData.name || '',
+                        definition: formData.definition || '',
+                        program: formData.program || ''
+                      }}
+                      targetLang="en"
+                      onTranslated={handleMicumTranslate}
+                      label="Traduire vers l'Anglais avec Micum"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
                       Nom de l'indicateur (Français) *
@@ -454,7 +585,21 @@ export default function AdminIndicatorsPage() {
                       required
                       value={formData.name || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443] font-serif text-sm"
+                      placeholder="Ex: Puissance Solaire Installée"
+                      className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443] font-serif text-sm font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                      Programme ou Cadre Stratégique (Optionnel)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.program || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, program: e.target.value }))}
+                      placeholder="Ex: Plan National de Développement 2026-2030"
+                      className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded"
                     />
                   </div>
 
@@ -466,37 +611,53 @@ export default function AdminIndicatorsPage() {
                       rows={2}
                       value={formData.definition || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, definition: e.target.value }))}
+                      placeholder="Description méthodologique et champ d'application de la mesure..."
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
                     />
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3 bg-[#f8fafc] p-3 border border-[#cbd5e1] rounded">
+                <div className="space-y-3 pt-2 border-t border-[#cbd5e1] bg-[#f8fafc] -mx-5 px-5 py-4">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-[#1e3a5f] uppercase">
                     <Languages size={13} />
-                    <span>Traductions Anglaises</span>
+                    <span>English Version (EN)</span>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                    <label className="block text-[10px] uppercase font-bold text-[#1e3a5f] mb-1">
                       Indicator Name (English)
                     </label>
                     <input
                       type="text"
                       value={formData.nameEn || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, nameEn: e.target.value }))}
-                      className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded focus:outline-none focus:border-[#1e3a5f] bg-white font-serif text-sm"
+                      placeholder="Ex: Installed Solar Capacity"
+                      className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded focus:outline-none focus:border-[#1e3a5f] bg-white font-serif text-sm font-bold"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                    <label className="block text-[10px] uppercase font-bold text-[#1e3a5f] mb-1">
+                      Strategic Program (English)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.programEn || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, programEn: e.target.value }))}
+                      placeholder="Ex: National Development Plan 2026-2030"
+                      className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#1e3a5f] mb-1">
                       Methodological Definition (English)
                     </label>
                     <textarea
                       rows={2}
                       value={formData.definitionEn || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, definitionEn: e.target.value }))}
+                      placeholder="Methodological overview and scope of measurement..."
                       className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded focus:outline-none focus:border-[#1e3a5f] bg-white"
                     />
                   </div>
@@ -533,6 +694,7 @@ export default function AdminIndicatorsPage() {
                       required
                       value={formData.unit || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, unit: e.target.value }))}
+                      placeholder="%, MW, FCFA, t/ha..."
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded"
                     />
                   </div>
@@ -544,7 +706,7 @@ export default function AdminIndicatorsPage() {
                     <input
                       type="number"
                       value={formData.currentYear ?? 2026}
-                      onChange={(e) => setFormData(prev => ({ ...prev, currentYear: parseInt(e.target.value) || 2026 }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, currentYear: parseInt(e.target.value, 10) || 2026 }))}
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded"
                     />
                   </div>
@@ -584,7 +746,7 @@ export default function AdminIndicatorsPage() {
                     <input
                       type="number"
                       value={formData.baselineYear ?? 2023}
-                      onChange={(e) => setFormData(prev => ({ ...prev, baselineYear: parseInt(e.target.value) || 2023 }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, baselineYear: parseInt(e.target.value, 10) || 2023 }))}
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded"
                     />
                   </div>
@@ -632,23 +794,56 @@ export default function AdminIndicatorsPage() {
               </div>
 
               {/* Actions */}
-              <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
+              <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] w-full sm:w-auto text-center"
+                  className="px-3 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] w-full sm:w-auto text-center cursor-pointer"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center cursor-pointer"
                 >
                   <Check size={14} />
-                  Enregistrer l'indicateur
+                  {isEditing ? 'Enregistrer l\'indicateur' : 'Créer l\'indicateur'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Indicator Confirmation Modal */}
+      {isDeletingIndicator && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white border border-[#141414] max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-[#dc2626]">
+              <AlertCircle size={24} />
+              <h3 className="font-serif font-bold text-lg text-[#141414]">
+                Supprimer cet indicateur ?
+              </h3>
+            </div>
+            <p className="text-xs font-mono text-[#5a554e] leading-relaxed">
+              Êtes-vous sûr de vouloir supprimer l'indicateur <b>"{isDeletingIndicator.name}"</b> (code: <code>{isDeletingIndicator.code}</code>) du Baromètre RELANCE ? Cette action retirera la métrique du site public.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e6dfd5]">
+              <button
+                type="button"
+                onClick={() => setIsDeletingIndicator(null)}
+                className="px-3 py-2 border border-[#e6dfd5] text-xs font-mono font-bold hover:bg-[#faf8f5] cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteIndicator(isDeletingIndicator)}
+                className="px-4 py-2 bg-[#dc2626] text-white text-xs font-mono font-bold uppercase rounded hover:bg-[#b91c1c] transition-colors cursor-pointer"
+              >
+                Supprimer définitivement
+              </button>
+            </div>
           </div>
         </div>
       )}
