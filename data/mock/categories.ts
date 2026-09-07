@@ -47,15 +47,15 @@ export const categories: Category[] = [
     color: '#7C3AED',
   },
   {
-    code: 'idees',
-    nameFr: 'Idées',
-    nameEn: 'Ideas',
-    descriptionFr: 'Sankara, comparaisons internationales, trajectoires de développement et tribunes.',
-    descriptionEn: 'Sankara, international comparisons, development trajectories and opinion.',
-    slug: 'idees',
+    code: 'histoire',
+    nameFr: 'Histoire',
+    nameEn: 'History',
+    descriptionFr: 'Mémoire, archives, Sankara, comparaisons historiques et trajectoires de la nation.',
+    descriptionEn: 'Memory, archives, Sankara, historical comparisons and national trajectories.',
+    slug: 'histoire',
     color: '#BE185D',
   },
 ]
 
 export const getCategoryByCode = (code: string): Category | undefined =>
-  categories.find(c => c.code === code)
+  categories.find(c => c.code === code || (code === 'idees' && c.code === 'histoire'))

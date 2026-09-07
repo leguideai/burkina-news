@@ -51,7 +51,7 @@ export default function Footer({ lang }: { lang?: 'fr' | 'en' }) {
               <li><Link href={isEn ? "/en/chantiers" : "/fr/chantiers"} className="hover:text-white transition-colors">{isEn ? "Infrastructure" : "Chantiers"}</Link></li>
               <li><Link href={isEn ? "/en/agriculture" : "/fr/agriculture"} className="hover:text-white transition-colors">{isEn ? "Agriculture" : "Agriculture"}</Link></li>
               <li><Link href={isEn ? "/en/societe" : "/fr/societe"} className="hover:text-white transition-colors">{isEn ? "Society" : "Société"}</Link></li>
-              <li><Link href={isEn ? "/en/idees" : "/fr/idees"} className="hover:text-white transition-colors">{isEn ? "Ideas & Essays" : "Idées & Trajectoires"}</Link></li>
+              <li><Link href={isEn ? "/en/histoire" : "/fr/histoire"} className="hover:text-white transition-colors">{isEn ? "History" : "Histoire"}</Link></li>
             </ul>
           </div>
 

@@ -223,7 +223,7 @@ export const articles: Article[] = [
     tags: ['santé', 'Dori', 'Sahel', 'terrain'],
   },
 
-  // ── Idées ─────────────────────────────────────────────
+  // ── Histoire ────────────────────────────────────────────
   {
     id: 'art-12',
     type: 'analyse',
@@ -234,7 +234,7 @@ export const articles: Article[] = [
     excerptEn: 'Sankara’s 1987 OAU address on debt and domestic resource mobilization resonates with today’s sovereign choices. A comparative economic assessment.',
     body: 'Thomas Sankara, président du Burkina Faso de 1983 à 1987, avait théorisé un modèle de développement fondé sur la mobilisation des ressources internes et le refus de l\'endettement structurel.',
     bodyEn: 'Thomas Sankara, President of Burkina Faso from 1983 to 1987, articulated an economic development doctrine grounded in domestic resource mobilization and the rejection of foreign structural dependency.',
-    category: 'idees',
+    category: 'histoire',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS47Up4RBtOzTUp6pwaGDGwigmntoyWymeZSHbtKnMdAQ&s=10',
     author: 'La Rédaction',
     publishedAt: '2026-08-06T07:00:00Z',
@@ -253,7 +253,7 @@ export const articles: Article[] = [
     excerptEn: 'Why we chose to build an independent Tracker of national infrastructure — and why evidentiary traceability is never a luxury.',
     body: 'Créer un média au Burkina Faso en 2026, c\'est faire un pari sur la valeur de la vérification. Dans un environnement informationnel saturé de déclarations d\'intention, nous avons choisi de compter.',
     bodyEn: 'Building an independent news organization in Burkina Faso in 2026 is an investment in the primacy of verification. In an informational ecosystem crowded with political announcements, we chose to measure, trace, and document.',
-    category: 'idees',
+    category: 'histoire',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsyFc8_NZhee3WLNX-YWs0mKthH3cGCDHMTxgETBaZig&s=10',
     author: 'La Rédaction',
     publishedAt: '2026-08-01T06:00:00Z',
@@ -326,7 +326,7 @@ export const getArticles = (lang: 'fr' | 'en' = 'fr'): Article[] =>
   articles.map(a => localizeArticle(a, lang))
 
 export const getArticlesByCategory = (code: string, lang: 'fr' | 'en' = 'fr'): Article[] =>
-  articles.filter(a => a.category === code).map(a => localizeArticle(a, lang))
+  articles.filter(a => a.category === code || (code === 'idees' && a.category === 'histoire') || (code === 'histoire' && a.category === 'idees')).map(a => localizeArticle(a, lang))
 
 export const getArticleBySlug = (slug: string, lang: 'fr' | 'en' = 'fr'): Article | undefined => {
   const article = articles.find(a => a.slug === slug)

@@ -23,7 +23,8 @@ export default function IndicatorsPage() {
     chantiers: 'Infrastructures & Énergie',
     agriculture: 'Agriculture & Souveraineté Alimentaire',
     societe: 'Santé, Éducation & Société',
-    idees: 'Gouvernance & Réformes',
+    histoire: 'Histoire & Trajectoires',
+    idees: 'Histoire & Trajectoires',
   };
 
   return (

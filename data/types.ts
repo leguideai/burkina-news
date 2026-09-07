@@ -1,5 +1,5 @@
 // ─── Catégories (les 6 rubriques de la Charte V3) ─────────────────────────
-export type CategoryCode = 'economie' | 'securite' | 'chantiers' | 'agriculture' | 'societe' | 'idees'
+export type CategoryCode = 'economie' | 'securite' | 'chantiers' | 'agriculture' | 'societe' | 'histoire' | 'idees'
 
 export interface Category {
   code: CategoryCode
