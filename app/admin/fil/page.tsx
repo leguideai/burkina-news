@@ -24,7 +24,6 @@ import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import ImageUploader from '@/components/admin/ImageUploader';
 import Tooltip from '@/components/ui/Tooltip';
-import MicumCopilot from '@/components/admin/MicumCopilot';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
 const CATEGORIES: { code: CategoryCode; label: string }[] = [
@@ -451,14 +450,7 @@ export default function AdminFilPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Micum Intelligent Assistant Banner */}
-          <MicumCopilot
-            mode="fil"
-            variant="banner"
-            isEditing={!!currentBrief}
-            currentData={currentBrief}
-            onApply={handleMicumApplyFil}
-          />
+
 
           <div className="bg-white border border-[#e6dfd5] overflow-hidden shadow-sm">
             <div className="p-4 bg-[#faf8f5] border-b border-[#e6dfd5] flex items-center justify-between">

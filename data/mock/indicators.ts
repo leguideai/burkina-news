@@ -228,18 +228,25 @@ export const indicators: Indicator[] = [
   },
 ]
 
+const getIndicatorList = (): Indicator[] => {
+  if (typeof globalThis !== 'undefined' && globalThis.__burkinaAdminStore?.indicators && globalThis.__burkinaAdminStore.indicators.length > 0) {
+    return globalThis.__burkinaAdminStore.indicators;
+  }
+  return indicators;
+}
+
 export const getIndicators = (lang: 'fr' | 'en' = 'fr'): Indicator[] =>
-  indicators.map(i => localizeIndicator(i, lang))
+  getIndicatorList().map(i => localizeIndicator(i, lang))
 
 export const getIndicatorByCode = (code: string, lang: 'fr' | 'en' = 'fr'): Indicator | undefined => {
-  const ind = indicators.find(i => i.code === code)
+  const ind = getIndicatorList().find(i => i.code === code)
   return ind ? localizeIndicator(ind, lang) : undefined
 }
 
 export const getIndicatorsByCategory = (code: string, lang: 'fr' | 'en' = 'fr'): Indicator[] =>
-  indicators.filter(i => i.category === code).map(i => localizeIndicator(i, lang))
+  getIndicatorList().filter(i => i.category === code).map(i => localizeIndicator(i, lang))
 
 export const getKeyIndicators = (lang: 'fr' | 'en' = 'fr'): Indicator[] =>
-  indicators
+  getIndicatorList()
     .filter(i => ['PIB-CROISSANCE', 'ELEC-CAPACITE', 'OR-PRODUCTION', 'PAUVRETE'].includes(i.code))
     .map(i => localizeIndicator(i, lang))

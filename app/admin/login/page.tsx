@@ -7,7 +7,7 @@ import { useAdminAuth } from '@/components/admin/AuthGuard';
 import { useToast } from '@/components/admin/Toast';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('alfred@burkinanews.bf');
+  const [email, setEmail] = useState('diop@burkinanews.bf');
   const [password, setPassword] = useState('faso2026');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -71,7 +71,7 @@ export default function AdminLoginPage() {
             Espace d'Administration
           </h1>
           <p className="text-xs font-serif text-[#666666]">
-            Réservé aux membres de la rédaction et du comité éditorial de Bobo-Dioulasso et Ouagadougou.
+            Réservé aux membres de la rédaction et du comité éditorial.
           </p>
         </div>
 
@@ -144,20 +144,12 @@ export default function AdminLoginPage() {
           <div className="text-[10px] font-mono uppercase text-[#737373] text-center font-semibold">
             Accès Rapide Démo Rédaction :
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => fillAndSubmit('alfred@burkinanews.bf')}
-              className="p-2 bg-[#faf8f5] hover:bg-[#f4eee3] border border-[#e6dfd5] text-left rounded text-[11px] font-mono transition-colors"
-            >
-              <span className="font-bold text-[#141414] block">Alfred Ouédraogo</span>
-              <span className="text-[9px] text-[#0b4627]">Directeur éditorial</span>
-            </button>
+          <div className="grid grid-cols-1 sm:grid-cols-1 gap-2">
 
             <button
               type="button"
               onClick={() => fillAndSubmit('diop@burkinanews.bf')}
-              className="p-2 bg-[#faf8f5] hover:bg-[#f4eee3] border border-[#e6dfd5] text-left rounded text-[11px] font-mono transition-colors"
+              className="p-2 bg-[#faf8f5] hover:bg-[#f4eee3] border border-[#e6dfd5] text-center rounded text-[11px] font-mono transition-colors"
             >
               <span className="font-bold text-[#141414] block">Samba Diop</span>
               <span className="text-[9px] font-bold text-[#c2410c] uppercase">Superadmin</span>

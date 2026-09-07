@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useImperativeHandle, forwardRef, useCallback } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -16,7 +16,7 @@ import { Article, CategoryCode, ContentType } from '@/data/types';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
-import MicumIcon from '@/components/admin/MicumIcon';
+import { useMicum } from '@/components/admin/MicumContext';
 
 export interface ArticleEditorFormHandle {
   insertToBody: (text: string) => void;
@@ -28,8 +28,6 @@ interface ArticleEditorFormProps {
   initialData?: Partial<Article>;
   isEditing: boolean;
   onSave: (data: Partial<Article>, tagsInput: string) => Promise<void>;
-  onToggleMicum?: () => void;
-  isMicumOpen?: boolean;
 }
 
 const CATEGORIES: { value: CategoryCode; label: string }[] = [
@@ -58,7 +56,7 @@ const CONFIDENCE_LEVELS = [
 ];
 
 const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormProps>(
-  ({ initialData, isEditing, onSave, onToggleMicum, isMicumOpen }, ref) => {
+  ({ initialData, isEditing, onSave }, ref) => {
     const defaultData: Partial<Article> = {
       title: '',
       titleEn: '',
@@ -85,6 +83,43 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
     );
     const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
     const [isSaving, setIsSaving] = useState(false);
+
+    const { registerEditor, updateEditorData } = useMicum();
+
+    // Register active form with MicumContext so floating assistant is 100% aware
+    useEffect(() => {
+      const unregister = registerEditor({
+        sectionId: 'article',
+        sectionTitle: isEditing ? `Édition : "${formData.title || 'Article'}"` : "Création d'Article",
+        canInsert: true,
+        currentData: formData,
+        insertToBody: (text: string) => {
+          setFormData(prev => ({
+            ...prev,
+            body: (prev.body || '') ? prev.body + '\n\n' + text : text
+          }));
+        },
+        replaceField: (field: string, value: string) => {
+          setFormData(prev => ({ ...prev, [field]: value }));
+        },
+        applyAll: (data: any) => {
+          setFormData(prev => ({
+            ...prev,
+            title: data.title || prev.title,
+            excerpt: data.excerpt || prev.excerpt,
+            body: (data.content || data.body) ? ((prev.body || '') ? prev.body + '\n\n' + (data.content || data.body) : (data.content || data.body)) : prev.body,
+            titleEn: data.titleEn || prev.titleEn,
+            excerptEn: data.excerptEn || prev.excerptEn,
+            bodyEn: (data.contentEn || data.bodyEn) || prev.bodyEn,
+          }));
+        }
+      });
+      return unregister;
+    }, [registerEditor, isEditing, formData.title]);
+
+    useEffect(() => {
+      updateEditorData(formData);
+    }, [formData, updateEditorData]);
 
     // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
@@ -170,18 +205,6 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
                   EN
                 </button>
               </div>
-
-              {/* Micum Toggle */}
-              {onToggleMicum && (
-                <button
-                  onClick={onToggleMicum}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-mono font-bold cursor-pointer transition-colors border ${isMicumOpen ? 'bg-emerald-50 border-emerald-300 text-[#087443]' : 'border-[#e6dfd5] text-[#736c62] hover:text-[#087443] hover:border-emerald-300'}`}
-                  title="Ouvrir/fermer Micum"
-                >
-                  <MicumIcon size={16} />
-                  <span className="hidden sm:inline">Micum</span>
-                </button>
-              )}
 
               {/* Save */}
               <button

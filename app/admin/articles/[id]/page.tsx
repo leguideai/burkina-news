@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Article } from '@/data/types';
 import { useToast } from '@/components/admin/Toast';
-import ArticleEditorForm, { ArticleEditorFormHandle } from '@/components/admin/ArticleEditorForm';
-import MicumSidePanel from '@/components/admin/MicumSidePanel';
+import ArticleEditorForm from '@/components/admin/ArticleEditorForm';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -13,11 +12,9 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
   const { id } = React.use(params);
   const router = useRouter();
   const { success, error, warning } = useToast();
-  const [isMicumOpen, setIsMicumOpen] = useState(false);
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const editorRef = useRef<ArticleEditorFormHandle>(null);
 
   useEffect(() => {
     (async () => {
@@ -68,22 +65,6 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  const handleMicumInsertBody = (text: string) => {
-    editorRef.current?.insertToBody(text);
-  };
-
-  const handleMicumReplaceField = (field: string, value: string) => {
-    editorRef.current?.replaceField(field, value);
-  };
-
-  const handleMicumApplyAll = (data: any) => {
-    if (data.title) editorRef.current?.replaceField('title', data.title);
-    if (data.excerpt) editorRef.current?.replaceField('excerpt', data.excerpt);
-    if (data.content || data.body) editorRef.current?.insertToBody(data.content || data.body);
-    if (data.titleEn) editorRef.current?.replaceField('titleEn', data.titleEn);
-    if (data.excerptEn) editorRef.current?.replaceField('excerptEn', data.excerptEn);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
@@ -107,29 +88,13 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      <div className="flex-1 min-w-0">
-        <ArticleEditorForm
-          ref={editorRef}
-          initialData={article!}
-          isEditing={true}
-          onSave={handleSave}
-          onToggleMicum={() => setIsMicumOpen(!isMicumOpen)}
-          isMicumOpen={isMicumOpen}
-        />
-      </div>
-      <MicumSidePanel
-        isOpen={isMicumOpen}
-        onClose={() => setIsMicumOpen(false)}
-        onOpen={() => setIsMicumOpen(true)}
-        onToggle={() => setIsMicumOpen(!isMicumOpen)}
-        mode="article"
+    <div className="h-[calc(100vh-4rem)]">
+      <ArticleEditorForm
+        initialData={article!}
         isEditing={true}
-        currentData={article || undefined}
-        onInsertToBody={handleMicumInsertBody}
-        onReplaceField={handleMicumReplaceField}
-        onApplyAll={handleMicumApplyAll}
+        onSave={handleSave}
       />
     </div>
   );
 }
+

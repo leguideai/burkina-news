@@ -21,9 +21,13 @@ import {
   Undo2, 
   Redo2,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  FileText,
+  Eye,
+  Edit3
 } from 'lucide-react';
 import Tooltip from '@/components/ui/Tooltip';
+import ArticleBodyRenderer from '@/components/editorial/ArticleBodyRenderer';
 
 interface RichTextEditorProps {
   value: string;
@@ -48,7 +52,10 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
 
   // History stack for Undo / Redo
   const [history, setHistory] = useState<string[]>([value]);
@@ -181,6 +188,46 @@ export default function RichTextEditor({
     }
   };
 
+  // Handle local PDF / Document upload inside text
+  const handleDocumentSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingDoc(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+          const isPdf = file.name.toLowerCase().endsWith('.pdf');
+          const badge = isPdf ? '(PDF)' : '(DOCUMENT)';
+          applyFormat(`\n\n[${cleanName} ${badge}](`, `${data.url})\n\n`, '');
+          setIsUploadingDoc(false);
+          return;
+        }
+      }
+
+      alert('Échec du téléversement du document. Veuillez vérifier le fichier.');
+      setIsUploadingDoc(false);
+    } catch {
+      alert("Erreur réseau lors de l'envoi du document.");
+      setIsUploadingDoc(false);
+    } finally {
+      if (docInputRef.current) {
+        docInputRef.current.value = '';
+      }
+    }
+  };
+
   // Clear or delete content
   const handleClearOrDelete = () => {
     if (onDelete) {
@@ -235,10 +282,40 @@ export default function RichTextEditor({
           
           {/* Top Bar inside Card (Badge + Supprimer) */}
           <div className="flex items-center justify-between">
-            {/* Tag Badge */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#f1f5f9] text-[#475569] border border-[#e2e8f0] rounded-md text-[11px] font-mono font-bold tracking-wider uppercase">
-              <Type size={13} className="text-[#64748b]" />
-              <span>{label}</span>
+            <div className="flex items-center gap-2">
+              {/* Tag Badge */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#f1f5f9] text-[#475569] border border-[#e2e8f0] rounded-md text-[11px] font-mono font-bold tracking-wider uppercase">
+                <Type size={13} className="text-[#64748b]" />
+                <span>{label}</span>
+              </div>
+
+              {/* Mode Toggle: Édition / Aperçu Direct */}
+              <div className="inline-flex items-center p-0.5 bg-[#f1f5f9] border border-[#e2e8f0] rounded-lg text-xs font-mono">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('edit')}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                    viewMode === 'edit'
+                      ? 'bg-white text-[#087443] font-bold shadow-2xs'
+                      : 'text-[#64748b] hover:text-[#141414]'
+                  }`}
+                >
+                  <Edit3 size={12} />
+                  <span>Édition</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('preview')}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                    viewMode === 'preview'
+                      ? 'bg-[#087443] text-white font-bold shadow-2xs'
+                      : 'text-[#64748b] hover:text-[#141414]'
+                  }`}
+                >
+                  <Eye size={12} />
+                  <span>Aperçu Réel</span>
+                </button>
+              </div>
             </div>
 
             {/* Supprimer button */}
@@ -333,6 +410,22 @@ export default function RichTextEditor({
                       <Loader2 size={15} className="animate-spin text-[#087443]" />
                     ) : (
                       <ImageIcon size={15} />
+                    )}
+                  </button>
+                </Tooltip>
+
+                <Tooltip position="top" content="Insérer un document PDF / Preuve d'audit">
+                  <button
+                    type="button"
+                    onClick={() => docInputRef.current?.click()}
+                    disabled={isUploadingDoc}
+                    className="p-1.5 hover:bg-[#f1f5f9] text-[#1e293b] rounded transition-colors relative cursor-pointer"
+                    aria-label="Téléverser un document PDF ou preuve"
+                  >
+                    {isUploadingDoc ? (
+                      <Loader2 size={15} className="animate-spin text-red-600" />
+                    ) : (
+                      <FileText size={15} className="text-red-700" />
                     )}
                   </button>
                 </Tooltip>
@@ -442,7 +535,7 @@ export default function RichTextEditor({
 
             </div>
 
-            {/* Textarea Content Area */}
+            {/* Content Area: Editor or Live Preview */}
             <div className="relative">
               <input
                 ref={fileInputRef}
@@ -451,13 +544,36 @@ export default function RichTextEditor({
                 onChange={handleImageSelect}
                 className="hidden"
               />
-              <textarea
-                ref={textareaRef}
-                value={value}
-                onChange={(e) => updateValueWithHistory(e.target.value)}
-                placeholder={placeholder}
-                className={`w-full ${minHeight} p-4 sm:p-5 font-serif text-sm text-[#1e293b] leading-relaxed focus:outline-none resize-y bg-white placeholder-[#94a3b8]`}
+              <input
+                ref={docInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.txt,.csv"
+                onChange={handleDocumentSelect}
+                className="hidden"
               />
+              {viewMode === 'edit' ? (
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => updateValueWithHistory(e.target.value)}
+                  placeholder={placeholder}
+                  className={`w-full ${minHeight} p-4 sm:p-5 font-serif text-sm text-[#1e293b] leading-relaxed focus:outline-none resize-y bg-white placeholder-[#94a3b8]`}
+                />
+              ) : (
+                <div className={`w-full ${minHeight} p-4 sm:p-8 bg-[#faf8f5] overflow-y-auto border-t border-[#f1f5f9]`}>
+                  <div className="max-w-3xl mx-auto bg-white border border-[#e6dfd5] p-5 sm:p-8 shadow-xs rounded-xl">
+                    <div className="mb-4 pb-2 border-b border-[#e6dfd5] flex items-center justify-between text-xs font-mono text-[#736c62]">
+                      <span className="font-bold text-[#087443] flex items-center gap-1.5">
+                        <Eye size={14} /> Aperçu du Rendu Public (Images, Liens, Pièces PDF)
+                      </span>
+                      <span className="bg-[#087443]/10 text-[#087443] px-2 py-0.5 rounded font-bold uppercase text-[10px]">
+                        Vue Visiteur
+                      </span>
+                    </div>
+                    <ArticleBodyRenderer content={value} />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer Bar: Character Count */}

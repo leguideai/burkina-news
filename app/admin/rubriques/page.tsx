@@ -134,32 +134,32 @@ export default function AdminRubriquesPage() {
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#e6dfd5] pb-5">
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs text-[#be185d] font-bold uppercase tracking-wider">
+          <div className="flex items-center gap-2 font-mono text-xs text-[#087443] font-bold uppercase tracking-wider">
             <Landmark size={15} />
-            <span>Architecture Éditoriale & Cadrage Thématique</span>
+            <span>Pôle Mémoire & Archives Nationales</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
-            Rubriques & Section Histoire
+            Section Histoire
           </h1>
           <p className="text-sm font-mono text-[#5a554e] mt-0.5">
-            Gouvernance des 6 piliers thématiques, du "Regard de la rédaction" et des archives de la mémoire.
+            Gouvernance des enquêtes rétrospectives, archives de la révolution sankariste et mémoire de la nation.
           </p>
         </div>
 
         <Link
-          href="/admin/articles"
+          href="/admin/articles/nouveau?category=histoire"
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm self-start md:self-auto"
         >
           <Plus size={16} />
-          Créer un Article
+          <span>Nouvel Article Histoire</span>
         </Link>
       </div>
 
       {/* Special Histoire Focus Banner */}
-      <div className="bg-[#be185d]/5 border-2 border-[#be185d] p-5 rounded relative overflow-hidden">
+      <div className="bg-white border border-[#e6dfd5] border-l-4 border-l-[#087443] p-5 rounded shadow-xs relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
           <div className="space-y-1 max-w-2xl">
-            <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase text-[#be185d]">
+            <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase text-[#087443]">
               <Sparkles size={15} />
               <span>Priorité Éditoriale · Rubrique Histoire</span>
             </div>
@@ -175,119 +175,167 @@ export default function AdminRubriquesPage() {
             <Link
               href="/fr/histoire"
               target="_blank"
-              className="px-3.5 py-2 bg-white border border-[#be185d] text-[#be185d] hover:bg-[#be185d] hover:text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors inline-flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] hover:border-[#087443] hover:text-[#087443] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors inline-flex items-center gap-1.5"
             >
               <ExternalLink size={14} />
               Voir /fr/histoire
             </Link>
             <Link
-              href="/admin/articles"
-              className="px-3.5 py-2 bg-[#be185d] text-white hover:bg-[#9d174d] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors"
+              href="/admin/articles?category=histoire"
+              className="px-3.5 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors inline-flex items-center gap-1.5"
             >
-              Gérer les articles Histoire
+              <span>Gérer dans la table des articles</span>
+              <span className="bg-white/20 px-1.5 py-0.2 rounded text-[10px]">
+                {articles.filter(a => a.category === 'histoire' || a.category === 'idees').length}
+              </span>
             </Link>
           </div>
         </div>
+
+        {/* Articles Histoire list directly embedded in this screen */}
+        <div className="mt-5 pt-4 border-t border-[#e6dfd5] relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <FileText size={15} className="text-[#087443]" />
+              <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
+                Articles publiés dans la rubrique Histoire ({articles.filter(a => a.category === 'histoire' || a.category === 'idees').length})
+              </h3>
+            </div>
+            <Link
+              href="/admin/articles/nouveau?category=histoire"
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#087443] hover:underline"
+            >
+              <Plus size={14} />
+              <span>Rédiger un nouvel article Histoire</span>
+            </Link>
+          </div>
+
+          {articles.filter(a => a.category === 'histoire' || a.category === 'idees').length === 0 ? (
+            <div className="bg-[#faf8f5] p-6 text-center rounded border border-[#e6dfd5] text-xs font-mono text-[#736c62]">
+              Aucun article rattaché à l&apos;Histoire pour le moment.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {articles.filter(a => a.category === 'histoire' || a.category === 'idees').map(art => (
+                <div 
+                  key={art.id} 
+                  className="bg-[#faf8f5] border border-[#e6dfd5] p-4 rounded flex flex-col justify-between hover:border-[#087443] hover:shadow-xs transition-all"
+                >
+                  <div className="flex flex-col sm:flex-row gap-3.5 items-start">
+                    {art.image && (
+                      <div className="w-full sm:w-28 h-32 sm:h-24 shrink-0 rounded overflow-hidden border border-[#e6dfd5] bg-white shadow-xs">
+                        <img 
+                          src={art.image} 
+                          alt={art.title} 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="px-2 py-0.5 bg-emerald-50 text-[#087443] border border-emerald-200 text-[10px] font-mono font-bold uppercase rounded">
+                          {art.type}
+                        </span>
+                        <span className="text-[10px] font-mono text-[#736c62]">
+                          {art.readTime || '6 min'} • {art.sourceCount || 0} sources
+                        </span>
+                      </div>
+                      <h4 className="font-serif font-bold text-sm text-[#141414] leading-snug">
+                        {art.title}
+                      </h4>
+                      <p className="text-xs font-serif text-[#5a554e] line-clamp-2 italic">
+                        {art.excerpt}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-[#e6dfd5] text-xs font-mono">
+                    <span className="text-[10px] text-[#736c62]">
+                      Publié le {art.publishedAt ? new Date(art.publishedAt).toLocaleDateString('fr-FR') : 'Août 2026'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/fr/histoire/${art.slug}`}
+                        target="_blank"
+                        className="px-2.5 py-1 bg-white border border-[#e6dfd5] text-[#141414] hover:border-[#087443] hover:text-[#087443] rounded text-[11px] inline-flex items-center gap-1 transition-colors"
+                      >
+                        <ExternalLink size={12} />
+                        <span>Voir en ligne</span>
+                      </Link>
+                      <Link
+                        href={`/admin/articles/${art.id}`}
+                        className="px-2.5 py-1 bg-[#087443] hover:bg-[#075f37] text-white font-bold rounded text-[11px] inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Edit3 size={12} />
+                        <span>Modifier</span>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Rubriques Cards Grid */}
+      {/* Histoire Key Indicators */}
       {loading ? (
-        <SkeletonCard count={6} />
+        <SkeletonStat count={4} />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {categories.map((cat) => {
-            const isHistoire = cat.code === 'histoire';
-            const catArticles = articles.filter(a => a.category === cat.code);
-            const catProjects = projects.filter(p => p.category === cat.code || p.sector.toLowerCase().includes(cat.nameFr.toLowerCase()));
-            const regard = defaultRegards[cat.code] || { fr: cat.descriptionFr, en: cat.descriptionEn };
-
-            return (
-              <div 
-                key={cat.code}
-                className={`bg-white border transition-shadow hover:shadow-md flex flex-col justify-between ${
-                  isHistoire ? 'border-2 border-[#be185d]' : 'border-[#e6dfd5]'
-                }`}
-              >
-                {/* Card Top */}
-                <div className="p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span 
-                      className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider"
-                      style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
-                    >
-                      Code : {cat.code}
-                    </span>
-                    {isHistoire && (
-                      <span className="text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 bg-[#be185d] text-white rounded">
-                        ★ Pôle Mémoire
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <h3 className="font-serif font-bold text-lg text-[#141414]">
-                      {cat.nameFr}
-                    </h3>
-                    <div className="text-xs font-mono text-[#736c62] italic mt-0.5">
-                      EN: {cat.nameEn}
-                    </div>
-                  </div>
-
-                  <p className="text-xs font-serif text-[#5a554e] leading-relaxed line-clamp-3">
-                    {cat.descriptionFr}
-                  </p>
-
-                  {/* Regard de la redaction box snippet */}
-                  <div className="bg-[#faf8f5] p-3 border-l-2 border-[#141414] rounded-r text-[11px] font-serif italic text-[#3f3b35]">
-                    <div className="font-mono text-[9px] font-bold uppercase not-italic text-[#736c62] mb-1">
-                      Regard de la rédaction :
-                    </div>
-                    "{regard.fr.slice(0, 110)}..."
-                  </div>
-                </div>
-
-                {/* Card Bottom / Stats & Actions */}
-                <div className="p-4 border-t border-[#e6dfd5] bg-[#faf8f5] flex items-center justify-between text-xs font-mono">
-                  <div className="flex items-center gap-3 text-[#736c62]">
-                    <span className="flex items-center gap-1 font-bold text-[#141414]">
-                      <FileText size={13} className="text-[#087443]" />
-                      {catArticles.length} article{catArticles.length > 1 ? 's' : ''}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Construction size={13} className="text-[#d97706]" />
-                      {catProjects.length} chantier{catProjects.length > 1 ? 's' : ''}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <Tooltip position="top" content="Consulter la page publique de cette rubrique">
-                      <Link
-                        href={`/fr/${cat.slug}`}
-                        target="_blank"
-                        className="p-1.5 text-[#736c62] hover:text-[#087443] hover:bg-white rounded"
-                        aria-label="Voir la page publique"
-                      >
-                        <ExternalLink size={14} />
-                      </Link>
-                    </Tooltip>
-
-                    <Tooltip position="top" content="Modifier le cadrage et le regard de la rédaction">
-                      <button
-                        onClick={() => handleOpenEdit(cat)}
-                        className="p-1.5 text-[#736c62] hover:text-[#087443] hover:bg-white rounded"
-                        aria-label="Modifier le cadrage"
-                      >
-                        <Edit3 size={14} />
-                      </button>
-                    </Tooltip>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white border border-[#e6dfd5] p-4">
+            <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Articles Publiés</div>
+            <div className="text-2xl font-mono font-bold text-[#087443] mt-1">
+              {articles.filter(a => a.category === 'histoire' || a.category === 'idees').length}
+            </div>
+            <div className="text-[10px] font-mono text-[#736c62] mt-0.5">Enquêtes & Éditoriaux</div>
+          </div>
+          <div className="bg-white border border-[#e6dfd5] p-4">
+            <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Sources & Archives</div>
+            <div className="text-2xl font-mono font-bold text-[#087443] mt-1">
+              {articles.filter(a => a.category === 'histoire' || a.category === 'idees').reduce((acc, a) => acc + (a.sourceCount || 0), 0)}
+            </div>
+            <div className="text-[10px] font-mono text-[#736c62] mt-0.5">Documents primaires vérifiés</div>
+          </div>
+          <div className="bg-white border border-[#e6dfd5] p-4">
+            <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Bilinguisme EN</div>
+            <div className="text-2xl font-mono font-bold text-[#1e3a5f] mt-1">
+              {articles.filter(a => (a.category === 'histoire' || a.category === 'idees') && a.titleEn).length} / {articles.filter(a => a.category === 'histoire' || a.category === 'idees').length}
+            </div>
+            <div className="text-[10px] font-mono text-[#087443] mt-0.5">Versions anglaises validées</div>
+          </div>
+          <div className="bg-white border border-[#e6dfd5] p-4">
+            <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Pôle Mémoriel</div>
+            <div className="text-sm font-mono font-bold text-[#141414] mt-2">
+              Sankara 1983-1987
+            </div>
+            <div className="text-[10px] font-mono text-[#087443] mt-0.5">Doctrine d&apos;autosuffisance</div>
+          </div>
         </div>
       )}
+
+      {/* Regard de la Rédaction (Manifeste Histoire) */}
+      <div className="bg-white border-l-4 border-[#087443] border-y border-r border-[#e6dfd5] p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase text-[#087443]">
+            <BookOpen size={14} />
+            <span>Ligne Éditoriale · Le Regard de la Rédaction pour l&apos;Histoire</span>
+          </div>
+          <p className="font-serif italic text-sm text-[#3f3b35] leading-relaxed max-w-3xl">
+            &ldquo;{defaultRegards.histoire.fr}&rdquo;
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            const histoireCat = categories.find(c => c.code === 'histoire');
+            if (histoireCat) handleOpenEdit(histoireCat);
+          }}
+          className="px-3.5 py-2 border border-[#e6dfd5] hover:border-[#087443] hover:text-[#087443] text-xs font-mono font-bold rounded transition-colors shrink-0 inline-flex items-center gap-1.5 self-start md:self-auto cursor-pointer"
+        >
+          <Edit3 size={14} />
+          <span>Modifier le cadrage</span>
+        </button>
+      </div>
 
       {/* Edit Category Framing Modal */}
       {editingCategory && (

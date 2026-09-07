@@ -44,13 +44,20 @@ export const issues: Issue[] = [
   },
 ]
 
+const getIssueList = (): Issue[] => {
+  if (typeof globalThis !== 'undefined' && globalThis.__burkinaAdminStore?.issues && globalThis.__burkinaAdminStore.issues.length > 0) {
+    return globalThis.__burkinaAdminStore.issues;
+  }
+  return issues;
+}
+
 export const getIssues = (lang: 'fr' | 'en' = 'fr'): Issue[] =>
-  issues.map(i => localizeIssue(i, lang))
+  getIssueList().map(i => localizeIssue(i, lang))
 
 export const getIssueBySlug = (slug: string, lang: 'fr' | 'en' = 'fr'): Issue | undefined => {
-  const issue = issues.find(i => i.slug === slug)
+  const issue = getIssueList().find(i => i.slug === slug)
   return issue ? localizeIssue(issue, lang) : undefined
 }
 
 export const getLatestIssue = (lang: 'fr' | 'en' = 'fr'): Issue =>
-  localizeIssue(issues[0], lang)
+  localizeIssue(getIssueList()[0] || issues[0], lang)

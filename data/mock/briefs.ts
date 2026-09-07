@@ -281,13 +281,20 @@ export const briefs: Brief[] = [
   },
 ]
 
+const getBriefList = (): Brief[] => {
+  if (typeof globalThis !== 'undefined' && globalThis.__burkinaAdminStore?.briefs && globalThis.__burkinaAdminStore.briefs.length > 0) {
+    return globalThis.__burkinaAdminStore.briefs;
+  }
+  return briefs;
+}
+
 export const getBriefs = (lang: 'fr' | 'en' = 'fr'): Brief[] =>
-  briefs.map(b => localizeBrief(b, lang))
+  getBriefList().map(b => localizeBrief(b, lang))
 
 export const getBriefBySlug = (slug: string, lang: 'fr' | 'en' = 'fr'): Brief | undefined => {
-  const brief = briefs.find(b => b.slug === slug)
+  const brief = getBriefList().find(b => b.slug === slug)
   return brief ? localizeBrief(brief, lang) : undefined
 }
 
 export const getLatestBrief = (lang: 'fr' | 'en' = 'fr'): Brief =>
-  localizeBrief(briefs[0], lang)
+  localizeBrief(getBriefList()[0] || briefs[0], lang)

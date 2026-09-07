@@ -81,10 +81,10 @@ export default function AdminOverviewPage() {
             <span>Desk de Rédaction Actif</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#141414]">
-            Bonjour, {user?.name || 'Alfred'}
+            Bonjour, {user?.name || 'User'} ! <span className="text-[#0b4627]">Bienvenue sur le Desk</span>
           </h1>
           <p className="text-xs sm:text-sm font-serif text-[#555555] mt-1 max-w-2xl">
-            Gestion intégrale des contenus, des 60 chantiers du Tracker, des indicateurs PND RELANCE et des signalements de la communauté.
+            Gestion intégrale des contenus, des chantiers du Tracker, des indicateurs PND RELANCE et des signalements de la communauté.
           </p>
         </div>
 

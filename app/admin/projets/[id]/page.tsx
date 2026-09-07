@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Project } from '@/data/types';
 import { useToast } from '@/components/admin/Toast';
-import ProjectEditorForm, { ProjectEditorFormHandle } from '@/components/admin/ProjectEditorForm';
-import MicumSidePanel from '@/components/admin/MicumSidePanel';
+import ProjectEditorForm from '@/components/admin/ProjectEditorForm';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -13,11 +12,9 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const { id } = React.use(params);
   const router = useRouter();
   const { success, error, warning } = useToast();
-  const [isMicumOpen, setIsMicumOpen] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const editorRef = useRef<ProjectEditorFormHandle>(null);
 
   useEffect(() => {
     (async () => {
@@ -68,22 +65,6 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  const handleMicumInsertBody = (text: string) => {
-    editorRef.current?.insertToBody(text);
-  };
-
-  const handleMicumReplaceField = (field: string, value: string) => {
-    editorRef.current?.replaceField(field, value);
-  };
-
-  const handleMicumApplyAll = (data: any) => {
-    if (data.title || data.name) editorRef.current?.replaceField('title', data.title || data.name);
-    if (data.description) editorRef.current?.insertToBody(data.description);
-    if (data.sector) editorRef.current?.replaceField('sector', data.sector);
-    if (data.region) editorRef.current?.replaceField('region', data.region);
-    if (data.amount || data.currentBudget) editorRef.current?.replaceField('amount', data.amount || data.currentBudget);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
@@ -107,29 +88,13 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      <div className="flex-1 min-w-0">
-        <ProjectEditorForm
-          ref={editorRef}
-          initialData={project!}
-          isEditing={true}
-          onSave={handleSave}
-          onToggleMicum={() => setIsMicumOpen(!isMicumOpen)}
-          isMicumOpen={isMicumOpen}
-        />
-      </div>
-      <MicumSidePanel
-        isOpen={isMicumOpen}
-        onClose={() => setIsMicumOpen(false)}
-        onOpen={() => setIsMicumOpen(true)}
-        onToggle={() => setIsMicumOpen(!isMicumOpen)}
-        mode="project"
+    <div className="h-[calc(100vh-4rem)]">
+      <ProjectEditorForm
+        initialData={project!}
         isEditing={true}
-        currentData={project || undefined}
-        onInsertToBody={handleMicumInsertBody}
-        onReplaceField={handleMicumReplaceField}
-        onApplyAll={handleMicumApplyAll}
+        onSave={handleSave}
       />
     </div>
   );
 }
+

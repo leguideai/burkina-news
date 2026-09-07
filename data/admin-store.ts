@@ -163,6 +163,138 @@ declare global {
   var __burkinaAdminStore: AdminState | undefined;
 }
 
+export function saveArticles(articles: Article[]) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'articles.json'), JSON.stringify(articles, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving articles.json', e);
+  }
+}
+
+export function getPersistedArticles(): Article[] | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'articles.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading articles.json', e);
+  }
+  return null;
+}
+
+export function saveProjects(projects: Project[]) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'projects.json'), JSON.stringify(projects, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving projects.json', e);
+  }
+}
+
+export function getPersistedProjects(): Project[] | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'projects.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading projects.json', e);
+  }
+  return null;
+}
+
+export function saveIndicators(indicators: Indicator[]) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'indicators.json'), JSON.stringify(indicators, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving indicators.json', e);
+  }
+}
+
+export function getPersistedIndicators(): Indicator[] | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'indicators.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading indicators.json', e);
+  }
+  return null;
+}
+
+export function saveBriefs(briefs: Brief[]) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'briefs.json'), JSON.stringify(briefs, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving briefs.json', e);
+  }
+}
+
+export function getPersistedBriefs(): Brief[] | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'briefs.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading briefs.json', e);
+  }
+  return null;
+}
+
+export function saveIssues(issues: Issue[]) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'issues.json'), JSON.stringify(issues, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving issues.json', e);
+  }
+}
+
+export function getPersistedIssues(): Issue[] | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'issues.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading issues.json', e);
+  }
+  return null;
+}
+
+export function saveCorrections(corrections: Correction[]) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'corrections.json'), JSON.stringify(corrections, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving corrections.json', e);
+  }
+}
+
+export function getPersistedCorrections(): Correction[] | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'corrections.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading corrections.json', e);
+  }
+  return null;
+}
+
 export function saveAdminUsers(users: AdminUser[]) {
   try {
     const dirPath = path.join(process.cwd(), 'data', 'submissions');
@@ -218,14 +350,21 @@ export function getPersistedHomepageConfig(): HomepageConfig | null {
 function getInitialState(): AdminState {
   const persistedConfig = getPersistedHomepageConfig();
   const persistedUsers = getPersistedAdminUsers();
+  const persistedArticles = getPersistedArticles();
+  const persistedProjects = getPersistedProjects();
+  const persistedIndicators = getPersistedIndicators();
+  const persistedBriefs = getPersistedBriefs();
+  const persistedIssues = getPersistedIssues();
+  const persistedCorrections = getPersistedCorrections();
+
   return {
-    articles: [...initialArticles],
-    projects: [...initialProjects],
-    indicators: [...initialIndicators],
-    briefs: [...initialBriefs],
-    issues: [...initialIssues],
+    articles: persistedArticles || [...initialArticles],
+    projects: persistedProjects || [...initialProjects],
+    indicators: persistedIndicators || [...initialIndicators],
+    briefs: persistedBriefs || [...initialBriefs],
+    issues: persistedIssues || [...initialIssues],
     categories: [...initialCategories],
-    corrections: [...initialCorrections],
+    corrections: persistedCorrections || [...initialCorrections],
     homepageConfig: persistedConfig || { ...initialHomepageConfig },
     users: persistedUsers || [...ADMIN_USERS],
   };

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { 
   FileText, 
   Plus, 
@@ -41,17 +42,29 @@ const CONTENT_TYPES: { code: ContentType; label: string }[] = [
   { code: 'trois-questions', label: 'Trois Questions' },
 ];
 
-export default function AdminArticlesPage() {
+function AdminArticlesContent() {
+  const searchParams = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'all';
+  const initialType = searchParams.get('type') || 'all';
+
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
   const [articles, setArticles] = useState<Article[]>([]);
   
   // Filters & search
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>(initialCategory);
+  const [typeFilter, setTypeFilter] = useState<string>(initialType);
 
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+
+  // Sync category filter if URL param changes
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (cat) {
+      setCategoryFilter(cat);
+    }
+  }, [searchParams]);
 
   // Fetch data
   const loadData = async () => {
@@ -81,7 +94,10 @@ export default function AdminArticlesPage() {
         art.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
         art.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const matchesCat = categoryFilter === 'all' || art.category === categoryFilter;
+      const matchesCat = 
+        categoryFilter === 'all' || 
+        art.category === categoryFilter || 
+        (categoryFilter === 'histoire' && (art.category === 'histoire' || art.category === 'idees'));
       const matchesType = typeFilter === 'all' || art.type === typeFilter;
 
       return matchesSearch && matchesCat && matchesType;
@@ -146,7 +162,7 @@ export default function AdminArticlesPage() {
           </div>
           <div className="bg-white border border-[#e6dfd5] p-4">
             <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Rubrique Histoire</div>
-            <div className="text-2xl font-mono font-bold text-[#be185d] mt-1">
+            <div className="text-2xl font-mono font-bold text-[#087443] mt-1">
               {articles.filter(a => a.category === 'histoire').length}
             </div>
             <div className="text-[10px] font-mono text-[#736c62] mt-0.5">Archives & Mémoire</div>
@@ -218,6 +234,24 @@ export default function AdminArticlesPage() {
         </div>
       </div>
 
+      {/* Active Filter Pill */}
+      {categoryFilter !== 'all' && (
+        <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded text-xs font-mono text-[#087443]">
+          <div className="flex items-center gap-2">
+            <Filter size={14} />
+            <span>
+              Filtre actif : Rubrique <strong>« {RUBRIQUES.find(r => r.code === categoryFilter)?.label || categoryFilter} »</strong> ({filteredArticles.length} article{filteredArticles.length > 1 ? 's' : ''})
+            </span>
+          </div>
+          <button
+            onClick={() => setCategoryFilter('all')}
+            className="text-xs text-[#087443] underline hover:text-[#075f37] cursor-pointer font-bold"
+          >
+            Afficher toutes les rubriques
+          </button>
+        </div>
+      )}
+
       {/* Articles Table */}
       {loading ? (
         <SkeletonTable rows={6} columns={6} />
@@ -288,7 +322,7 @@ export default function AdminArticlesPage() {
                     <td className="py-3 px-3 whitespace-nowrap">
                       <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                         isHistoire 
-                          ? 'bg-[#be185d]/10 text-[#be185d] border border-[#be185d]/30 font-extrabold'
+                          ? 'bg-emerald-50 text-[#087443] border border-emerald-300 font-extrabold'
                           : art.category === 'economie'
                           ? 'bg-[#087443]/10 text-[#087443]'
                           : art.category === 'securite'
@@ -408,3 +442,16 @@ export default function AdminArticlesPage() {
     </div>
   );
 }
+
+export default function AdminArticlesPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-6">
+        <SkeletonTable rows={6} columns={6} />
+      </div>
+    }>
+      <AdminArticlesContent />
+    </Suspense>
+  );
+}
+

@@ -25,7 +25,6 @@ import { Indicator, CategoryCode } from '@/data/types';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
-import MicumCopilot from '@/components/admin/MicumCopilot';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
 const CATEGORIES: { code: CategoryCode; label: string }[] = [
@@ -293,12 +292,7 @@ export default function AdminIndicatorsPage() {
         </div>
       )}
 
-      {/* Micum Intelligent Assistant Banner */}
-      <MicumCopilot
-        mode="indicators"
-        variant="banner"
-        onApply={handleMicumApplyIndicators}
-      />
+
 
       {/* Filter and Search Bar */}
       <div className="bg-white border border-[#e6dfd5] p-4 flex flex-col md:flex-row items-stretch md:items-center gap-3">

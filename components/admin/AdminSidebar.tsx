@@ -45,7 +45,7 @@ export default function AdminSidebar({
     { label: "Vue d'ensemble", href: "/admin", icon: LayoutDashboard },
     { label: "Pilotage de la Une", href: "/admin/une", icon: Sparkles, badge: "Vitrine" },
     { label: "Articles & Enquêtes", href: "/admin/articles", icon: FileText },
-    { label: "Rubriques & Histoire", href: "/admin/rubriques", icon: Landmark },
+    { label: "Section Histoire", href: "/admin/rubriques", icon: Landmark, badge: "Mémoire" },
     { label: "Tracker des Chantiers", href: "/admin/projets", icon: Construction },
     { label: "Baromètre RELANCE", href: "/admin/indicateurs", icon: TrendingUp },
     { label: "Le Fil Hebdo", href: "/admin/fil", icon: Zap },
@@ -184,28 +184,6 @@ export default function AdminSidebar({
           })}
         </div>
 
-        {/* Micum Desk IA Status */}
-        {!collapsed ? (
-          <div className="mx-3 mb-2 p-2.5 bg-gradient-to-r from-emerald-950/80 to-teal-950/80 border border-emerald-500/30 rounded-lg flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <MicumIcon size={22} glow />
-              <div className="flex flex-col">
-                <span className="text-[11px] font-mono font-bold text-white leading-tight">Micum · Desk IA</span>
-                <span className="text-[9px] font-mono text-emerald-300">Actif & opérationnel</span>
-              </div>
-            </div>
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          </div>
-        ) : (
-          <div className="py-2 flex justify-center">
-            <Tooltip position="right" content="Micum (Desk IA) : Actif & opérationnel">
-              <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center">
-                <MicumIcon size={18} glow />
-              </div>
-            </Tooltip>
-          </div>
-        )}
-
         {/* Footer info & public link */}
         <div className={`border-t border-[#1b4d32] bg-[#052213] text-xs font-mono ${collapsed ? 'p-2.5 text-center' : 'p-3 space-y-1'}`}>
           <Tooltip position={collapsed ? "right" : "top"} content="Consulter le site public dans un nouvel onglet" className="w-full">
@@ -219,12 +197,6 @@ export default function AdminSidebar({
               <ExternalLink size={14} />
             </a>
           </Tooltip>
-
-          {!collapsed && (
-            <div className="text-[10px] text-[#789e8b] px-2 pt-1 border-t border-[#1b4d32]/40">
-              Bobo-Dioulasso & Ouagadougou
-            </div>
-          )}
         </div>
       </div>
     );

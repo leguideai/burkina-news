@@ -67,7 +67,7 @@ export default function AdminHeader({ onToggleMobileMenu }: AdminHeaderProps) {
           {/* User profile capsule */}
           <div className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-[#e6dfd5]">
             <img
-              src={user?.avatar || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80'}
+              src={user?.avatar || 'https://avatars.githubusercontent.com/u/88273908?v=4'}
               alt={user?.name || 'Admin'}
               className={`w-8 h-8 rounded-full object-cover border-2 ${
                 isSuperadmin ? 'border-[#c2410c] ring-1 ring-[#c2410c]/40' : 'border-[#087443]'

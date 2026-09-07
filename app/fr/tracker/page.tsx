@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { projects, getProjectStats } from '@/data/mock/projects';
+import { getProjects, getProjectStats } from '@/data/mock/projects';
 import { getKeyIndicators } from '@/data/mock/indicators';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import StatusBadge from '@/components/tracker/StatusBadge';
@@ -36,11 +36,12 @@ export default function TrackerPage() {
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
+  const projects = useMemo(() => getProjects('fr'), []);
   const stats = getProjectStats();
-  const keyIndicators = getKeyIndicators();
+  const keyIndicators = useMemo(() => getKeyIndicators('fr'), []);
 
-  const sectors = useMemo(() => Array.from(new Set(projects.map(p => p.sector))), []);
-  const regions = useMemo(() => Array.from(new Set(projects.map(p => p.region))), []);
+  const sectors = useMemo(() => Array.from(new Set(projects.map(p => p.sector))), [projects]);
+  const regions = useMemo(() => Array.from(new Set(projects.map(p => p.region))), [projects]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
@@ -58,7 +59,7 @@ export default function TrackerPage() {
       }
       return true;
     });
-  }, [search, selectedStatus, selectedSector, selectedRegion]);
+  }, [projects, search, selectedStatus, selectedSector, selectedRegion]);
 
   const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all';
 

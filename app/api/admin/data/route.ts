@@ -4,7 +4,13 @@ import {
   getSubmissionsContacts, 
   getSubmissionsNewsletter,
   saveHomepageConfig,
-  saveAdminUsers 
+  saveAdminUsers,
+  saveArticles,
+  saveProjects,
+  saveIndicators,
+  saveBriefs,
+  saveIssues,
+  saveCorrections
 } from '@/data/admin-store';
 import { Article, Project, ProjectStatus, Indicator, Brief, Issue, Correction } from '@/data/types';
 
@@ -46,6 +52,7 @@ export async function POST(request: Request) {
           ...payload,
         };
         store.articles.unshift(newArticle);
+        saveArticles(store.articles);
         return NextResponse.json({ success: true, message: 'Article créé avec succès.', item: newArticle });
       }
 
@@ -55,11 +62,13 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Article introuvable.' }, { status: 404 });
         }
         store.articles[index] = { ...store.articles[index], ...payload };
+        saveArticles(store.articles);
         return NextResponse.json({ success: true, message: 'Article mis à jour.', item: store.articles[index] });
       }
 
       case 'delete_article': {
         store.articles = store.articles.filter(a => a.id !== payload.id);
+        saveArticles(store.articles);
         return NextResponse.json({ success: true, message: 'Article supprimé.' });
       }
 
@@ -82,6 +91,7 @@ export async function POST(request: Request) {
           ...payload,
         };
         store.projects.unshift(newProject);
+        saveProjects(store.projects);
         return NextResponse.json({ success: true, message: 'Chantier ajouté au Tracker.', item: newProject });
       }
 
@@ -91,6 +101,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Chantier introuvable.' }, { status: 404 });
         }
         store.projects[index] = { ...store.projects[index], ...payload };
+        saveProjects(store.projects);
         return NextResponse.json({ success: true, message: 'Fiche chantier mise à jour.', item: store.projects[index] });
       }
 
@@ -113,6 +124,7 @@ export async function POST(request: Request) {
           noteEn: noteEn || `Status updated to ${newStatus}`
         });
 
+        saveProjects(store.projects);
         return NextResponse.json({ 
           success: true, 
           message: `Statut du chantier mis à jour : ${newStatus.toUpperCase()}`, 
@@ -122,6 +134,7 @@ export async function POST(request: Request) {
 
       case 'delete_project': {
         store.projects = store.projects.filter(p => p.id !== payload.id);
+        saveProjects(store.projects);
         return NextResponse.json({ success: true, message: 'Chantier retiré du Tracker.' });
       }
 
@@ -161,6 +174,7 @@ export async function POST(request: Request) {
           ]
         };
         store.indicators.push(newIndicator);
+        saveIndicators(store.indicators);
         return NextResponse.json({ success: true, message: 'Indicateur créé dans le Baromètre RELANCE.', item: newIndicator });
       }
 
@@ -170,6 +184,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Indicateur introuvable.' }, { status: 404 });
         }
         store.indicators[index] = { ...store.indicators[index], ...payload };
+        saveIndicators(store.indicators);
         return NextResponse.json({ success: true, message: 'Indicateur mis à jour.', item: store.indicators[index] });
       }
 
@@ -180,6 +195,7 @@ export async function POST(request: Request) {
         if (store.indicators.length === initialLen) {
           return NextResponse.json({ error: 'Indicateur introuvable.' }, { status: 404 });
         }
+        saveIndicators(store.indicators);
         return NextResponse.json({ success: true, message: 'Indicateur supprimé du Baromètre.' });
       }
 
@@ -198,11 +214,13 @@ export async function POST(request: Request) {
           ...payload,
         };
         store.corrections.unshift(newCorr);
+        saveCorrections(store.corrections);
         return NextResponse.json({ success: true, message: 'Correction inscrite au registre public.', item: newCorr });
       }
 
       case 'delete_correction': {
         store.corrections = store.corrections.filter(c => c.id !== payload.id);
+        saveCorrections(store.corrections);
         return NextResponse.json({ success: true, message: 'Correction supprimée du registre.' });
       }
 
@@ -239,6 +257,7 @@ export async function POST(request: Request) {
           facts: Array.isArray(payload.facts) ? payload.facts : []
         };
         store.briefs.unshift(newBrief);
+        saveBriefs(store.briefs);
         return NextResponse.json({ success: true, message: 'Nouvelle édition du Fil créée.', item: newBrief });
       }
 
@@ -252,6 +271,7 @@ export async function POST(request: Request) {
           ...payload,
           facts: payload.facts !== undefined ? payload.facts : store.briefs[index].facts
         };
+        saveBriefs(store.briefs);
         return NextResponse.json({ success: true, message: 'Édition du Fil mise à jour.', item: store.briefs[index] });
       }
 
@@ -262,6 +282,7 @@ export async function POST(request: Request) {
         if (store.briefs.length === initialLen) {
           return NextResponse.json({ error: 'Édition introuvable.' }, { status: 404 });
         }
+        saveBriefs(store.briefs);
         return NextResponse.json({ success: true, message: 'Édition du Fil supprimée.' });
       }
 
@@ -272,6 +293,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Fait introuvable.' }, { status: 404 });
         }
         brief.facts[factIndex] = { ...brief.facts[factIndex], ...fact };
+        saveBriefs(store.briefs);
         return NextResponse.json({ success: true, message: 'Fait du Fil mis à jour.' });
       }
 
@@ -282,6 +304,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Édition du Fil introuvable.' }, { status: 404 });
         }
         brief.facts.push(fact);
+        saveBriefs(store.briefs);
         return NextResponse.json({ success: true, message: 'Nouveau fait ajouté à l\'édition.' });
       }
 
@@ -292,6 +315,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Fait introuvable.' }, { status: 404 });
         }
         brief.facts.splice(factIndex, 1);
+        saveBriefs(store.briefs);
         return NextResponse.json({ success: true, message: 'Fait supprimé de l\'édition.' });
       }
 
@@ -321,6 +345,7 @@ export async function POST(request: Request) {
           pdfUrl: payload.pdfUrl || ''
         };
         store.issues.unshift(newIssue);
+        saveIssues(store.issues);
         return NextResponse.json({ success: true, message: `Numéro #${newIssue.number} créé avec succès.`, item: newIssue });
       }
 
@@ -334,6 +359,7 @@ export async function POST(request: Request) {
           ...payload,
           articleCount: Array.isArray(payload.articleIds) ? payload.articleIds.length : (payload.articleCount ?? store.issues[index].articleCount)
         };
+        saveIssues(store.issues);
         return NextResponse.json({ success: true, message: 'Détails du numéro enregistrés.', item: store.issues[index] });
       }
 
@@ -344,6 +370,7 @@ export async function POST(request: Request) {
         if (store.issues.length === initialLen) {
           return NextResponse.json({ error: 'Numéro introuvable.' }, { status: 404 });
         }
+        saveIssues(store.issues);
         return NextResponse.json({ success: true, message: 'Numéro supprimé de la collection.' });
       }
 

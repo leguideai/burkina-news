@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -14,7 +14,7 @@ import {
 import { Project, ProjectStatus, PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, ProjectActor } from '@/data/types';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
-import MicumIcon from '@/components/admin/MicumIcon';
+import { useMicum } from '@/components/admin/MicumContext';
 
 export interface ProjectEditorFormHandle {
   insertToBody: (text: string) => void;
@@ -26,8 +26,6 @@ interface ProjectEditorFormProps {
   initialData?: Partial<Project>;
   isEditing: boolean;
   onSave: (data: Partial<Project>) => Promise<void>;
-  onToggleMicum?: () => void;
-  isMicumOpen?: boolean;
 }
 
 const SECTORS = [
@@ -59,7 +57,7 @@ const REGIONS = [
 ];
 
 const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormProps>(
-  ({ initialData, isEditing, onSave, onToggleMicum, isMicumOpen }, ref) => {
+  ({ initialData, isEditing, onSave }, ref) => {
     const defaultData: Partial<Project> = {
       title: '',
       titleEn: '',
@@ -80,6 +78,41 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
     const [formData, setFormData] = useState<Partial<Project>>(defaultData);
     const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
     const [isSaving, setIsSaving] = useState(false);
+
+    const { registerEditor, updateEditorData } = useMicum();
+
+    // Register active form with MicumContext so floating assistant is 100% aware
+    useEffect(() => {
+      const unregister = registerEditor({
+        sectionId: 'project',
+        sectionTitle: isEditing ? `Édition Chantier : "${formData.title || 'Projet'}"` : "Nouveau Chantier",
+        canInsert: true,
+        currentData: formData,
+        insertToBody: (text: string) => {
+          setFormData(prev => ({
+            ...prev,
+            description: (prev.description || '') ? prev.description + '\n\n' + text : text
+          }));
+        },
+        replaceField: (field: string, value: string) => {
+          setFormData(prev => ({ ...prev, [field]: value }));
+        },
+        applyAll: (data: any) => {
+          setFormData(prev => ({
+            ...prev,
+            title: data.title || prev.title,
+            description: (data.content || data.body || data.description) ? ((prev.description || '') ? prev.description + '\n\n' + (data.content || data.body || data.description) : (data.content || data.body || data.description)) : prev.description,
+            titleEn: data.titleEn || prev.titleEn,
+            descriptionEn: (data.contentEn || data.bodyEn || data.descriptionEn) || prev.descriptionEn,
+          }));
+        }
+      });
+      return unregister;
+    }, [registerEditor, isEditing, formData.title]);
+
+    useEffect(() => {
+      updateEditorData(formData);
+    }, [formData, updateEditorData]);
 
     useImperativeHandle(ref, () => ({
       insertToBody: (text: string) => {
@@ -182,16 +215,7 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                 </button>
               </div>
 
-              {onToggleMicum && (
-                <button
-                  onClick={onToggleMicum}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-mono font-bold cursor-pointer transition-colors border ${isMicumOpen ? 'bg-emerald-50 border-emerald-300 text-[#087443]' : 'border-[#e6dfd5] text-[#736c62] hover:text-[#087443] hover:border-emerald-300'}`}
-                  title="Ouvrir/fermer Micum"
-                >
-                  <MicumIcon size={16} />
-                  <span className="hidden sm:inline">Micum</span>
-                </button>
-              )}
+
 
               <button
                 onClick={handleSaveClick}

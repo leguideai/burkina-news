@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Article } from '@/data/types';
+import React, { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Article, CategoryCode } from '@/data/types';
 import { useToast } from '@/components/admin/Toast';
-import ArticleEditorForm, { ArticleEditorFormHandle } from '@/components/admin/ArticleEditorForm';
-import MicumSidePanel from '@/components/admin/MicumSidePanel';
+import ArticleEditorForm from '@/components/admin/ArticleEditorForm';
+import { Loader2 } from 'lucide-react';
 
-export default function NewArticlePage() {
+function NewArticleContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category') as CategoryCode | null;
   const { success, error, warning } = useToast();
-  const [isMicumOpen, setIsMicumOpen] = useState(false);
-  const editorRef = useRef<ArticleEditorFormHandle>(null);
 
   const handleSave = async (formData: Partial<Article>, tagsInput: string) => {
     if (!formData.title || !formData.category || !formData.body) {
@@ -40,44 +40,26 @@ export default function NewArticlePage() {
     }
   };
 
-  const handleMicumInsertBody = (text: string) => {
-    editorRef.current?.insertToBody(text);
-  };
-
-  const handleMicumReplaceField = (field: string, value: string) => {
-    editorRef.current?.replaceField(field, value);
-  };
-
-  const handleMicumApplyAll = (data: any) => {
-    if (data.title) editorRef.current?.replaceField('title', data.title);
-    if (data.excerpt) editorRef.current?.replaceField('excerpt', data.excerpt);
-    if (data.content || data.body) editorRef.current?.insertToBody(data.content || data.body);
-    if (data.titleEn) editorRef.current?.replaceField('titleEn', data.titleEn);
-    if (data.excerptEn) editorRef.current?.replaceField('excerptEn', data.excerptEn);
-  };
-
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      <div className="flex-1 min-w-0">
-        <ArticleEditorForm
-          ref={editorRef}
-          isEditing={false}
-          onSave={handleSave}
-          onToggleMicum={() => setIsMicumOpen(!isMicumOpen)}
-          isMicumOpen={isMicumOpen}
-        />
-      </div>
-      <MicumSidePanel
-        isOpen={isMicumOpen}
-        onClose={() => setIsMicumOpen(false)}
-        onOpen={() => setIsMicumOpen(true)}
-        onToggle={() => setIsMicumOpen(!isMicumOpen)}
-        mode="article"
+    <div className="h-[calc(100vh-4rem)]">
+      <ArticleEditorForm
+        initialData={categoryParam ? { category: categoryParam } : undefined}
         isEditing={false}
-        onInsertToBody={handleMicumInsertBody}
-        onReplaceField={handleMicumReplaceField}
-        onApplyAll={handleMicumApplyAll}
+        onSave={handleSave}
       />
     </div>
   );
 }
+
+export default function NewArticlePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <Loader2 size={24} className="animate-spin text-[#736c62]" />
+      </div>
+    }>
+      <NewArticleContent />
+    </Suspense>
+  );
+}
+

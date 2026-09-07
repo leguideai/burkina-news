@@ -8,6 +8,8 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import MicumSidePanel from '@/components/admin/MicumSidePanel';
 import { usePathname } from 'next/navigation';
 
+import { MicumProvider } from '@/components/admin/MicumContext';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -49,16 +51,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
   }, [mobileMenuOpen]);
 
-  // Close mobile drawer and global Micum on route change
+  // Close mobile drawer on route change
   useEffect(() => {
     setMobileMenuOpen(false);
-    setIsGlobalMicumOpen(false);
   }, [pathname]);
-
-  const [isGlobalMicumOpen, setIsGlobalMicumOpen] = useState(false);
-
-  // Editor pages manage their own dedicated MicumSidePanel instance
-  const isEditorPage = pathname.startsWith('/admin/articles/') || pathname.startsWith('/admin/projets/');
 
   // If on login page, don't show the dashboard shell
   const isLoginPage = pathname === '/admin/login';
@@ -66,48 +62,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <ToastProvider>
       <AuthGuard>
-        {isLoginPage ? (
-          children
-        ) : (
-          <div className="min-h-screen bg-[#faf8f5] flex relative">
-            {/* Fixed & Togglable Sidebar */}
-            <AdminSidebar 
-              mobileOpen={mobileMenuOpen} 
-              onCloseMobile={() => setMobileMenuOpen(false)}
-              isCollapsed={isCollapsed}
-              onToggleCollapse={handleToggleCollapse}
-            />
-
-            {/* Main Content Pane with dynamic left padding for fixed sidebar */}
-            <div 
-              className={`flex-1 flex flex-col min-w-0 min-h-screen transition-all duration-300 ${
-                isCollapsed ? 'lg:pl-20' : 'lg:pl-64'
-              }`}
-            >
-              <AdminHeader 
-                onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+        <MicumProvider>
+          {isLoginPage ? (
+            children
+          ) : (
+            <div className="min-h-screen bg-[#faf8f5] flex relative">
+              {/* Fixed & Togglable Sidebar */}
+              <AdminSidebar 
+                mobileOpen={mobileMenuOpen} 
+                onCloseMobile={() => setMobileMenuOpen(false)}
+                isCollapsed={isCollapsed}
+                onToggleCollapse={handleToggleCollapse}
               />
-              
-              <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-                {children}
-              </main>
+
+              {/* Main Content Pane with dynamic left padding for fixed sidebar */}
+              <div 
+                className={`flex-1 flex flex-col min-w-0 min-h-screen transition-all duration-300 ${
+                  isCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+                }`}
+              >
+                <AdminHeader 
+                  onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+                />
+                
+                <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+                  {children}
+                </main>
+              </div>
+
+              {/* Universal Floating Micum Assistant (Always on FAB) */}
+              <MicumSidePanel />
             </div>
-
-            {/* Global Floating Micum Assistant (on non-editor pages) */}
-            {!isEditorPage && (
-              <MicumSidePanel
-                isOpen={isGlobalMicumOpen}
-                onClose={() => setIsGlobalMicumOpen(false)}
-                onOpen={() => setIsGlobalMicumOpen(true)}
-                onToggle={() => setIsGlobalMicumOpen(!isGlobalMicumOpen)}
-                mode="article"
-                isEditing={false}
-                variant="drawer"
-                showFloatingButton={true}
-              />
-            )}
-          </div>
-        )}
+          )}
+        </MicumProvider>
       </AuthGuard>
     </ToastProvider>
   );
