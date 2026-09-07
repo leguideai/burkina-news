@@ -28,6 +28,8 @@ import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUploader from '@/components/admin/ImageUploader';
 import Tooltip from '@/components/ui/Tooltip';
+import MicumCopilot from '@/components/admin/MicumCopilot';
+import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
 const RUBRIQUES: { code: CategoryCode; label: string }[] = [
   { code: 'economie', label: 'Économie' },
@@ -149,6 +151,40 @@ export default function AdminArticlesPage() {
         .replace(/[^\w\s-]/g, '')
         .trim()
         .replace(/\s+/g, '-')
+    }));
+  };
+
+  // Micum AI Handlers
+  const handleMicumApplyArticle = (data: any) => {
+    setFormData(prev => ({
+      ...prev,
+      title: data.title !== undefined ? data.title : prev.title,
+      titleEn: data.titleEn !== undefined ? data.titleEn : prev.titleEn,
+      excerpt: data.excerpt !== undefined ? data.excerpt : prev.excerpt,
+      excerptEn: data.excerptEn !== undefined ? data.excerptEn : prev.excerptEn,
+      body: (data.content || data.body) !== undefined ? (data.content || data.body) : prev.body,
+      bodyEn: (data.contentEn || data.bodyEn) !== undefined ? (data.contentEn || data.bodyEn) : prev.bodyEn,
+      category: data.category !== undefined ? data.category : prev.category,
+      type: data.type !== undefined ? data.type : prev.type,
+      readTime: data.readTime !== undefined ? data.readTime : prev.readTime,
+      sourceCount: data.sourcesCount !== undefined ? data.sourcesCount : prev.sourceCount,
+      confidence: data.confidenceLevel 
+        ? ((data.confidenceLevel === 'A' || data.confidence === 'high') ? 'high' : (data.confidenceLevel === 'B' || data.confidence === 'medium') ? 'medium' : 'low') 
+        : prev.confidence,
+      imageUrl: data.imageUrl || prev.imageUrl,
+      slug: (prev.slug && isEditing) ? prev.slug : (data.title ? data.title.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') : prev.slug)
+    }));
+    if (data.tags) {
+      setTagsInput(Array.isArray(data.tags) ? data.tags.join(', ') : data.tags);
+    }
+  };
+
+  const handleMicumTranslatedArticle = (translated: Record<string, string>) => {
+    setFormData(prev => ({
+      ...prev,
+      titleEn: translated.title || prev.titleEn,
+      excerptEn: translated.excerpt || prev.excerptEn,
+      bodyEn: translated.body || prev.bodyEn,
     }));
   };
 
@@ -523,7 +559,7 @@ export default function AdminArticlesPage() {
               </div>
 
               {/* Language Switch Tabs */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center bg-[#e6dfd5] p-0.5 rounded">
                   <button
                     type="button"
@@ -553,7 +589,7 @@ export default function AdminArticlesPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="p-1.5 text-[#736c62] hover:text-[#141414] rounded"
+                    className="p-1.5 text-[#736c62] hover:text-[#141414] rounded cursor-pointer"
                     aria-label="Fermer la boîte de dialogue"
                   >
                     <X size={20} />
@@ -567,6 +603,15 @@ export default function AdminArticlesPage() {
               {/* French Tab */}
               {activeTab === 'fr' && (
                 <div className="space-y-4">
+                  {/* Micum Intelligent Assistant Banner */}
+                  <MicumCopilot 
+                    mode="article" 
+                    variant="banner"
+                    isEditing={isEditing}
+                    currentData={formData}
+                    onApply={handleMicumApplyArticle}
+                  />
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
@@ -645,9 +690,21 @@ export default function AdminArticlesPage() {
               {/* English Tab */}
               {activeTab === 'en' && (
                 <div className="space-y-4 bg-[#f8fafc] p-4 border border-[#cbd5e1] rounded">
-                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#1e3a5f] uppercase tracking-wider mb-2">
-                    <Languages size={15} />
-                    <span>Version Anglaise (International Edition)</span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-[#cbd5e1]">
+                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#1e3a5f] uppercase tracking-wider">
+                      <Languages size={15} />
+                      <span>Version Anglaise (International Edition)</span>
+                    </div>
+
+                    <MicumTranslateButton
+                      fieldsToTranslate={{
+                        title: formData.title || '',
+                        excerpt: formData.excerpt || '',
+                        body: formData.body || '',
+                      }}
+                      onTranslated={handleMicumTranslatedArticle}
+                      label="Traduire tout l'article avec Micum"
+                    />
                   </div>
 
                   <div>

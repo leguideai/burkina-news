@@ -22,6 +22,8 @@ import {
 import { Indicator, CategoryCode } from '@/data/types';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
+import MicumCopilot from '@/components/admin/MicumCopilot';
+import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
 const CATEGORIES: { code: CategoryCode; label: string }[] = [
   { code: 'economie', label: 'Économie & Finances' },
@@ -93,6 +95,37 @@ export default function AdminIndicatorsPage() {
     setIsModalOpen(true);
   };
 
+  // Micum Batch Indicators Ingestion
+  const handleMicumApplyIndicators = async (data: any) => {
+    if (!data.updates || !Array.isArray(data.updates)) return;
+    try {
+      setLoading(true);
+      for (const update of data.updates) {
+        const found = indicators.find(i => i.code === update.code);
+        if (found) {
+          const updated: Indicator = {
+            ...found,
+            currentValue: typeof update.newValue === 'number' ? update.newValue : parseFloat(update.newValue) || found.currentValue,
+            trend: (update.trend === 'up' || update.trend === 'down' || update.trend === 'stable') ? update.trend : found.trend,
+            source: update.source || found.source,
+            currentYear: new Date().getFullYear()
+          };
+          await fetch('/api/admin/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update_indicator', payload: updated })
+          });
+        }
+      }
+      success('Indicateurs actualisés par Micum', `${data.updates.length} indicateurs ont été mis à jour dans le Baromètre RELANCE.`);
+      loadData();
+    } catch (err: any) {
+      error('Erreur', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Submit edit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,9 +145,9 @@ export default function AdminIndicatorsPage() {
       });
 
       const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de la mise à jour.');
+      if (!res.ok || result.error) throw new Error(result.error || 'Erreur inconnue.');
 
-      success('Indicateur actualisé', `La métrique "${formData.name}" a été mise à jour.`);
+      success('Indicateur mis à jour', `La métrique "${formData.name}" a été actualisée.`);
       setIsModalOpen(false);
       loadData();
     } catch (err: any) {
@@ -124,7 +157,7 @@ export default function AdminIndicatorsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
+      {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#e6dfd5] pb-5">
         <div>
           <div className="flex items-center gap-2 font-mono text-xs text-[#087443] font-bold uppercase tracking-wider">
@@ -139,7 +172,7 @@ export default function AdminIndicatorsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
           <Link
             href="/fr/tracker/indicateurs"
             target="_blank"
@@ -184,6 +217,13 @@ export default function AdminIndicatorsPage() {
           </div>
         </div>
       )}
+
+      {/* Micum Intelligent Assistant Banner */}
+      <MicumCopilot
+        mode="indicators"
+        variant="banner"
+        onApply={handleMicumApplyIndicators}
+      />
 
       {/* Filter and Search Bar */}
       <div className="bg-white border border-[#e6dfd5] p-4 flex flex-col md:flex-row items-stretch md:items-center gap-3">

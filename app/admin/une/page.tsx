@@ -19,6 +19,7 @@ import { Article } from '@/data/types';
 import { HomepageConfig } from '@/data/admin-store';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonCard, SkeletonStat } from '@/components/admin/Skeleton';
+import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
 export default function AdminUnePage() {
   const { success, error, warning } = useToast();
@@ -79,6 +80,32 @@ export default function AdminUnePage() {
     if (!id) return null;
     const norm = id.replace(/^art-0*/, 'art-');
     return articles.find(a => a.id === id || a.id.replace(/^art-0*/, 'art-') === norm);
+  };
+
+  // Micum AI Suggestion & Translation for Featured Quote
+  const handleSuggestQuote = () => {
+    setHomepageConfig(prev => prev ? ({
+      ...prev,
+      featuredQuote: {
+        quoteFr: "La souveraineté d'une nation ne se mesure pas à l'éloquence de ses discours, mais à la rigueur de ses comptes et à l'édification méthodique de ses infrastructures.",
+        quoteEn: "A nation's sovereignty is not measured by the eloquence of its rhetoric, but by the rigor of its accounting and the methodical building of its infrastructure.",
+        author: "Alfred Ouédraogo",
+        contextFr: "Directeur éditorial · Cadrage hebdomadaire Burkina News",
+        contextEn: "Editorial Director · Burkina News Weekly Focus"
+      }
+    }) : null);
+    success('Citation suggérée par Micum', 'Une citation éditoriale bilingue a été insérée.');
+  };
+
+  const handleTranslateQuote = (translated: Record<string, string>) => {
+    setHomepageConfig(prev => prev ? ({
+      ...prev,
+      featuredQuote: {
+        ...prev.featuredQuote,
+        quoteEn: translated.quote || prev.featuredQuote.quoteEn,
+        contextEn: translated.context || prev.featuredQuote.contextEn
+      }
+    }) : null);
   };
 
   return (
@@ -317,7 +344,7 @@ export default function AdminUnePage() {
           {/* Right Col: Quote of the Editorial Board */}
           <div className="space-y-6">
             <div className="bg-[#072e1a] text-white p-5 border-t-4 border-[#ffd8a8] shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-[#1b4d32] pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1b4d32] pb-3">
                 <div className="flex items-center gap-2">
                   <Quote size={16} className="text-[#ffd8a8]" />
                   <h3 className="font-serif font-bold text-base">
@@ -325,25 +352,36 @@ export default function AdminUnePage() {
                   </h3>
                 </div>
 
-                <div className="flex bg-[#0b4627] p-0.5 rounded">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setQuoteTab('fr')}
-                    className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
-                      quoteTab === 'fr' ? 'bg-[#ffd8a8] text-[#072e1a]' : 'text-[#a7c5b6]'
-                    }`}
+                    onClick={handleSuggestQuote}
+                    className="px-2 py-1 bg-white/10 hover:bg-white/20 text-[#ffd8a8] text-[10px] font-mono font-bold rounded border border-white/10 transition-colors flex items-center gap-1 cursor-pointer"
                   >
-                    FR
+                    <Sparkles size={11} className="text-amber-300" />
+                    <span>✨ Suggérer avec Micum</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setQuoteTab('en')}
-                    className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
-                      quoteTab === 'en' ? 'bg-[#ffd8a8] text-[#072e1a]' : 'text-[#a7c5b6]'
-                    }`}
-                  >
-                    EN
-                  </button>
+
+                  <div className="flex bg-[#0b4627] p-0.5 rounded">
+                    <button
+                      type="button"
+                      onClick={() => setQuoteTab('fr')}
+                      className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
+                        quoteTab === 'fr' ? 'bg-[#ffd8a8] text-[#072e1a]' : 'text-[#a7c5b6]'
+                      }`}
+                    >
+                      FR
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setQuoteTab('en')}
+                      className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
+                        quoteTab === 'en' ? 'bg-[#ffd8a8] text-[#072e1a]' : 'text-[#a7c5b6]'
+                      }`}
+                    >
+                      EN
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -405,6 +443,17 @@ export default function AdminUnePage() {
                 </div>
               ) : (
                 <div className="space-y-3 text-xs font-mono">
+                  <div className="flex justify-end pb-2 border-b border-[#1b4d32]">
+                    <MicumTranslateButton
+                      fieldsToTranslate={{
+                        quote: homepageConfig.featuredQuote.quoteFr || '',
+                        context: homepageConfig.featuredQuote.contextFr || ''
+                      }}
+                      onTranslated={handleTranslateQuote}
+                      label="Traduire avec Micum"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-[#ffd8a8] mb-1">
                       Featured Quote (English) :

@@ -35,6 +35,8 @@ import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import ImageUploader from '@/components/admin/ImageUploader';
 import Tooltip from '@/components/ui/Tooltip';
+import MicumCopilot from '@/components/admin/MicumCopilot';
+import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
 const SECTORS = [
   'Énergie',
@@ -157,6 +159,32 @@ export default function AdminProjectsPage() {
     setIsEditing(true);
     setActiveTab('fr');
     setIsModalOpen(true);
+  };
+
+  // Micum AI Handlers for Projects
+  const handleMicumApplyProject = (data: any) => {
+    setFormData(prev => ({
+      ...prev,
+      title: (isEditing && prev.title) ? prev.title : (data.name || data.title || prev.title),
+      titleEn: (isEditing && prev.titleEn) ? prev.titleEn : (data.nameEn || data.titleEn || prev.titleEn),
+      sector: data.sector || prev.sector,
+      region: data.region || prev.region,
+      amount: data.currentBudget || data.amount || prev.amount,
+      image: data.imageUrl || data.image || prev.image,
+      currentStatus: data.status || prev.currentStatus,
+      description: data.description || prev.description,
+      descriptionEn: data.descriptionEn || prev.descriptionEn,
+      slug: (prev.slug && isEditing) ? prev.slug : ((data.name || data.title) ? (data.name || data.title).toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') : prev.slug),
+      actors: data.actors && Array.isArray(data.actors) ? data.actors : prev.actors
+    }));
+  };
+
+  const handleMicumTranslatedProject = (translated: Record<string, string>) => {
+    setFormData(prev => ({
+      ...prev,
+      titleEn: translated.title || prev.titleEn,
+      descriptionEn: translated.description || prev.descriptionEn
+    }));
   };
 
   // Open status change modal
@@ -715,7 +743,7 @@ export default function AdminProjectsPage() {
               </div>
 
               {/* Language Switch Tabs */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center bg-[#e6dfd5] p-0.5 rounded">
                   <button
                     type="button"
@@ -745,7 +773,7 @@ export default function AdminProjectsPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="p-1.5 text-[#736c62] hover:text-[#141414] rounded"
+                    className="p-1.5 text-[#736c62] hover:text-[#141414] rounded cursor-pointer"
                     aria-label="Fermer la boîte de dialogue"
                   >
                     <X size={20} />
@@ -759,6 +787,15 @@ export default function AdminProjectsPage() {
               {/* French Tab */}
               {activeTab === 'fr' && (
                 <div className="space-y-4">
+                  {/* Micum Intelligent Assistant Banner */}
+                  <MicumCopilot 
+                    mode="project" 
+                    variant="banner"
+                    isEditing={isEditing}
+                    currentData={formData}
+                    onApply={handleMicumApplyProject}
+                  />
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
@@ -824,9 +861,20 @@ export default function AdminProjectsPage() {
               {/* English Tab */}
               {activeTab === 'en' && (
                 <div className="space-y-4 bg-[#f8fafc] p-4 border border-[#cbd5e1] rounded">
-                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#1e3a5f] uppercase tracking-wider mb-2">
-                    <Languages size={15} />
-                    <span>Version Anglaise (Tracker International)</span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-[#cbd5e1]">
+                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#1e3a5f] uppercase tracking-wider">
+                      <Languages size={15} />
+                      <span>Version Anglaise (Tracker International)</span>
+                    </div>
+
+                    <MicumTranslateButton
+                      fieldsToTranslate={{
+                        title: formData.title || '',
+                        description: formData.description || ''
+                      }}
+                      onTranslated={handleMicumTranslatedProject}
+                      label="Traduire la fiche avec Micum"
+                    />
                   </div>
 
                   <div>

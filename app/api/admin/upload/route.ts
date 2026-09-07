@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Aucun fichier fourni' }, { status: 400 });
     }
 
-    // Validate mime type
+    // Validate mime type (Images & Documents)
     const validMimes = [
       'image/jpeg',
       'image/png',
@@ -19,18 +19,25 @@ export async function POST(request: NextRequest) {
       'image/gif',
       'image/svg+xml',
       'image/avif',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'text/csv',
+      'text/markdown',
+      'application/json',
     ];
-    if (!validMimes.includes(file.type)) {
+    if (!validMimes.includes(file.type) && !file.name.endsWith('.md')) {
       return NextResponse.json(
-        { error: 'Format non supporté. Veuillez utiliser JPG, PNG, WebP, GIF, SVG ou AVIF.' },
+        { error: 'Format non supporté. Formats acceptés : Images (JPG, PNG, WebP, GIF, SVG) et Documents (PDF, DOCX, TXT, CSV, MD).' },
         { status: 400 }
       );
     }
 
-    // Max file size 10MB
-    if (file.size > 10 * 1024 * 1024) {
+    // Max file size 25MB
+    if (file.size > 25 * 1024 * 1024) {
       return NextResponse.json(
-        { error: 'Le fichier dépasse la taille maximale autorisée (10 Mo).' },
+        { error: 'Le fichier dépasse la taille maximale autorisée (25 Mo).' },
         { status: 400 }
       );
     }

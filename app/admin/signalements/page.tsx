@@ -17,11 +17,14 @@ import {
   ShieldAlert,
   ArrowRight,
   Filter,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
+import MicumIcon from '@/components/admin/MicumIcon';
 
 interface Submission {
   id: string;
@@ -86,6 +89,39 @@ export default function AdminSignalementsPage() {
     setCorrCorrectedText('');
     setCorrReason(`Rectification suite au signalement lecteur (${sub.email}) basé sur la source : ${sub.source || 'Rapport communiqué'}`);
     setCorrValidator('Alfred Ouédraogo (Directeur éditorial)');
+  };
+
+  // Micum AI Instant Assistant for Error Reports
+  const [micumLoadingId, setMicumLoadingId] = useState<string | null>(null);
+
+  const handleMicumConvert = async (sub: Submission) => {
+    try {
+      setMicumLoadingId(sub.id);
+      const res = await fetch('/api/admin/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'convert_signalement',
+          payload: { report: sub }
+        })
+      });
+      if (!res.ok) throw new Error('Erreur lors de l\'analyse par Micum');
+      const json = await res.json();
+      if (json.data) {
+        setConvertingReport(sub);
+        setCorrArticleTitle(json.data.articleTitle || sub.url?.split('/').pop()?.replace(/-/g, ' ') || 'Article signalé');
+        setCorrPreviousText(json.data.previousText || '');
+        setCorrCorrectedText(json.data.correctedText || '');
+        setCorrReason(json.data.reason || `Rectification suite au signalement lecteur (${sub.email})`);
+        setCorrValidator(json.data.validator || 'Alfred Ouédraogo (Directeur éditorial)');
+        success('Analyse Micum terminée', 'La correction déontologique a été formulée automatiquement. Vérifiez et validez.');
+      }
+    } catch (err: any) {
+      error('Erreur Micum', err.message || 'Impossible d\'analyser le signalement.');
+      handleOpenConvert(sub);
+    } finally {
+      setMicumLoadingId(null);
+    }
   };
 
   // Submit Converted Correction
@@ -308,15 +344,36 @@ export default function AdminSignalementsPage() {
                     )}
 
                     {/* Action button to convert into correction */}
-                    <div className="pt-2 flex justify-end">
-                      <Tooltip position="top" content="Inscrire une correction déontologique basée sur ce signalement">
+                    <div className="pt-2 flex flex-wrap items-center justify-end gap-2">
+                      <Tooltip position="top" content="Micum analyse le signalement, retrouve le texte et formule le diff Avant/Après automatiquement">
+                        <button
+                          onClick={() => handleMicumConvert(sub)}
+                          disabled={micumLoadingId === sub.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-mono font-bold uppercase tracking-wider rounded transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                          aria-label="Traiter avec Micum"
+                        >
+                          {micumLoadingId === sub.id ? (
+                            <>
+                              <Loader2 size={13} className="animate-spin" />
+                              <span>Micum analyse...</span>
+                            </>
+                          ) : (
+                            <>
+                              <MicumIcon size={14} glow />
+                              <span>Traiter avec Micum</span>
+                            </>
+                          )}
+                        </button>
+                      </Tooltip>
+
+                      <Tooltip position="top" content="Inscrire manuellement une correction déontologique">
                         <button
                           onClick={() => handleOpenConvert(sub)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#c2410c] text-white hover:bg-[#9a3412] text-xs font-mono font-bold uppercase tracking-wider rounded transition-colors shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#c2410c] text-white hover:bg-[#9a3412] text-xs font-mono font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
                           aria-label="Convertir en correction"
                         >
                           <Scale size={13} />
-                          Convertir en Correction Publique
+                          Saisie Manuelle
                         </button>
                       </Tooltip>
                     </div>

@@ -22,6 +22,7 @@ import {
   PanelLeftOpen
 } from 'lucide-react';
 import Tooltip from '@/components/ui/Tooltip';
+import MicumIcon from '@/components/admin/MicumIcon';
 
 interface AdminSidebarProps {
   mobileOpen?: boolean;
@@ -182,6 +183,28 @@ export default function AdminSidebar({
             return <React.Fragment key={item.href}>{linkContent}</React.Fragment>;
           })}
         </div>
+
+        {/* Micum Desk IA Status */}
+        {!collapsed ? (
+          <div className="mx-3 mb-2 p-2.5 bg-gradient-to-r from-emerald-950/80 to-teal-950/80 border border-emerald-500/30 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <MicumIcon size={22} glow />
+              <div className="flex flex-col">
+                <span className="text-[11px] font-mono font-bold text-white leading-tight">Micum · Desk IA</span>
+                <span className="text-[9px] font-mono text-emerald-300">Actif & opérationnel</span>
+              </div>
+            </div>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          </div>
+        ) : (
+          <div className="py-2 flex justify-center">
+            <Tooltip position="right" content="Micum (Desk IA) : Actif & opérationnel">
+              <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center">
+                <MicumIcon size={18} glow />
+              </div>
+            </Tooltip>
+          </div>
+        )}
 
         {/* Footer info & public link */}
         <div className={`border-t border-[#1b4d32] bg-[#052213] text-xs font-mono ${collapsed ? 'p-2.5 text-center' : 'p-3 space-y-1'}`}>

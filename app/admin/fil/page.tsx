@@ -24,6 +24,8 @@ import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import ImageUploader from '@/components/admin/ImageUploader';
 import Tooltip from '@/components/ui/Tooltip';
+import MicumCopilot from '@/components/admin/MicumCopilot';
+import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
 const CATEGORIES: { code: CategoryCode; label: string }[] = [
   { code: 'economie', label: 'Économie' },
@@ -144,6 +146,48 @@ export default function AdminFilPage() {
     }
   };
 
+  // Micum AI Handlers for Le Fil
+  const handleMicumApplyFil = async (data: any) => {
+    if (!currentBrief || !data.facts || !Array.isArray(data.facts)) return;
+    try {
+      const updatedBrief: Brief = {
+        ...currentBrief,
+        facts: data.facts.map((f: any, i: number) => ({
+          id: `fact-${Date.now()}-${i}`,
+          time: f.time || '10:00',
+          text: f.text || '',
+          textEn: f.textEn || '',
+          source: f.source || 'SIG / AIB',
+          sourceUrl: f.sourceUrl || 'https://www.sig.bf',
+          category: f.category || 'economie',
+          whyWatch: f.whyWatch || '',
+          whyWatchEn: f.whyWatchEn || '',
+          image: f.image || ''
+        }))
+      };
+
+      const res = await fetch('/api/admin/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_brief', payload: updatedBrief })
+      });
+
+      if (!res.ok) throw new Error('Erreur d\'enregistrement des 10 faits.');
+      success('10 Faits Compilés par Micum', `L'édition ${currentBrief.title} a été mise à jour avec les 10 faits vérifiés.`);
+      loadData(currentBrief.slug);
+    } catch (err: any) {
+      error('Erreur', err.message);
+    }
+  };
+
+  const handleMicumTranslateFact = (translated: Record<string, string>) => {
+    setFactFormData(prev => ({
+      ...prev,
+      textEn: translated.text || prev.textEn,
+      whyWatchEn: translated.whyWatch || prev.whyWatchEn
+    }));
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -162,7 +206,7 @@ export default function AdminFilPage() {
         </div>
 
         {currentBrief && (
-          <div className="flex items-center gap-2 self-start md:self-auto">
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
             <Link
               href={`/fr/fil/${currentBrief.slug}`}
               target="_blank"
@@ -173,7 +217,7 @@ export default function AdminFilPage() {
             </Link>
             <button
               onClick={handleOpenAddFact}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm cursor-pointer"
             >
               <Plus size={16} />
               Ajouter un Fait
@@ -221,6 +265,15 @@ export default function AdminFilPage() {
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Micum Intelligent Assistant Banner */}
+          <MicumCopilot
+            mode="fil"
+            variant="banner"
+            isEditing={!!currentBrief}
+            currentData={currentBrief}
+            onApply={handleMicumApplyFil}
+          />
+
           <div className="bg-white border border-[#e6dfd5] overflow-hidden shadow-sm">
             <div className="p-4 bg-[#faf8f5] border-b border-[#e6dfd5] flex items-center justify-between">
               <div>
@@ -458,9 +511,19 @@ export default function AdminFilPage() {
                 </div>
               ) : (
                 <div className="space-y-3 bg-[#f8fafc] p-3 border border-[#cbd5e1] rounded">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#1e3a5f] uppercase">
-                    <Languages size={13} />
-                    <span>English Translation</span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#cbd5e1]">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#1e3a5f] uppercase">
+                      <Languages size={13} />
+                      <span>English Translation</span>
+                    </div>
+                    <MicumTranslateButton
+                      fieldsToTranslate={{
+                        text: factFormData.text || '',
+                        whyWatch: factFormData.whyWatch || ''
+                      }}
+                      onTranslated={handleMicumTranslateFact}
+                      label="Traduire avec Micum"
+                    />
                   </div>
 
                   <div>
