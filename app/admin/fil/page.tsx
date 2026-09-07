@@ -372,10 +372,10 @@ export default function AdminFilPage() {
 
       {/* Fact Edit / Add Modal */}
       {isFactModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white border border-[#141414] max-w-2xl w-full shadow-2xl overflow-hidden my-auto">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-white border border-[#141414] max-w-2xl w-full h-[95vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl rounded-t-xl sm:rounded-none overflow-hidden my-auto">
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#d97706]">
                   {editingFactIndex !== null ? `Modifier le fait #${editingFactIndex + 1}` : 'Nouveau Fait Vérifié'}
@@ -386,7 +386,7 @@ export default function AdminFilPage() {
               </div>
 
               {/* Language Switch */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
                 <div className="flex bg-[#e6dfd5] p-0.5 rounded">
                   <button
                     type="button"
@@ -410,7 +410,7 @@ export default function AdminFilPage() {
                 <Tooltip position="left" content="Fermer la boîte de dialogue">
                   <button
                     onClick={() => setIsFactModalOpen(false)}
-                    className="p-1 text-[#736c62] hover:text-[#141414]"
+                    className="p-1 text-[#736c62] hover:text-[#141414] shrink-0"
                     aria-label="Fermer"
                   >
                     <X size={18} />
@@ -420,8 +420,8 @@ export default function AdminFilPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmitFact} className="p-5 space-y-4 text-xs font-mono">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <form onSubmit={handleSubmitFact} className="p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
                     Heure du fait *
@@ -565,17 +565,17 @@ export default function AdminFilPage() {
               </div>
 
               {/* Modal Actions */}
-              <div className="pt-3 border-t border-[#e6dfd5] flex items-center justify-between">
+              <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsFactModalOpen(false)}
-                  className="px-3 py-1.5 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5]"
+                  className="px-3 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] w-full sm:w-auto text-center"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37]"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center"
                 >
                   <Check size={14} />
                   {editingFactIndex !== null ? 'Sauvegarder le fait' : 'Ajouter le fait'}

@@ -28,22 +28,22 @@ export default function AdminHeader({ onToggleMobileMenu }: AdminHeaderProps) {
       <header className="h-16 bg-white border-b border-[#e6dfd5] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
         
         {/* Left: Hamburger (mobile) + Toggle (desktop) & breadcrumb title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           {/* Mobile hamburger */}
           <Tooltip position="bottom" content="Ouvrir le menu de navigation">
             <button
               onClick={onToggleMobileMenu}
-              className="lg:hidden p-2 text-[#141414] hover:bg-[#faf8f5] rounded border border-[#e6dfd5] cursor-pointer"
+              className="lg:hidden w-10 h-10 flex items-center justify-center text-[#141414] hover:bg-[#faf8f5] rounded border border-[#e6dfd5] cursor-pointer shrink-0"
               aria-label="Ouvrir le menu mobile"
             >
-              <Menu size={18} />
+              <Menu size={19} />
             </button>
           </Tooltip>
 
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#087443] inline-block animate-pulse" />
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-              Plateforme Éditoriale & Données
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-[#087443] inline-block animate-pulse shrink-0" />
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] truncate max-w-[140px] xs:max-w-[200px] sm:max-w-none">
+              Plateforme Éditoriale
             </span>
           </div>
         </div>

@@ -545,28 +545,28 @@ Taux d'avancement certifié par la mission de contrôle : 42%.`;
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col border border-gray-100 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-4xl w-full h-[95vh] sm:h-auto sm:max-h-[92vh] flex flex-col border border-gray-100 overflow-hidden">
             
             {/* Header */}
-            <div className="px-6 py-3.5 bg-gradient-to-r from-[var(--ink)] to-[#0A5C36] text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <MicumIcon size={34} glow className="shrink-0" />
-                <div>
-                  <h3 className="font-bold text-sm sm:text-base flex items-center gap-2">
-                    Micum · Desk IA & Ingestion Documentaire
+            <div className="px-4 sm:px-6 py-3 sm:py-3.5 bg-gradient-to-r from-[var(--ink)] to-[#0A5C36] text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <MicumIcon size={30} glow className="shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-xs sm:text-base flex flex-wrap items-center gap-1.5 sm:gap-2 truncate">
+                    <span>Micum · Desk IA</span>
                     {providerInfo?.isLive ? (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-emerald-200 font-mono flex items-center gap-1 font-semibold">
-                        <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+                      <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-emerald-200 font-mono flex items-center gap-1 font-semibold">
+                        <Sparkles className="w-2 h-2 text-amber-300" />
                         {providerInfo.modelName}
                       </span>
                     ) : (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/70 font-mono">
+                      <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-white/10 text-white/70 font-mono">
                         Moteur Local
                       </span>
                     )}
                   </h3>
-                  <p className="text-[11px] sm:text-xs text-white/75">
+                  <p className="hidden sm:block text-[11px] sm:text-xs text-white/75 truncate">
                     Analyse de scans, photos de décrets, PDF officiels et directives sur-mesure
                   </p>
                 </div>
@@ -574,7 +574,8 @@ Taux d'avancement certifié par la mission de contrôle : 42%.`;
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 rounded-lg text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer shrink-0 ml-2"
+                aria-label="Fermer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1066,11 +1067,11 @@ Taux d'avancement certifié par la mission de contrôle : 42%.`;
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/60 rounded-lg transition-colors cursor-pointer"
+                className="px-4 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/60 rounded-lg transition-colors cursor-pointer text-center w-full sm:w-auto"
               >
                 Annuler
               </button>
@@ -1080,17 +1081,17 @@ Taux d'avancement certifié par la mission de contrôle : 42%.`;
                   type="button"
                   onClick={handleAnalyze}
                   disabled={loading}
-                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 w-full sm:w-auto"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>{isEditing ? "Micum intègre les modifications..." : "Micum analyse le document..."}</span>
+                      <span>{isEditing ? "Micum intègre..." : "Micum analyse..."}</span>
                     </>
                   ) : (
                     <>
                       <MicumIcon size={16} glow />
-                      <span>{isEditing ? "Calculer la mise à jour avec Micum" : "Lancer l'analyse avec Micum"}</span>
+                      <span>{isEditing ? "Calculer la mise à jour" : "Lancer l'analyse avec Micum"}</span>
                     </>
                   )}
                 </button>
@@ -1098,10 +1099,10 @@ Taux d'avancement certifié par la mission de contrôle : 42%.`;
                 <button
                   type="button"
                   onClick={handleApply}
-                  className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                 >
                   <Check className="w-4 h-4" />
-                  <span>{isEditing ? "Appliquer la mise à jour à l'enquête" : "Appliquer au formulaire"}</span>
+                  <span>{isEditing ? "Appliquer à l'enquête" : "Appliquer au formulaire"}</span>
                 </button>
               )}
             </div>

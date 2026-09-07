@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/admin/Toast';
 import { AuthGuard } from '@/components/admin/AuthGuard';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
+import MicumSidePanel from '@/components/admin/MicumSidePanel';
 import { usePathname } from 'next/navigation';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -36,6 +37,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     });
   };
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  // Close mobile drawer and global Micum on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setIsGlobalMicumOpen(false);
+  }, [pathname]);
+
+  const [isGlobalMicumOpen, setIsGlobalMicumOpen] = useState(false);
+
+  // Editor pages manage their own dedicated MicumSidePanel instance
+  const isEditorPage = pathname.startsWith('/admin/articles/') || pathname.startsWith('/admin/projets/');
+
   // If on login page, don't show the dashboard shell
   const isLoginPage = pathname === '/admin/login';
 
@@ -64,10 +88,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
               />
               
-              <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+              <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
                 {children}
               </main>
             </div>
+
+            {/* Global Floating Micum Assistant (on non-editor pages) */}
+            {!isEditorPage && (
+              <MicumSidePanel
+                isOpen={isGlobalMicumOpen}
+                onClose={() => setIsGlobalMicumOpen(false)}
+                onOpen={() => setIsGlobalMicumOpen(true)}
+                onToggle={() => setIsGlobalMicumOpen(!isGlobalMicumOpen)}
+                mode="article"
+                isEditing={false}
+                variant="drawer"
+                showFloatingButton={true}
+              />
+            )}
           </div>
         )}
       </AuthGuard>

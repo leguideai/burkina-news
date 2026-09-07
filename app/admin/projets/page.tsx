@@ -9,18 +9,15 @@ import {
   Filter, 
   Edit3, 
   Trash2, 
-  ExternalLink,
+  ExternalLink, 
   Check, 
   X, 
   MapPin, 
   Calendar, 
-  Clock, 
   AlertCircle, 
-  Languages, 
   ShieldCheck, 
   History, 
   ArrowRight,
-  Sparkles,
   Link2
 } from 'lucide-react';
 import { 
@@ -33,10 +30,7 @@ import {
 } from '@/data/types';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
-import ImageUploader from '@/components/admin/ImageUploader';
 import Tooltip from '@/components/ui/Tooltip';
-import MicumCopilot from '@/components/admin/MicumCopilot';
-import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
 const SECTORS = [
   'Énergie',
@@ -77,11 +71,7 @@ export default function AdminProjectsPage() {
   const [sectorFilter, setSectorFilter] = useState<string>('all');
   const [regionFilter, setRegionFilter] = useState<string>('all');
 
-  // Modals
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
 
   // Status Change Modal (Strict charter verification modal)
   const [statusModalProject, setStatusModalProject] = useState<Project | null>(null);
@@ -90,24 +80,6 @@ export default function AdminProjectsPage() {
   const [statusSource, setStatusSource] = useState('');
   const [statusNoteFr, setStatusNoteFr] = useState('');
   const [statusNoteEn, setStatusNoteEn] = useState('');
-
-  // Project Form State
-  const initialFormState: Partial<Project> = {
-    title: '',
-    titleEn: '',
-    slug: '',
-    description: '',
-    descriptionEn: '',
-    sector: 'Énergie',
-    region: 'Centre (Ouagadougou)',
-    category: 'chantiers',
-    currentStatus: 'annonce',
-    amount: '45 milliards FCFA',
-    capacity: '50 MWc',
-    image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=800&q=80',
-  };
-
-  const [formData, setFormData] = useState<Partial<Project>>(initialFormState);
 
   // Fetch projects
   const loadData = async () => {
@@ -144,48 +116,6 @@ export default function AdminProjectsPage() {
       return matchesSearch && matchesStatus && matchesSector && matchesRegion;
     });
   }, [projects, searchTerm, statusFilter, sectorFilter, regionFilter]);
-
-  // Open creation modal
-  const handleOpenCreate = () => {
-    setFormData(initialFormState);
-    setIsEditing(false);
-    setActiveTab('fr');
-    setIsModalOpen(true);
-  };
-
-  // Open edit modal
-  const handleOpenEdit = (project: Project) => {
-    setFormData({ ...project });
-    setIsEditing(true);
-    setActiveTab('fr');
-    setIsModalOpen(true);
-  };
-
-  // Micum AI Handlers for Projects
-  const handleMicumApplyProject = (data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      title: (isEditing && prev.title) ? prev.title : (data.name || data.title || prev.title),
-      titleEn: (isEditing && prev.titleEn) ? prev.titleEn : (data.nameEn || data.titleEn || prev.titleEn),
-      sector: data.sector || prev.sector,
-      region: data.region || prev.region,
-      amount: data.currentBudget || data.amount || prev.amount,
-      image: data.imageUrl || data.image || prev.image,
-      currentStatus: data.status || prev.currentStatus,
-      description: data.description || prev.description,
-      descriptionEn: data.descriptionEn || prev.descriptionEn,
-      slug: (prev.slug && isEditing) ? prev.slug : ((data.name || data.title) ? (data.name || data.title).toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') : prev.slug),
-      actors: data.actors && Array.isArray(data.actors) ? data.actors : prev.actors
-    }));
-  };
-
-  const handleMicumTranslatedProject = (translated: Record<string, string>) => {
-    setFormData(prev => ({
-      ...prev,
-      titleEn: translated.title || prev.titleEn,
-      descriptionEn: translated.description || prev.descriptionEn
-    }));
-  };
 
   // Open status change modal
   const handleOpenStatusModal = (project: Project) => {
@@ -239,43 +169,6 @@ export default function AdminProjectsPage() {
     }
   };
 
-  // Submit full project create or update
-  const handleSubmitProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.title || !formData.sector || !formData.region) {
-      warning('Champs obligatoires', 'Veuillez renseigner le nom du chantier, le secteur et la région.');
-      return;
-    }
-
-    const payload: Project = {
-      ...(formData as Project),
-      slug: formData.slug || formData.title!.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-'),
-    };
-
-    const action = isEditing ? 'update_project' : 'create_project';
-
-    try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, payload })
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de l\'enregistrement.');
-
-      success(
-        isEditing ? 'Chantier actualisé' : 'Nouveau chantier inscrit',
-        `"${payload.title}" est à jour dans le Tracker.`
-      );
-
-      setIsModalOpen(false);
-      loadData();
-    } catch (err: any) {
-      error('Erreur', err.message);
-    }
-  };
-
   // Delete project
   const handleDelete = async (id: string, title: string) => {
     try {
@@ -313,13 +206,13 @@ export default function AdminProjectsPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenCreate}
+        <Link
+          href="/admin/projets/nouveau"
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm self-start md:self-auto"
         >
           <Plus size={16} />
           Nouveau Chantier
-        </button>
+        </Link>
       </div>
 
       {/* 6-Stage Progress Strip */}
@@ -439,7 +332,7 @@ export default function AdminProjectsPage() {
         </div>
       ) : (
         <div className="bg-white border border-[#e6dfd5] overflow-x-auto shadow-sm">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[720px]">
             <thead>
               <tr className="border-b border-[#141414] bg-[#faf8f5] text-[10px] font-mono uppercase tracking-wider text-[#736c62]">
                 <th className="py-3 px-4">Chantier & Secteur</th>
@@ -545,13 +438,13 @@ export default function AdminProjectsPage() {
                         </Tooltip>
 
                         <Tooltip position="top" content="Modifier la fiche du chantier">
-                          <button
-                            onClick={() => handleOpenEdit(p)}
-                            className="p-1.5 text-[#736c62] hover:text-[#087443] hover:bg-[#faf8f5] rounded"
+                          <Link
+                            href={`/admin/projets/${p.id}`}
+                            className="p-1.5 text-[#736c62] hover:text-[#087443] hover:bg-[#faf8f5] rounded inline-flex items-center"
                             aria-label="Modifier la fiche"
                           >
                             <Edit3 size={14} />
-                          </button>
+                          </Link>
                         </Tooltip>
 
                         <Tooltip position="top" content="Supprimer ce chantier du Tracker">
@@ -600,7 +493,7 @@ export default function AdminProjectsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#e6dfd5]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#e6dfd5]">
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
                     Nouveau Statut Certifié *
@@ -674,17 +567,17 @@ export default function AdminProjectsPage() {
                 />
               </div>
 
-              <div className="pt-3 border-t border-[#e6dfd5] flex items-center justify-between">
+              <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setStatusModalProject(null)}
-                  className="px-3 py-1.5 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5]"
+                  className="px-3 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] w-full sm:w-auto text-center"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37]"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center"
                 >
                   <Check size={14} />
                   Valider et Inscrire le Jalon
@@ -723,279 +616,6 @@ export default function AdminProjectsPage() {
                 Confirmer la suppression
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Full Project Create / Edit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
-          <div className="bg-white border border-[#141414] w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl my-auto">
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex items-center justify-between">
-              <div>
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#d97706]">
-                  {isEditing ? 'Édition de la fiche chantier' : 'Nouveau Chantier PND'}
-                </span>
-                <h2 className="text-xl font-serif font-bold text-[#141414]">
-                  {isEditing ? `Modifier : ${formData.title?.slice(0, 45)}...` : 'Enregistrer un nouveau projet national'}
-                </h2>
-              </div>
-
-              {/* Language Switch Tabs */}
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center bg-[#e6dfd5] p-0.5 rounded">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('fr')}
-                    className={`px-3 py-1 text-xs font-mono font-bold rounded transition-colors ${
-                      activeTab === 'fr' 
-                        ? 'bg-white text-[#087443] shadow-sm' 
-                        : 'text-[#5a554e] hover:text-[#141414]'
-                    }`}
-                  >
-                    🇫🇷 Français (Principal)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('en')}
-                    className={`px-3 py-1 text-xs font-mono font-bold rounded transition-colors ${
-                      activeTab === 'en' 
-                        ? 'bg-white text-[#1e3a5f] shadow-sm' 
-                        : 'text-[#5a554e] hover:text-[#141414]'
-                    }`}
-                  >
-                    🇬🇧 English
-                  </button>
-                </div>
-
-                <Tooltip position="left" content="Fermer la boîte de dialogue">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="p-1.5 text-[#736c62] hover:text-[#141414] rounded cursor-pointer"
-                    aria-label="Fermer la boîte de dialogue"
-                  >
-                    <X size={20} />
-                  </button>
-                </Tooltip>
-              </div>
-            </div>
-
-            {/* Modal Body / Form */}
-            <form onSubmit={handleSubmitProject} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
-              {/* French Tab */}
-              {activeTab === 'fr' && (
-                <div className="space-y-4">
-                  {/* Micum Intelligent Assistant Banner */}
-                  <MicumCopilot 
-                    mode="project" 
-                    variant="banner"
-                    isEditing={isEditing}
-                    currentData={formData}
-                    onApply={handleMicumApplyProject}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                        Nom officiel du chantier (Français) *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.title || ''}
-                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Ex: Centrale solaire photovoltaïque de Donsin"
-                        className="w-full px-3 py-2 text-sm font-serif border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                        Secteur d'activité *
-                      </label>
-                      <select
-                        value={formData.sector || 'Énergie'}
-                        onChange={(e) => setFormData(prev => ({ ...prev, sector: e.target.value }))}
-                        className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
-                      >
-                        {SECTORS.map(s => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                        Région administrative *
-                      </label>
-                      <select
-                        value={formData.region || 'Centre (Ouagadougou)'}
-                        onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value }))}
-                        className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
-                      >
-                        {REGIONS.map(r => (
-                          <option key={r} value={r}>{r}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                        Descriptif technique & Objectifs (Français) *
-                      </label>
-                      <textarea
-                        rows={4}
-                        required
-                        value={formData.description || ''}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Détails du chantier, objectifs de production ou d'infrastructure, calendrier initial..."
-                        className="w-full px-3 py-2 text-xs font-serif border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* English Tab */}
-              {activeTab === 'en' && (
-                <div className="space-y-4 bg-[#f8fafc] p-4 border border-[#cbd5e1] rounded">
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-[#cbd5e1]">
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#1e3a5f] uppercase tracking-wider">
-                      <Languages size={15} />
-                      <span>Version Anglaise (Tracker International)</span>
-                    </div>
-
-                    <MicumTranslateButton
-                      fieldsToTranslate={{
-                        title: formData.title || '',
-                        description: formData.description || ''
-                      }}
-                      onTranslated={handleMicumTranslatedProject}
-                      label="Traduire la fiche avec Micum"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                      Project Official Title (English)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.titleEn || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, titleEn: e.target.value }))}
-                      placeholder="e.g. Donsin Solar Photovoltaic Power Plant"
-                      className="w-full px-3 py-2 text-sm font-serif border border-[#cbd5e1] rounded focus:outline-none focus:border-[#1e3a5f] bg-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                      Technical Description & Objectives (English)
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={formData.descriptionEn || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, descriptionEn: e.target.value }))}
-                      placeholder="Technical overview, capacity targets, commissioning milestones in English..."
-                      className="w-full px-3 py-2 text-xs font-serif border border-[#cbd5e1] rounded focus:outline-none focus:border-[#1e3a5f] bg-white"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Shared Metadata Fields */}
-              <div className="border-t border-[#e6dfd5] pt-4">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#736c62] block mb-3">
-                  Données Chiffrées & Spécifications
-                </span>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-mono uppercase font-bold text-[#141414] mb-1">
-                      Enveloppe budgétaire
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.amount || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                      placeholder="ex: 45 milliards FCFA"
-                      className="w-full px-2.5 py-1.5 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-mono uppercase font-bold text-[#141414] mb-1">
-                      Capacité technique
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.capacity || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
-                      placeholder="ex: 50 MWc, 140 km..."
-                      className="w-full px-2.5 py-1.5 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-mono uppercase font-bold text-[#141414] mb-1">
-                      Statut d'entrée
-                    </label>
-                    <select
-                      value={formData.currentStatus || 'annonce'}
-                      onChange={(e) => setFormData(prev => ({ ...prev, currentStatus: e.target.value as ProjectStatus }))}
-                      className="w-full px-2.5 py-1.5 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
-                    >
-                      {PROJECT_STATUS_ORDER.map(s => (
-                        <option key={s} value={s}>{PROJECT_STATUS_LABELS[s]}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-mono uppercase font-bold text-[#141414] mb-1">
-                      Slug URL
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.slug || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                      placeholder="ex: centrale-solaire-donsin"
-                      className="w-full px-2.5 py-1.5 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443] bg-[#faf8f5]"
-                    />
-                  </div>
-
-                  <div className="md:col-span-4">
-                    <ImageUploader
-                      label="Image du chantier / Infrastructure"
-                      value={formData.image || ''}
-                      onChange={(url) => setFormData(prev => ({ ...prev, image: url }))}
-                      helperText="Téléversez une photo du site ou des travaux depuis votre ordinateur (PNG, JPG, WebP) ou renseignez un lien web."
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Actions */}
-              <div className="border-t border-[#e6dfd5] pt-4 flex items-center justify-between bg-[#faf8f5] -mx-4 -mb-4 p-4 sm:-mx-6 sm:-mb-6 sm:p-6">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-[#e6dfd5] text-xs font-mono font-bold hover:bg-white transition-colors"
-                >
-                  Annuler
-                </button>
-
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#087443] text-white font-mono text-xs font-bold uppercase tracking-wider rounded hover:bg-[#075f37] transition-colors shadow-sm"
-                >
-                  <Check size={16} />
-                  {isEditing ? 'Sauvegarder la fiche' : 'Inscrire au Tracker'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

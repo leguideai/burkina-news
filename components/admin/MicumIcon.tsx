@@ -16,15 +16,15 @@ export default function MicumIcon({
 }: MicumIconProps) {
   return (
     <span 
-      className={`inline-flex items-center justify-center shrink-0 rounded-lg overflow-hidden relative select-none ${glow ? 'shadow-md shadow-emerald-700/30' : ''} ${className}`}
+      className={`inline-flex items-center justify-center shrink-0 rounded-full overflow-hidden relative select-none ${glow ? 'shadow-md shadow-emerald-700/30' : ''} ${className}`}
       style={{ width: size, height: size }}
     >
       <img
-        src="/images/micum.svg"
+        src="/images/micum.png"
         alt="Micum (IA)"
         width={size}
         height={size}
-        className="w-full h-full object-contain pointer-events-none"
+        className="w-full h-full object-cover pointer-events-none rounded-full"
       />
     </span>
   );

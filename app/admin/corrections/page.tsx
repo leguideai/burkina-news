@@ -310,22 +310,22 @@ export default function AdminCorrectionsPage() {
 
       {/* Create Correction Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white border border-[#141414] max-w-2xl w-full shadow-2xl overflow-hidden my-auto">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-white border border-[#141414] max-w-2xl w-full h-[95vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl rounded-t-xl sm:rounded-none overflow-hidden my-auto">
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex items-center justify-between gap-2 shrink-0">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#087443]">
                   Déontologie & Transparence
                 </span>
-                <h3 className="font-serif font-bold text-lg text-[#141414]">
+                <h3 className="font-serif font-bold text-base sm:text-lg text-[#141414]">
                   Inscrire une nouvelle rectification
                 </h3>
               </div>
               <Tooltip position="left" content="Fermer la boîte de dialogue">
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1 text-[#736c62] hover:text-[#141414]"
+                  className="p-1 text-[#736c62] hover:text-[#141414] shrink-0"
                   aria-label="Fermer"
                 >
                   <X size={18} />
@@ -334,7 +334,7 @@ export default function AdminCorrectionsPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs font-mono">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
@@ -423,17 +423,17 @@ export default function AdminCorrectionsPage() {
               </div>
 
               {/* Actions */}
-              <div className="pt-3 border-t border-[#e6dfd5] flex items-center justify-between">
+              <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3 py-1.5 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5]"
+                  className="px-3 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] w-full sm:w-auto text-center"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37]"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center"
                 >
                   <Check size={14} />
                   Inscrire au Registre Public

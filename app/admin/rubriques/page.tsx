@@ -291,10 +291,10 @@ export default function AdminRubriquesPage() {
 
       {/* Edit Category Framing Modal */}
       {editingCategory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white border border-[#141414] max-w-2xl w-full shadow-2xl overflow-hidden my-auto">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-white border-t sm:border border-[#141414] rounded-t-xl sm:rounded-none max-w-2xl w-full shadow-2xl overflow-hidden my-0 sm:my-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#087443]">
                   Cadrage Théorique & Ligne Éditoriale
@@ -305,7 +305,7 @@ export default function AdminRubriquesPage() {
               </div>
 
               {/* Language Switch */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between sm:justify-end gap-2">
                 <div className="flex bg-[#e6dfd5] p-0.5 rounded">
                   <button
                     type="button"
@@ -339,7 +339,7 @@ export default function AdminRubriquesPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs font-mono">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
               {activeTab === 'fr' ? (
                 <div className="space-y-3">
                   <div>
@@ -427,7 +427,7 @@ export default function AdminRubriquesPage() {
               )}
 
               {/* Color Code */}
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#e6dfd5]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#e6dfd5]">
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
                     Couleur Identitaire (Hex)
@@ -462,17 +462,17 @@ export default function AdminRubriquesPage() {
               </div>
 
               {/* Actions */}
-              <div className="pt-3 border-t border-[#e6dfd5] flex items-center justify-between">
+              <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setEditingCategory(null)}
-                  className="px-3 py-1.5 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5]"
+                  className="w-full sm:w-auto px-4 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] rounded cursor-pointer text-center"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] cursor-pointer text-center"
                 >
                   <Check size={14} />
                   Enregistrer les modifications

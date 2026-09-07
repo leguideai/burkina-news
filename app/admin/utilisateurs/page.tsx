@@ -542,7 +542,7 @@ export default function AdminUsersPage() {
       ) : (
         <div className="bg-white border border-[#e6dfd5] rounded-lg shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse min-w-[660px]">
               <thead>
                 <tr className="bg-[#faf8f5] border-b border-[#e6dfd5] text-[10px] font-mono uppercase text-[#736c62] tracking-wider">
                   <th className="py-3 px-4">Membre du Desk</th>
@@ -666,8 +666,8 @@ export default function AdminUsersPage() {
 
       {/* Add / Edit User Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border-2 border-[#141414] max-w-lg w-full max-h-[92vh] overflow-y-auto p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white border-t-2 sm:border-2 border-[#141414] rounded-t-xl sm:rounded-none max-w-lg w-full max-h-[92vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-5">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#e6dfd5] pb-3">
@@ -810,18 +810,18 @@ export default function AdminUsersPage() {
               </div>
 
               {/* Modal Buttons */}
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#e6dfd5]">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-[#e6dfd5]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-[#e6dfd5] text-xs font-mono font-bold text-[#141414] hover:bg-[#faf8f5] rounded cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-[#e6dfd5] text-xs font-mono font-bold text-[#141414] hover:bg-[#faf8f5] rounded cursor-pointer text-center"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 bg-[#087443] hover:bg-[#0a5c36] text-white text-xs font-mono font-bold uppercase tracking-wider rounded transition-colors cursor-pointer disabled:opacity-50"
+                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-[#087443] hover:bg-[#0a5c36] text-white text-xs font-mono font-bold uppercase tracking-wider rounded transition-colors cursor-pointer disabled:opacity-50 text-center"
                 >
                   {isSubmitting ? 'Enregistrement...' : editingUser ? 'Mettre à jour' : 'Créer le compte'}
                 </button>
@@ -834,8 +834,8 @@ export default function AdminUsersPage() {
 
       {/* Delete Confirmation Modal */}
       {isDeletingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border-2 border-rose-700 max-w-sm w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white border-t-2 sm:border-2 border-rose-700 rounded-t-xl sm:rounded-none max-w-sm w-full p-4 sm:p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-2 text-rose-700 font-serif font-bold text-lg">
               <AlertCircle size={20} />
               <span>Confirmer la suppression</span>
@@ -846,18 +846,18 @@ export default function AdminUsersPage() {
             <p className="text-[11px] font-mono text-[#c2410c] bg-rose-50 p-2 rounded border border-rose-200">
               Cette action est irréversible. Toutes les sessions actives associées seront closes.
             </p>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setIsDeletingUser(null)}
-                className="px-3 py-1.5 border border-[#e6dfd5] text-xs font-mono text-[#141414] hover:bg-[#faf8f5] rounded cursor-pointer"
+                className="w-full sm:w-auto px-3 py-2 sm:py-1.5 border border-[#e6dfd5] text-xs font-mono text-[#141414] hover:bg-[#faf8f5] rounded cursor-pointer text-center"
               >
                 Annuler
               </button>
               <button
                 type="button"
                 onClick={() => handleDelete(isDeletingUser)}
-                className="px-4 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-mono font-bold uppercase tracking-wider rounded cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2 sm:py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-mono font-bold uppercase tracking-wider rounded cursor-pointer text-center"
               >
                 Supprimer
               </button>

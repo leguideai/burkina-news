@@ -289,7 +289,7 @@ export default function AdminIndicatorsPage() {
         </div>
       ) : (
         <div className="bg-white border border-[#e6dfd5] overflow-x-auto shadow-sm">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="border-b border-[#141414] bg-[#faf8f5] text-[10px] font-mono uppercase tracking-wider text-[#736c62]">
                 <th className="py-3 px-4">Code & Indicateur</th>
@@ -396,10 +396,10 @@ export default function AdminIndicatorsPage() {
 
       {/* Edit Indicator Modal */}
       {isModalOpen && selectedIndicator && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white border border-[#141414] max-w-2xl w-full shadow-2xl overflow-hidden my-auto">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-white border border-[#141414] max-w-2xl w-full h-[95vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl rounded-t-xl sm:rounded-none overflow-hidden my-auto">
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#087443]">
                   Indicateur {formData.code}
@@ -410,7 +410,7 @@ export default function AdminIndicatorsPage() {
               </div>
 
               {/* Language Switch */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
                 <div className="flex bg-[#e6dfd5] p-0.5 rounded">
                   <button
                     type="button"
@@ -433,7 +433,8 @@ export default function AdminIndicatorsPage() {
                 </div>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1 text-[#736c62] hover:text-[#141414]"
+                  className="p-1 text-[#736c62] hover:text-[#141414] shrink-0"
+                  aria-label="Fermer"
                 >
                   <X size={18} />
                 </button>
@@ -508,7 +509,7 @@ export default function AdminIndicatorsPage() {
                   Mesures & Cibles Chiffrées
                 </span>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-[#087443] mb-1">
                       Valeur Actuelle *
@@ -631,17 +632,17 @@ export default function AdminIndicatorsPage() {
               </div>
 
               {/* Actions */}
-              <div className="pt-3 border-t border-[#e6dfd5] flex items-center justify-between">
+              <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3 py-1.5 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5]"
+                  className="px-3 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] w-full sm:w-auto text-center"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37]"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center"
                 >
                   <Check size={14} />
                   Enregistrer l'indicateur

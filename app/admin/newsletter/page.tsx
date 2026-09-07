@@ -264,7 +264,7 @@ export default function AdminNewsletterPage() {
         </div>
       ) : (
         <div className="bg-white border border-[#e6dfd5] overflow-x-auto shadow-sm">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[560px]">
             <thead>
               <tr className="border-b border-[#141414] bg-[#faf8f5] text-[10px] font-mono uppercase tracking-wider text-[#736c62]">
                 <th className="py-3 px-4">#</th>
@@ -316,8 +316,8 @@ export default function AdminNewsletterPage() {
 
       {/* Manual Add Subscriber Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white border border-[#141414] max-w-md w-full shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-white border-t sm:border border-[#141414] rounded-t-xl sm:rounded-none max-w-md w-full shadow-2xl overflow-hidden">
             <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex items-center justify-between">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#087443]">
@@ -353,17 +353,17 @@ export default function AdminNewsletterPage() {
                 />
               </div>
 
-              <div className="pt-3 border-t border-[#e6dfd5] flex items-center justify-between">
+              <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3 py-1.5 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5]"
+                  className="w-full sm:w-auto px-4 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] rounded cursor-pointer text-center"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] cursor-pointer"
                 >
                   <Check size={14} />
                   Valider l'inscription
@@ -376,8 +376,8 @@ export default function AdminNewsletterPage() {
 
       {/* Micum Generated Newsletter Draft Modal */}
       {isDraftModalOpen && newsletterDraft && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white border border-[#141414] max-w-2xl w-full shadow-2xl overflow-hidden my-auto rounded-xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-white border-t sm:border border-[#141414] max-w-2xl w-full shadow-2xl overflow-hidden my-0 sm:my-auto rounded-t-xl sm:rounded-xl">
             <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-gradient-to-r from-[var(--ink)] to-[#0A5C36] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-300">
@@ -436,14 +436,14 @@ export default function AdminNewsletterPage() {
                 />
               </div>
 
-              <div className="flex justify-end pt-3 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:justify-end pt-3 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(newsletterDraft.fullText || '');
                     success('Lettre copiée', 'Le texte complet a été copié dans le presse-papier.');
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg transition-colors cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg transition-colors cursor-pointer"
                 >
                   <Copy size={14} />
                   Copier le texte de la lettre
