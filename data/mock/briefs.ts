@@ -274,7 +274,7 @@ export const briefs: Brief[] = [
         text: 'Thomas Sankara fait l\'objet d\'un colloque international à Dakar.', 
         textEn: 'International academic symposium convenes in Dakar to examine the political economy and legacy of Thomas Sankara.',
         source: 'UCAD / CODESRIA', 
-        category: 'idees', 
+        category: 'histoire', 
         image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeYP8DctklaathBpL5M7ilvG1HpUu3YknAeniv9ioGcw&s=10' 
       },
     ],

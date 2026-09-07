@@ -12,7 +12,7 @@ export const NAV_CATEGORIES: NavCategory[] = [
   { code: 'chantiers', labelFr: 'Chantiers', labelEn: 'Infrastructure', hrefFr: '/fr/chantiers', hrefEn: '/en/chantiers' },
   { code: 'agriculture', labelFr: 'Agriculture', labelEn: 'Agriculture', hrefFr: '/fr/agriculture', hrefEn: '/en/agriculture' },
   { code: 'societe', labelFr: 'Société', labelEn: 'Society', hrefFr: '/fr/societe', hrefEn: '/en/societe' },
-  { code: 'idees', labelFr: 'Idées', labelEn: 'Ideas', hrefFr: '/fr/idees', hrefEn: '/en/idees' },
+  { code: 'histoire', labelFr: 'Histoire', labelEn: 'History', hrefFr: '/fr/histoire', hrefEn: '/en/histoire' },
 ];
 
 export const UI_STRINGS = {

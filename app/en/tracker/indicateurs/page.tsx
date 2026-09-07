@@ -24,7 +24,8 @@ export default function IndicatorsPageEn() {
     chantiers: 'Infrastructure & Power',
     agriculture: 'Agriculture & Food Security',
     societe: 'Health, Education & Society',
-    idees: 'Governance & Institutional Reforms',
+    histoire: 'History & Trajectories',
+    idees: 'History & Trajectories',
   };
 
   return (

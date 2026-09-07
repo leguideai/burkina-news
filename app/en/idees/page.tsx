@@ -1,5 +1,5 @@
-import { CategoryLayout } from '@/components/CategoryLayout';
+import { redirect } from 'next/navigation';
 
 export default function IdeesPageEn() {
-  return <CategoryLayout categoryCode="idees" lang="en" />;
+  redirect('/en/histoire');
 }
