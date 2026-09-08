@@ -141,7 +141,7 @@ export default function AdminRubriquesPage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Section Histoire
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Gouvernance des enquêtes rétrospectives, archives de la révolution sankariste et mémoire de la nation.
           </p>
         </div>

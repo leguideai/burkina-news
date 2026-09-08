@@ -295,7 +295,7 @@ export default function HomePage() {
 
           <div className="flex items-center gap-3">
             <span className="text-xs font-serif text-[#555555] hidden sm:inline">
-              {projects.length} chantiers documentés · Objectif : 60 projets
+              {projects.length} chantiers documentés · Sources vérifiées
             </span>
             <Link 
               href="/fr/tracker"
@@ -326,7 +326,7 @@ export default function HomePage() {
               Vérifications & Observations Directes
             </span>
             <h2 className="text-xl sm:text-2xl font-bold font-serif text-[#141414]">
-              Sur le terrain à Bobo-Dioulasso & Examen des déclarations
+              Sur le terrain & Examen des déclarations
             </h2>
           </div>
 

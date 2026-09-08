@@ -136,7 +136,7 @@ function AdminArticlesContent() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Articles & Enquêtes
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Gestion intégrale des décryptages, enquêtes terrain, analyses et de la rubrique Histoire.
           </p>
         </div>

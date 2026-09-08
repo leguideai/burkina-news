@@ -10,8 +10,11 @@ import {
   Plus,
   Trash2,
   Languages,
+  ShieldCheck,
+  FileText,
+  History,
 } from 'lucide-react';
-import { Project, ProjectStatus, PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, ProjectActor } from '@/data/types';
+import { Project, ProjectStatus, PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, ProjectActor, ProjectSource, ProjectStatusEntry } from '@/data/types';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 import { useMicum } from '@/components/admin/MicumContext';
@@ -72,6 +75,8 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
       capacity: '',
       image: '',
       actors: [],
+      sources: [],
+      statusHistory: [],
       ...initialData,
     };
 
@@ -165,6 +170,66 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
         ...prev,
         actors: (prev.actors || []).map((a, i) => i === index ? { ...a, [field]: value } : a)
       }));
+    };
+
+    const handleAddSource = () => {
+      setFormData(prev => ({
+        ...prev,
+        sources: [...(prev.sources || []), {
+          title: '',
+          url: '',
+          date: new Date().toISOString().split('T')[0],
+          institution: 'Ministère des Infrastructures / PND'
+        }]
+      }));
+    };
+
+    const handleRemoveSource = (index: number) => {
+      setFormData(prev => ({
+        ...prev,
+        sources: (prev.sources || []).filter((_, i) => i !== index)
+      }));
+    };
+
+    const handleSourceChange = (index: number, field: keyof ProjectSource, value: string) => {
+      setFormData(prev => ({
+        ...prev,
+        sources: (prev.sources || []).map((s, i) => i === index ? { ...s, [field]: value } : s)
+      }));
+    };
+
+    const handleAddHistoryEntry = () => {
+      const today = new Date().toISOString().split('T')[0];
+      setFormData(prev => {
+        const nextStatus = prev.currentStatus || 'annonce';
+        return {
+          ...prev,
+          statusHistory: [...(prev.statusHistory || []), {
+            status: nextStatus,
+            date: today,
+            source: '',
+            note: ''
+          }]
+        };
+      });
+    };
+
+    const handleRemoveHistoryEntry = (index: number) => {
+      setFormData(prev => ({
+        ...prev,
+        statusHistory: (prev.statusHistory || []).filter((_, i) => i !== index)
+      }));
+    };
+
+    const handleHistoryChange = (index: number, field: keyof ProjectStatusEntry, value: string) => {
+      setFormData(prev => {
+        const nextHistory = (prev.statusHistory || []).map((h, i) => i === index ? { ...h, [field]: value } : h);
+        let newCurrent = prev.currentStatus;
+        if (field === 'status' && index === nextHistory.length - 1) {
+          newCurrent = value as ProjectStatus;
+        }
+        return { ...prev, statusHistory: nextHistory, currentStatus: newCurrent };
+      });
     };
 
     const handleSaveClick = async () => {
@@ -339,6 +404,186 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                         <button onClick={() => handleRemoveActor(i)} className="p-1.5 text-rose-500 hover:text-rose-700 cursor-pointer">
                           <Trash2 size={14} />
                         </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Official Primary Sources */}
+                <div className="border-t border-[#e6dfd5] pt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <label className={`${labelClass} text-[#087443] flex items-center gap-1.5`}>
+                        <ShieldCheck size={14} /> Sources Documentaires Officielles (Couche de preuve)
+                      </label>
+                      <p className="text-[11px] font-mono text-[#736c62]">
+                        Décrets, arrêtés, rapports d'audit ou relevés de terrain garantissant la véracité de la fiche.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddSource}
+                      className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[#087443] hover:text-emerald-800 bg-[#087443]/10 px-2.5 py-1 rounded cursor-pointer transition-colors"
+                    >
+                      <Plus size={12} />
+                      Ajouter une source
+                    </button>
+                  </div>
+
+                  {(formData.sources || []).length === 0 && (
+                    <div className="p-3 bg-[#faf8f5] border border-dashed border-[#e6dfd5] rounded text-[11px] font-mono text-[#999] text-center">
+                      Aucune source officielle attachée. Cliquez sur "Ajouter une source" pour documenter ce chantier.
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {(formData.sources || []).map((src, i) => (
+                      <div key={i} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold uppercase text-[#087443]">
+                            Source #{i + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSource(i)}
+                            className="text-xs font-mono text-rose-500 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                          >
+                            <Trash2 size={12} /> Supprimer
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div>
+                            <span className="text-[10px] font-mono text-[#736c62]">Intitulé de la source</span>
+                            <input
+                              type="text"
+                              value={src.title}
+                              onChange={(e) => handleSourceChange(i, 'title', e.target.value)}
+                              placeholder="ex: Rapport National SONABEL 2025"
+                              className={inputClass}
+                            />
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-mono text-[#736c62]">Institution émettrice</span>
+                            <input
+                              type="text"
+                              value={src.institution || ''}
+                              onChange={(e) => handleSourceChange(i, 'institution', e.target.value)}
+                              placeholder="ex: Ministère de l'Énergie"
+                              className={inputClass}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <div className="sm:col-span-2">
+                            <span className="text-[10px] font-mono text-[#736c62]">Lien URL / Archive</span>
+                            <input
+                              type="text"
+                              value={src.url}
+                              onChange={(e) => handleSourceChange(i, 'url', e.target.value)}
+                              placeholder="https://... ou /uploads/sources/..."
+                              className={inputClass}
+                            />
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-mono text-[#736c62]">Date de consultation</span>
+                            <input
+                              type="date"
+                              value={src.date}
+                              onChange={(e) => handleSourceChange(i, 'date', e.target.value)}
+                              className={inputClass}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status Milestones & Non-écrasement History */}
+                <div className="border-t border-[#e6dfd5] pt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <label className={`${labelClass} text-[#141414] flex items-center gap-1.5`}>
+                        <History size={14} /> Chronologie des 6 Jalons (Règle de non-écrasement)
+                      </label>
+                      <p className="text-[11px] font-mono text-[#736c62]">
+                        Chaque évolution de statut est historisée avec sa date, sa justification et sa source vérifiée.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddHistoryEntry}
+                      className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[#141414] hover:bg-neutral-200 bg-[#faf8f5] border border-[#e6dfd5] px-2.5 py-1 rounded cursor-pointer transition-colors"
+                    >
+                      <Plus size={12} />
+                      Ajouter un jalon
+                    </button>
+                  </div>
+
+                  {(formData.statusHistory || []).length === 0 && (
+                    <div className="p-3 bg-[#faf8f5] border border-dashed border-[#e6dfd5] rounded text-[11px] font-mono text-[#999] text-center">
+                      Aucun jalon d'historique. Le statut actuel servira de point de départ.
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {(formData.statusHistory || []).map((entry, idx) => (
+                      <div key={idx} className="p-3 bg-white border border-[#e6dfd5] rounded space-y-2 shadow-2xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold uppercase text-[#736c62]">
+                            Étape {idx + 1} / {(formData.statusHistory || []).length}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveHistoryEntry(idx)}
+                            className="text-xs font-mono text-rose-500 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                          >
+                            <Trash2 size={12} /> Supprimer
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <div>
+                            <span className="text-[10px] font-mono text-[#736c62]">Statut atteint</span>
+                            <select
+                              value={entry.status}
+                              onChange={(e) => handleHistoryChange(idx, 'status', e.target.value)}
+                              className={selectClass}
+                            >
+                              {PROJECT_STATUS_ORDER.map(s => (
+                                <option key={s} value={s}>{PROJECT_STATUS_LABELS[s]}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-mono text-[#736c62]">Date effective</span>
+                            <input
+                              type="date"
+                              value={entry.date}
+                              onChange={(e) => handleHistoryChange(idx, 'date', e.target.value)}
+                              className={inputClass}
+                            />
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-mono text-[#736c62]">Source justificative</span>
+                            <input
+                              type="text"
+                              value={entry.source}
+                              onChange={(e) => handleHistoryChange(idx, 'source', e.target.value)}
+                              placeholder="ex: PV Conseil des Ministres"
+                              className={inputClass}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-mono text-[#736c62]">Observation / Note technique</span>
+                          <input
+                            type="text"
+                            value={entry.note || ''}
+                            onChange={(e) => handleHistoryChange(idx, 'note', e.target.value)}
+                            placeholder="Détails sur l'avancement constaté..."
+                            className={inputClass}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

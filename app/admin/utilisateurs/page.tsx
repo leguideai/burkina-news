@@ -291,7 +291,7 @@ export default function AdminUsersPage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Équipe & Comptes du Desk
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Administration des permissions, des rôles déontologiques et des comptes autorisés.
           </p>
         </div>
@@ -375,7 +375,7 @@ export default function AdminUsersPage() {
                 <span>Desk Données & Tracker</span>
               </div>
               <p className="text-[11px] leading-relaxed text-[#555]">
-                Suivi des 6 jalons des chantiers nationaux (PND 2026-2030) et actualisation des 20 métriques stratégiques du Baromètre RELANCE.
+                Suivi des jalons des chantiers nationaux et actualisation des métriques stratégiques du Baromètre RELANCE.
               </p>
             </div>
 

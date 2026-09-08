@@ -339,7 +339,7 @@ export default function AdminFilPage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Le Fil Hebdomadaire
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Chaque dimanche, 10 faits rigoureusement sourcés. Pas d'opinion, uniquement les faits vérifiés.
           </p>
         </div>
