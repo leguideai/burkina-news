@@ -156,7 +156,7 @@ export default function AdminNewsletterPage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Abonnés à la Lettre d'Information
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Base des abonnés recevant chaque dimanche les 10 faits du Fil et le Grand Décryptage mensuel.
           </p>
         </div>

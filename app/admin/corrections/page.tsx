@@ -149,8 +149,8 @@ export default function AdminCorrectionsPage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Registre Public des Corrections
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
-            Historique public des rectifications factuelles. Chez Burkina News, chaque correction est documentée avec son motif.
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
+            Historique public des rectifications factuelles. Chaque correction est documentée avec son motif.
           </p>
         </div>
 

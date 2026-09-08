@@ -165,7 +165,7 @@ export default function AdminNumerosPage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Les Numéros Mensuels
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Publication intégrale de la revue, gestion des couvertures, sommaires et fichiers PDF.
           </p>
         </div>

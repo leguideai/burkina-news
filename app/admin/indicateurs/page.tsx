@@ -234,8 +234,8 @@ export default function AdminIndicatorsPage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Baromètre RELANCE (Indicateurs Nationaux)
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
-            20 métriques stratégiques mesurant les engagements de la trajectoire nationale 2026-2030.
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5 max-w-2xl">
+            Suivi factuel des indicateurs nationaux et de la trajectoire de relance économique.
           </p>
         </div>
 

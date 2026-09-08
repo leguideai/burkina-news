@@ -120,7 +120,7 @@ export default function AdminUnePage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Mise en Page de la Une
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Orchestration du Grand Décryptage, des sujets prioritaires et de la citation de la rédaction.
           </p>
         </div>

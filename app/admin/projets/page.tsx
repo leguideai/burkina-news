@@ -199,9 +199,9 @@ export default function AdminProjectsPage() {
             <span>Base Documentaire & Tracker National</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
-            Tracker des Chantiers (PND 2026-2030)
+            Tracker des Chantiers
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Suivi factuel, chaînes de preuves et journalisation des 6 jalons de vie des projets burkinabè.
           </p>
         </div>

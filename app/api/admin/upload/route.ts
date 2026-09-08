@@ -45,26 +45,45 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Generate safe unique filename
-    const origName = file.name || 'image';
+    // Determine folder by entity type (Section 12.3: sources/, projects/, content/, issues/)
+    const rawFolder = ((formData.get('folder') as string) || (formData.get('entity') as string) || '').toLowerCase();
+    const validFolders = ['sources', 'projects', 'content', 'issues'];
+    
+    // Auto-detect folder if not specified
+    let targetFolder = validFolders.includes(rawFolder) ? rawFolder : 'content';
+    if (!rawFolder) {
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        targetFolder = 'sources';
+      }
+    }
+
+    const origName = file.name || 'document';
     const ext = path.extname(origName) || `.${file.type.split('/')[1] || 'jpg'}`;
-    const baseName = path
+    const cleanBase = path
       .basename(origName, ext)
       .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]/g, '-')
       .replace(/-+/g, '-')
-      .slice(0, 30);
-    const timestamp = Date.now();
-    const randomSuffix = Math.random().toString(36).substring(2, 7);
-    const fileName = `${baseName || 'img'}-${timestamp}-${randomSuffix}${ext}`;
+      .slice(0, 35)
+      .replace(/^-+|-+$/g, '') || 'file';
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 6);
+    
+    // Standardized nomenclature: prefix by entity type (e.g. source-pnd-2026-..., project-kodeni-...)
+    const prefix = targetFolder === 'sources' ? 'source' : targetFolder === 'projects' ? 'project' : targetFolder === 'issues' ? 'issue' : 'doc';
+    const normalizedName = cleanBase.startsWith(prefix) ? cleanBase : `${prefix}-${cleanBase}`;
+    const fileName = `${normalizedName}-${timestamp}-${randomSuffix}${ext}`;
+
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', targetFolder);
     await fs.mkdir(uploadsDir, { recursive: true });
 
     const filePath = path.join(uploadsDir, fileName);
     await fs.writeFile(filePath, buffer);
 
-    const publicUrl = `/uploads/${fileName}`;
+    const publicUrl = `/uploads/${targetFolder}/${fileName}`;
 
     return NextResponse.json({
       success: true,

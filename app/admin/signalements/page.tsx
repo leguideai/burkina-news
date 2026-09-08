@@ -178,7 +178,7 @@ export default function AdminSignalementsPage() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
             Signalements des Lecteurs
           </h1>
-          <p className="text-sm font-mono text-[#5a554e] mt-0.5">
+          <p className="text-xs font-mono text-[#5a554e] mt-0.5">
             Retours critiques de l'audience, détection d'erreurs matérielles et demandes de contact institutionnel.
           </p>
         </div>
