@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getActiveProviderInfo, generateAIJson } from '@/lib/ai/providers';
+import { getActiveProviderInfo, generateAIJson, generateAIChat } from '@/lib/ai/providers';
+import { getAdminStore, getSubmissionsContacts, getSubmissionsNewsletter } from '@/data/admin-store';
 
 // Interface for AI requests
 interface AIRequest {
   action: 
+    | 'chat'
     | 'extract_article'
     | 'extract_project'
     | 'extract_indicators'
@@ -25,7 +27,185 @@ export async function GET() {
   });
 }
 
-// Built-in multi-provider intelligent engine (Gemini, Claude, OpenAI, Local fallback)
+function buildScreenContext({
+  pathname,
+  sectionTitle,
+  canInsert,
+  activeEditorData,
+  store,
+  contacts,
+  newsletter
+}: {
+  pathname: string;
+  sectionTitle?: string;
+  canInsert?: boolean;
+  activeEditorData?: any;
+  store: any;
+  contacts: any[];
+  newsletter: any[];
+}): string {
+  const articles = store?.articles || [];
+  const projects = store?.projects || [];
+  const indicators = store?.indicators || [];
+  const briefs = store?.briefs || [];
+  const categories = store?.categories || [];
+  const corrections = store?.corrections || [];
+  const homepageConfig = store?.homepageConfig;
+  const users = store?.users || [];
+
+  let context = `=== ÉCRAN ACTUEL SUR LE BACKOFFICE ===\n`;
+  context += `Route : ${pathname}\n`;
+  context += `Titre de l'écran : ${sectionTitle || 'Desk Administration'}\n`;
+  context += `Capacité d'insertion directe : ${canInsert ? 'OUI (un formulaire de saisie est actif sur cet écran)' : 'NON (écran de consultation, audit ou pilotage)'}\n\n`;
+
+  // 1. If in an active editor
+  if (canInsert && activeEditorData) {
+    context += `=== DONNÉES DU FORMULAIRE EN COURS DE RÉDACTION ===\n`;
+    if (activeEditorData.title) context += `- Titre actuel : ${activeEditorData.title}\n`;
+    if (activeEditorData.excerpt) context += `- Chapô actuel : ${activeEditorData.excerpt}\n`;
+    if (activeEditorData.category) context += `- Rubrique : ${activeEditorData.category}\n`;
+    if (activeEditorData.type) context += `- Format : ${activeEditorData.type}\n`;
+    if (activeEditorData.sourceCount) context += `- Nombre de sources : ${activeEditorData.sourceCount}\n`;
+    if (activeEditorData.tags && activeEditorData.tags.length > 0) context += `- Tags : ${activeEditorData.tags.join(', ')}\n`;
+    if (activeEditorData.body) {
+      context += `- Corps de texte actuel (extrait) :\n${activeEditorData.body.slice(0, 1500)}${activeEditorData.body.length > 1500 ? '... [tronqué]' : ''}\n`;
+    }
+    context += `\nCONSIGNE D'INSERTION : Si le journaliste te demande de rédiger, titrer, corriger ou proposer un texte, formule d'abord ton analyse puis ajoute à la fin de ta réponse un bloc JSON strict pour permettre l'insertion immédiate dans le formulaire :\n`;
+    context += `\`\`\`json\n{\n  "title": "Titre proposé",\n  "excerpt": "Chapô proposé",\n  "content": "Texte complet en Markdown avec ## intertitres et citations >",\n  "titleEn": "English Title",\n  "excerptEn": "English Excerpt"\n}\n\`\`\`\n`;
+    return context;
+  }
+
+  // 2. Specific Screen context based on pathname
+  if (pathname === '/admin/rubriques') {
+    context += `=== DONNÉES DE L'ÉCRAN : RUBRIQUES & SECTION HISTOIRE ===\n`;
+    context += `Rubriques configurées (${categories.length}) :\n`;
+    for (const cat of categories) {
+      const count = articles.filter((a: any) => a.category === cat.id || a.category === cat.slug).length;
+      context += `- [${cat.id}] ${cat.label} (Slug: ${cat.slug}) · ${count} article(s) publié(s). Description: ${cat.description || 'N/A'}\n`;
+    }
+    const historyArticles = articles.filter((a: any) => a.category === 'histoire' || a.tags?.includes('Histoire'));
+    context += `\nArticles rattachés à la Section Histoire (${historyArticles.length}) :\n`;
+    for (const art of historyArticles) {
+      context += `  * « ${art.title} » (${art.publishedAt?.slice(0, 10) || 'Date inconnue'}) - Sources: ${art.sourceCount || 1}\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Conseiller la rédaction sur l'organisation des rubriques, la politique d'archives et de mémoire historique de Burkina News, et vérifier la bonne catégorisation des articles.\n`;
+    return context;
+  }
+
+  if (pathname === '/admin/articles') {
+    context += `=== DONNÉES DE L'ÉCRAN : CATALOGUE DES ARTICLES ===\n`;
+    context += `Total d'articles enregistrés : ${articles.length}\n`;
+    const byCat: Record<string, number> = {};
+    for (const a of articles) {
+      byCat[a.category] = (byCat[a.category] || 0) + 1;
+    }
+    context += `Répartition par rubrique : ${Object.entries(byCat).map(([k, v]) => `${k} (${v})`).join(', ')}\n\n`;
+    context += `Articles récents en base de données :\n`;
+    for (const a of articles.slice(0, 25)) {
+      context += `- [${a.id}] « ${a.title} » | Rubrique: ${a.category} | Type: ${a.type || 'decryptage'} | Sources: ${a.sourceCount || 0} | Date: ${a.publishedAt?.slice(0, 10) || 'N/A'}\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Analyser la couverture éditoriale, vérifier les angles non encore couverts, évaluer la solidité des sources et répondre aux questions de recherche sur le catalogue.\n`;
+    return context;
+  }
+
+  if (pathname === '/admin/une') {
+    context += `=== DONNÉES DE L'ÉCRAN : PILOTAGE DE LA UNE ===\n`;
+    const leadArt = articles.find((a: any) => a.id === homepageConfig?.leadArticleId);
+    const secArts = articles.filter((a: any) => homepageConfig?.secondaryArticleIds?.includes(a.id));
+    context += `- Article d'ouverture (Lead) : ${leadArt ? `« ${leadArt.title} » (${leadArt.category})` : 'Non défini'}\n`;
+    context += `- Articles secondaires en Une (${secArts.length}) :\n`;
+    for (const sa of secArts) {
+      context += `  * « ${sa.title} » (${sa.category})\n`;
+    }
+    if (homepageConfig?.featuredQuote) {
+      context += `- Citation éditoriale en Une : « ${homepageConfig.featuredQuote.quoteFr} » — ${homepageConfig.featuredQuote.author}\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Auditer la hiérarchie de l'information, l'équilibre thématique de la Une et proposer des optimisations d'impact.\n`;
+    return context;
+  }
+
+  if (pathname === '/admin/projets') {
+    context += `=== DONNÉES DE L'ÉCRAN : TRACKER DES CHANTIERS PUBLICS ===\n`;
+    context += `Total de chantiers suivis : ${projects.length}\n`;
+    for (const p of projects) {
+      context += `- [${p.id}] ${p.name} | Secteur: ${p.sector} | Budget: ${p.budget || 'N/A'} | Avancement: ${p.progress || 0}% | Statut: ${p.status} | Prestataire: ${p.contractor || 'Non précisé'}\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Analyser l'avancement des grands chantiers, identifier les retards ou blocages, vérifier la cohérence des budgets en FCFA et les maîtres d'œuvre.\n`;
+    return context;
+  }
+
+  if (pathname.startsWith('/admin/indicateurs')) {
+    context += `=== DONNÉES DE L'ÉCRAN : BAROMÈTRE RELANCE (INDICATEURS ÉCONOMIQUES) ===\n`;
+    context += `Nombre d'indicateurs : ${indicators.length}\n`;
+    for (const ind of indicators) {
+      context += `- ${ind.name} : ${ind.value} ${ind.unit || ''} (Cible: ${ind.target || 'N/A'}) | Tendance: ${ind.trend || 'N/A'} | Source: ${ind.source || 'N/A'} | MàJ: ${ind.updatedAt || 'N/A'}\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Expliquer les indicateurs, calculer des corrélations factuelles, comparer les valeurs aux objectifs stratégiques de souveraineté économique (PND 2026-2030).\n`;
+    return context;
+  }
+
+  if (pathname.startsWith('/admin/fil')) {
+    context += `=== DONNÉES DE L'ÉCRAN : FIL D'ACTUALITÉ CERTIFIÉ (DÉPÊCHES) ===\n`;
+    context += `Nombre de dépêches : ${briefs.length}\n`;
+    for (const b of briefs.slice(0, 15)) {
+      context += `- [${b.time || ''} ${b.date || ''}] « ${b.title} » | Source: ${b.source || 'N/A'} | Contenu: ${b.content?.slice(0, 100) || ''}...\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Rédiger ou calibrer des faits certifiés 1 minute, vérifier la source primaire et l'exactitude factuelle.\n`;
+    return context;
+  }
+
+  if (pathname.startsWith('/admin/corrections')) {
+    context += `=== DONNÉES DE L'ÉCRAN : REGISTRE DES CORRECTIONS ET TRANSPARENCE ===\n`;
+    context += `Corrections publiées (${corrections.length}) :\n`;
+    for (const c of corrections) {
+      context += `- ${c.date} | Article : « ${c.articleTitle} » | Motif : ${c.reason} | Validé par : ${c.validatedBy}\n  * Initial : ${c.previousText}\n  * Rectifié : ${c.correctedText}\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Assister l'auditeur déontologique pour formuler des rectificatifs précis, sans altération clandestine d'historique.\n`;
+    return context;
+  }
+
+  if (pathname.startsWith('/admin/signalements')) {
+    context += `=== DONNÉES DE L'ÉCRAN : SIGNALEMENTS LECTEURS ET ALERTES CITOYENNES ===\n`;
+    context += `Messages / Signalements reçus (${contacts.length}) :\n`;
+    for (const c of contacts.slice(0, 10)) {
+      context += `- ${c.date || c.createdAt || 'N/A'} | De: ${c.name} (${c.email || ''}) | Sujet: ${c.subject || 'N/A'} | Message: ${c.message?.slice(0, 120) || ''}...\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Évaluer la crédibilité des pistes d'enquête, proposer des vérifications de recoupement et rédiger des réponses déontologiques.\n`;
+    return context;
+  }
+
+  if (pathname.startsWith('/admin/newsletter')) {
+    context += `=== DONNÉES DE L'ÉCRAN : ABONNÉS NEWSLETTER ===\n`;
+    context += `Total d'inscrits : ${newsletter.length}\n`;
+    context += `RÔLE ATTENDU DE MICUM : Analyser la dynamique d'abonnement et formuler les résumés pour l'envoi de la lettre hebdomadaire.\n`;
+    return context;
+  }
+
+  if (pathname.startsWith('/admin/utilisateurs')) {
+    context += `=== DONNÉES DE L'ÉCRAN : ÉQUIPE RÉDACTIONNELLE & ACCÈS ===\n`;
+    context += `Membres enregistrés (${users.length}) :\n`;
+    for (const u of users) {
+      context += `- ${u.name} (${u.email}) - Rôle: ${u.role} - Statut: ${u.status}\n`;
+    }
+    context += `\nRÔLE ATTENDU DE MICUM : Rappeler les devoirs déontologiques et les droits d'accès selon les fonctions.\n`;
+    return context;
+  }
+
+  // General dashboard
+  context += `=== DONNÉES DE L'ÉCRAN : TABLEAU DE BORD GÉNÉRAL ===\n`;
+  context += `- Articles publiés/en cours : ${articles.length}\n`;
+  context += `- Chantiers suivis : ${projects.length}\n`;
+  context += `- Indicateurs économiques : ${indicators.length}\n`;
+  context += `- Dépêches au fil : ${briefs.length}\n`;
+  context += `- Corrections déontologiques : ${corrections.length}\n`;
+  context += `- Signalements citoyens : ${contacts.length}\n`;
+  context += `- Abonnés newsletter : ${newsletter.length}\n`;
+  context += `\nRÔLE ATTENDU DE MICUM : Donner une vision panoramique de l'activité éditoriale, prioriser les tâches d'enquête et répondre à toute question sur la rédaction.\n`;
+
+  return context;
+}
+
+// Built-in multi-provider intelligent engine (Gemini, Claude, OpenAI)
 export async function POST(req: NextRequest) {
   try {
     const body: AIRequest = await req.json();
@@ -36,6 +216,91 @@ export async function POST(req: NextRequest) {
     }
 
     switch (action) {
+      case 'chat': {
+        const message = payload?.message || payload?.text || '';
+        const history = payload?.history || [];
+        const screen = payload?.screen || { pathname: '/admin', sectionTitle: "Desk Rédaction", canInsert: false };
+        const activeEditorData = payload?.activeEditorData || payload?.currentContext;
+        const attachments = (payload?.attachments || []) as Array<{ name: string; url?: string; type?: string; size?: number }>;
+
+        const providerInfo = getActiveProviderInfo();
+        if (!providerInfo.isLive) {
+          return NextResponse.json({
+            error: "Aucune clé API d'IA en direct n'est configurée (GEMINI_API_KEY requise dans .env.local)."
+          }, { status: 503 });
+        }
+
+        const store = getAdminStore();
+        const contacts = getSubmissionsContacts();
+        const newsletter = getSubmissionsNewsletter();
+
+        const screenContext = buildScreenContext({
+          pathname: screen.pathname || '/admin',
+          sectionTitle: screen.sectionTitle,
+          canInsert: Boolean(screen.canInsert),
+          activeEditorData,
+          store,
+          contacts,
+          newsletter
+        });
+
+        const systemPrompt = `Tu es Micum, le Desk IA et assistant d'investigation journalistique de la rédaction de "Burkina News" (média d'investigation burkinabè axé sur la rigueur factuelle, la traçabilité des chiffres officiels et la souveraineté économique).
+
+RÈGLES D'OR :
+1. Tu as sous les yeux les DONNÉES RÉELLES de l'écran sur lequel se trouve le journaliste (détaillées ci-dessous).
+2. Toutes tes réponses doivent être rigoureuses, précises, étayées et adaptées à cet écran spécifique.
+3. Ne produis JAMAIS de réponses factices ou de textes mocks préenregistrés : réponds authentiquement en analysant les données réelles fournies et la demande du journaliste.
+4. Si l'utilisateur est sur un formulaire d'article ou de chantier (${screen.canInsert ? 'OUI' : 'NON'}), et qu'il demande de rédiger, améliorer, titrer ou traduire un contenu, réponds en expliquant ton travail puis ajoute à la fin un bloc JSON strict :
+\`\`\`json
+{
+  "title": "Titre proposé...",
+  "excerpt": "Chapô proposé...",
+  "content": "Corps rédigé en Markdown...",
+  "titleEn": "Titre en anglais...",
+  "excerptEn": "Chapô en anglais...",
+  "contentEn": "Corps en anglais..."
+}
+\`\`\`
+5. Rédige toujours en français d'un niveau journalistique irréprochable (ou en anglais si demandé).
+
+${screenContext}
+`;
+
+        let userPrompt = message;
+        if (attachments.length > 0) {
+          userPrompt += `\n\n[Pièces jointes fournies : ${attachments.map(a => `${a.name} (${a.type || 'fichier'})`).join(', ')}]`;
+        }
+
+        const messagesForAi = [
+          ...history.map((h: any) => ({
+            role: (h.role === 'assistant' || h.role === 'model') ? ('assistant' as const) : ('user' as const),
+            content: h.content || ''
+          })),
+          { role: 'user' as const, content: userPrompt }
+        ];
+
+        try {
+          const aiRes = await generateAIChat({
+            systemPrompt,
+            messages: messagesForAi,
+            temperature: 0.3
+          });
+
+          return NextResponse.json({
+            success: true,
+            model: aiRes.model,
+            provider: aiRes.provider,
+            text: aiRes.text,
+            data: aiRes.rawData || undefined
+          });
+        } catch (err: any) {
+          console.error('Gemini chat execution error:', err);
+          return NextResponse.json({
+            error: `Erreur du modèle IA (${providerInfo.modelName}) : ${err.message || 'Échec de génération'}`
+          }, { status: 502 });
+        }
+      }
+
       case 'extract_article': {
         const text = payload?.text || '';
         const instructions = payload?.instructions?.trim() || '';
@@ -104,9 +369,14 @@ Génère l'objet JSON complet.`
                   appliedAttachments: attachments.map(a => a.name)
                 }
               });
+            } else {
+              throw new Error("L'IA n'a pas retourné de structure d'article valide");
             }
-          } catch (aiErr) {
-            console.warn('Live AI call encountered an issue, falling back to local engine:', aiErr);
+          } catch (aiErr: any) {
+            console.error('Live AI call encountered an issue in extract_article:', aiErr);
+            return NextResponse.json({
+              error: `Erreur IA en direct (${providerInfo.modelName}) : ${aiErr.message || 'Échec de traitement'}`
+            }, { status: 502 });
           }
         }
 
@@ -346,9 +616,14 @@ Génère le JSON complet.`
                   appliedAttachments: attachments.map(a => a.name)
                 }
               });
+            } else {
+              throw new Error("L'IA n'a pas retourné de structure de chantier valide");
             }
-          } catch (e) {
-            console.warn('Live AI call for project failed, falling back to deterministic engine:', e);
+          } catch (e: any) {
+            console.error('Live AI call for project failed:', e);
+            return NextResponse.json({
+              error: `Erreur IA en direct (${providerInfo.modelName}) : ${e.message || 'Échec de traitement'}`
+            }, { status: 502 });
           }
         }
 

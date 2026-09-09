@@ -13,6 +13,11 @@ export interface ProviderInfo {
   apiKey?: string;
 }
 
+export interface ChatTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export function getActiveProviderInfo(): ProviderInfo {
   const forceProvider = process.env.MICUM_AI_PROVIDER?.toLowerCase()?.trim();
   
@@ -22,7 +27,7 @@ export function getActiveProviderInfo(): ProviderInfo {
 
   // 1. Explicit override if requested
   if (forceProvider === 'gemini' && geminiKey) {
-    return { provider: 'gemini', apiKey: geminiKey, modelName: 'Gemini 2.5 Flash', isLive: true };
+    return { provider: 'gemini', apiKey: geminiKey, modelName: 'Gemini 3.6 Flash', isLive: true };
   }
   if ((forceProvider === 'claude' || forceProvider === 'anthropic') && anthropicKey) {
     return { provider: 'claude', apiKey: anthropicKey, modelName: 'Claude 3.5 Sonnet', isLive: true };
@@ -31,10 +36,9 @@ export function getActiveProviderInfo(): ProviderInfo {
     return { provider: 'openai', apiKey: openAiKey, modelName: 'GPT-4o', isLive: true };
   }
 
-  // 2. Automatic detection by availability
-  // Priority: Gemini -> Claude -> OpenAI
+  // 2. Automatic detection by availability (Priority: Gemini -> Claude -> OpenAI)
   if (geminiKey) {
-    return { provider: 'gemini', apiKey: geminiKey, modelName: 'Gemini 2.5 Flash', isLive: true };
+    return { provider: 'gemini', apiKey: geminiKey, modelName: 'Gemini 3.6 Flash', isLive: true };
   }
   if (anthropicKey) {
     return { provider: 'claude', apiKey: anthropicKey, modelName: 'Claude 3.5 Sonnet', isLive: true };
@@ -43,17 +47,43 @@ export function getActiveProviderInfo(): ProviderInfo {
     return { provider: 'openai', apiKey: openAiKey, modelName: 'GPT-4o', isLive: true };
   }
 
-  // 3. Fallback: Internal deterministic engine
-  return { provider: 'simulation', modelName: 'Micum Desk IA', isLive: false };
+  // 3. Fallback: Simulation engine when no API keys are present
+  return { provider: 'simulation', modelName: 'Micum Desk IA (Offline)', isLive: false };
 }
 
 // -------------------------------------------------------------
-// Provider Callers
+// Gemini Chat & Generation
 // -------------------------------------------------------------
 
-async function callGemini(apiKey: string, systemPrompt: string, userPrompt: string): Promise<any | null> {
-  const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+async function callGeminiChat(
+  apiKey: string,
+  systemPrompt: string,
+  messages: ChatTurn[],
+  temperature = 0.3
+): Promise<{ text: string; model: string }> {
+  const models = ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-flash-latest'];
   
+  // Format contents for Gemini: strictly alternating user/model
+  const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+
+  for (const m of messages) {
+    const role = m.role === 'assistant' ? 'model' : 'user';
+    const text = m.content?.trim();
+    if (!text) continue;
+
+    if (contents.length > 0 && contents[contents.length - 1].role === role) {
+      contents[contents.length - 1].parts.push({ text });
+    } else {
+      contents.push({ role, parts: [{ text }] });
+    }
+  }
+
+  if (contents.length === 0 || contents[0].role !== 'user') {
+    contents.unshift({ role: 'user', parts: [{ text: 'Bonjour' }] });
+  }
+
+  let lastError: Error | null = null;
+
   for (const model of models) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -61,42 +91,47 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: userPrompt }]
-            }
-          ],
+          contents,
           systemInstruction: {
             parts: [{ text: systemPrompt }]
           },
           generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.2
+            temperature,
+            maxOutputTokens: 4096
           }
         })
       });
 
       if (!res.ok) {
-        console.warn(`Gemini API returned ${res.status} for model ${model}`);
+        const errText = await res.text();
+        lastError = new Error(`Gemini ${model} HTTP ${res.status}: ${errText}`);
+        console.warn(`Gemini chat error with ${model}:`, errText);
         continue;
       }
 
       const data = await res.json();
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (rawText) {
-        return parseCleanJson(rawText);
+        return { text: rawText, model: `${model}` };
       }
-    } catch (e) {
+    } catch (e: any) {
+      lastError = e;
       console.warn(`Gemini error with model ${model}:`, e);
     }
   }
 
-  return null;
+  throw lastError || new Error("Échec de communication avec les modèles Gemini.");
 }
 
-async function callClaude(apiKey: string, systemPrompt: string, userPrompt: string): Promise<any | null> {
-  const models = ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-haiku-20240307'];
+async function callClaudeChat(
+  apiKey: string,
+  systemPrompt: string,
+  messages: ChatTurn[],
+  temperature = 0.3
+): Promise<{ text: string; model: string }> {
+  const models = ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022'];
+
+  let lastError: Error | null = null;
 
   for (const model of models) {
     try {
@@ -110,36 +145,43 @@ async function callClaude(apiKey: string, systemPrompt: string, userPrompt: stri
         body: JSON.stringify({
           model,
           max_tokens: 4096,
-          system: `${systemPrompt}\nTu dois répondre EXCLUSIVEMENT sous forme d'objet JSON valide, sans balises de code ni texte introductif.`,
-          messages: [
-            {
-              role: 'user',
-              content: userPrompt
-            }
-          ]
+          system: systemPrompt,
+          temperature,
+          messages: messages.map(m => ({
+            role: m.role,
+            content: m.content
+          }))
         })
       });
 
       if (!res.ok) {
-        console.warn(`Claude API returned ${res.status} for model ${model}`);
+        const errText = await res.text();
+        lastError = new Error(`Claude ${model} HTTP ${res.status}: ${errText}`);
         continue;
       }
 
       const data = await res.json();
       const rawText = data.content?.[0]?.text;
       if (rawText) {
-        return parseCleanJson(rawText);
+        return { text: rawText, model };
       }
-    } catch (e) {
-      console.warn(`Claude error with model ${model}:`, e);
+    } catch (e: any) {
+      lastError = e;
     }
   }
 
-  return null;
+  throw lastError || new Error("Échec de communication avec Claude.");
 }
 
-async function callOpenAI(apiKey: string, systemPrompt: string, userPrompt: string): Promise<any | null> {
+async function callOpenAIChat(
+  apiKey: string,
+  systemPrompt: string,
+  messages: ChatTurn[],
+  temperature = 0.3
+): Promise<{ text: string; model: string }> {
   const models = ['gpt-4o-mini', 'gpt-4o'];
+
+  let lastError: Error | null = null;
 
   for (const model of models) {
     try {
@@ -152,51 +194,107 @@ async function callOpenAI(apiKey: string, systemPrompt: string, userPrompt: stri
         body: JSON.stringify({
           model,
           messages: [
-            { role: 'system', content: `${systemPrompt}\nTu dois répondre EXCLUSIVEMENT sous forme d'objet JSON valide.` },
-            { role: 'user', content: userPrompt }
+            { role: 'system', content: systemPrompt },
+            ...messages.map(m => ({ role: m.role, content: m.content }))
           ],
-          response_format: { type: 'json_object' },
-          temperature: 0.2
+          temperature
         })
       });
 
       if (!res.ok) {
-        console.warn(`OpenAI API returned ${res.status} for model ${model}`);
+        const errText = await res.text();
+        lastError = new Error(`OpenAI ${model} HTTP ${res.status}: ${errText}`);
         continue;
       }
 
       const data = await res.json();
       const rawText = data.choices?.[0]?.message?.content;
       if (rawText) {
-        return parseCleanJson(rawText);
+        return { text: rawText, model };
       }
-    } catch (e) {
-      console.warn(`OpenAI error with model ${model}:`, e);
+    } catch (e: any) {
+      lastError = e;
     }
   }
+
+  throw lastError || new Error("Échec de communication avec OpenAI.");
+}
+
+// -------------------------------------------------------------
+// JSON Clean Extractor
+// -------------------------------------------------------------
+
+export function extractEmbeddedJson(text: string): any | null {
+  if (!text) return null;
+  try {
+    const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (match && match[1]) {
+      const parsed = JSON.parse(match[1].trim());
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch {}
+
+  try {
+    const trimmed = text.trim();
+    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch {}
 
   return null;
 }
 
-function parseCleanJson(text: string): any | null {
-  try {
-    const cleaned = text
-      .trim()
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .trim();
-    return JSON.parse(cleaned);
-  } catch (e) {
-    console.error('Failed to parse AI JSON response:', e, text);
-    return null;
-  }
+export function parseCleanJson(text: string): any | null {
+  return extractEmbeddedJson(text);
 }
 
 // -------------------------------------------------------------
-// Unified Call Interface
+// Public High-Level AI Functions
 // -------------------------------------------------------------
 
+/**
+ * Freeform multi-turn conversational AI with screen awareness and rich Markdown response
+ */
+export async function generateAIChat({
+  systemPrompt,
+  messages,
+  temperature = 0.3
+}: {
+  systemPrompt: string;
+  messages: ChatTurn[];
+  temperature?: number;
+}): Promise<{ text: string; rawData?: any; model: string; provider: string }> {
+  const info = getActiveProviderInfo();
+  if (!info.isLive || !info.apiKey) {
+    throw new Error("Aucun fournisseur d'IA en direct actif (clé GEMINI_API_KEY requise).");
+  }
+
+  let res: { text: string; model: string };
+
+  if (info.provider === 'gemini') {
+    res = await callGeminiChat(info.apiKey, systemPrompt, messages, temperature);
+  } else if (info.provider === 'claude') {
+    res = await callClaudeChat(info.apiKey, systemPrompt, messages, temperature);
+  } else if (info.provider === 'openai') {
+    res = await callOpenAIChat(info.apiKey, systemPrompt, messages, temperature);
+  } else {
+    throw new Error("Fournisseur inconnu");
+  }
+
+  const rawData = extractEmbeddedJson(res.text);
+
+  return {
+    text: res.text,
+    rawData,
+    model: `${res.model}`,
+    provider: info.provider
+  };
+}
+
+/**
+ * Strict JSON generation for automated extraction actions
+ */
 export async function generateAIJson({
   systemPrompt,
   userPrompt
@@ -209,26 +307,20 @@ export async function generateAIJson({
     return null;
   }
 
-  try {
-    let result: any = null;
+  const jsonSystemPrompt = `${systemPrompt}\nTu DOIS impérativement répondre sous forme d'un objet JSON valide encapsulé dans un bloc \`\`\`json { ... } \`\`\`. Ne rajoute aucun commentaire en dehors du JSON.`;
 
-    if (info.provider === 'gemini') {
-      result = await callGemini(info.apiKey, systemPrompt, userPrompt);
-    } else if (info.provider === 'claude') {
-      result = await callClaude(info.apiKey, systemPrompt, userPrompt);
-    } else if (info.provider === 'openai') {
-      result = await callOpenAI(info.apiKey, systemPrompt, userPrompt);
-    }
+  const chatRes = await generateAIChat({
+    systemPrompt: jsonSystemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+    temperature: 0.1
+  });
 
-    if (result && typeof result === 'object') {
-      return {
-        data: result,
-        model: `${info.modelName} (Micum AI)`,
-        provider: info.provider
-      };
-    }
-  } catch (err) {
-    console.error(`Error calling ${info.provider} API:`, err);
+  if (chatRes.rawData && typeof chatRes.rawData === 'object') {
+    return {
+      data: chatRes.rawData,
+      model: chatRes.model,
+      provider: chatRes.provider
+    };
   }
 
   return null;
