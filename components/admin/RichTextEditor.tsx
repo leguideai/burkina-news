@@ -309,13 +309,29 @@ export default function RichTextEditor({
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                     viewMode === 'preview'
                       ? 'bg-[#087443] text-white font-bold shadow-2xs'
-                      : 'text-[#64748b] hover:text-[#141414]'
+                      : 'text-[#64748b] hover:text-[#087443] font-medium'
                   }`}
+                  title="Afficher la mise en page finale avec titres, citations et images"
                 >
                   <Eye size={12} />
                   <span>Aperçu Réel</span>
                 </button>
               </div>
+
+              {viewMode === 'edit' && (
+                <span className="hidden lg:inline-flex items-center gap-1 text-[11px] font-sans text-[#736c62] ml-1">
+                  <span>(Mode rédaction brut · Cliquez sur</span>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('preview')}
+                    className="text-[#087443] font-semibold underline underline-offset-2 hover:text-[#065330] cursor-pointer inline-flex items-center gap-0.5"
+                  >
+                    <Eye size={11} />
+                    <span>Aperçu Réel</span>
+                  </button>
+                  <span>pour voir la mise en page)</span>
+                </span>
+              )}
             </div>
 
             {/* Supprimer button */}
@@ -576,11 +592,39 @@ export default function RichTextEditor({
               )}
             </div>
 
-            {/* Footer Bar: Character Count */}
-            <div className="px-4 py-2 border-t border-[#f1f5f9] bg-[#fafafa] flex items-center justify-between text-xs font-serif text-[#94a3b8]">
-              <span>
-                {charCount.toLocaleString('fr-FR')} caractère{charCount > 1 ? 's' : ''}
-              </span>
+            {/* Footer Bar: Character Count & Formatting Hint */}
+            <div className="px-4 py-2 border-t border-[#f1f5f9] bg-[#fafafa] flex flex-wrap items-center justify-between gap-2 text-xs font-serif text-[#736c62]">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-[#94a3b8]">
+                  {charCount.toLocaleString('fr-FR')} caractère{charCount > 1 ? 's' : ''}
+                </span>
+                <span className="text-[#cbd5e1]">·</span>
+                <span className="text-[11px] font-sans text-[#64748b]">
+                  {viewMode === 'edit' 
+                    ? 'Syntaxe Markdown (## Intertitres · > Citations · **Gras**)' 
+                    : 'Rendu finalisé conforme au site public'}
+                </span>
+              </div>
+
+              {viewMode === 'edit' ? (
+                <button
+                  type="button"
+                  onClick={() => setViewMode('preview')}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#087443] hover:text-[#065330] font-bold cursor-pointer transition-colors"
+                >
+                  <Eye size={12} />
+                  <span>Basculer sur l&apos;Aperçu Réel</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setViewMode('edit')}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#475569] hover:text-[#141414] font-bold cursor-pointer transition-colors"
+                >
+                  <Edit3 size={12} />
+                  <span>Revenir à l&apos;Édition</span>
+                </button>
+              )}
             </div>
 
           </div>

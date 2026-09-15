@@ -19,6 +19,7 @@ import {
 import { useToast } from '@/components/admin/Toast';
 import MicumIcon from '@/components/admin/MicumIcon';
 import { useMicum } from '@/components/admin/MicumContext';
+import MicumMarkdown from '@/components/admin/MicumMarkdown';
 
 interface ChatMessage {
   id: string;
@@ -155,7 +156,7 @@ export default function MicumSidePanel() {
     return { sectionId: 'general', sectionTitle: "Desk Rédaction", canInsert: false };
   }, [activeEditor, pathname]);
 
-  // Section-tailored suggestions
+  // Section-tailored suggestions based on current screen
   const getSuggestions = () => {
     switch (resolvedSection.sectionId) {
       case 'article':
@@ -168,9 +169,9 @@ export default function MicumSidePanel() {
           ];
         }
         return [
-          { label: "Idées d'enquêtes sur les mines et l'or", icon: "⛏️" },
-          { label: "Méthodologie du Grand Décryptage mensuel", icon: "📋" },
-          { label: "Critères de sélection des sources primaires", icon: "🔍" },
+          { label: "Quels sont les articles récemment publiés ?", icon: "📋" },
+          { label: "Analyser la répartition des articles par rubrique", icon: "📊" },
+          { label: "Proposer des angles d'investigation non encore couverts", icon: "💡" },
         ];
 
       case 'project':
@@ -183,48 +184,77 @@ export default function MicumSidePanel() {
           ];
         }
         return [
-          { label: "Les 6 statuts vérifiés du Tracker", icon: "📊" },
-          { label: "Protocole d'audit physique de chantier", icon: "🏗️" },
+          { label: "Bilan des chantiers en retard ou à l'arrêt", icon: "⚠️" },
+          { label: "Synthèse des budgets alloués aux infrastructures", icon: "💰" },
+          { label: "Quels projets sont en phase opérationnelle ?", icon: "✅" },
         ];
 
       case 'indicator':
         return [
-          { label: "Proposer une définition méthodologique standard", icon: "📊" },
-          { label: "Calculer la trajectoire cible PND 2028-2030", icon: "🎯" },
-          { label: "Traduire l'indicateur et le programme en anglais", icon: "🇬🇧" },
+          { label: "Analyser les indicateurs macroéconomiques clés", icon: "📈" },
+          { label: "Comparer les réalisations aux cibles du PND", icon: "🎯" },
+          { label: "Explications méthodologiques du Baromètre RELANCE", icon: "📊" },
         ];
 
       case 'fil':
         return [
           { label: "Formater un fait certifié au format 1 minute", icon: "⚡" },
-          { label: "Traduire une sélection de faits en anglais", icon: "🇬🇧" },
+          { label: "Traduire une sélection de dépêches en anglais", icon: "🇬🇧" },
           { label: "Vérifier la validité de la source primaire", icon: "🔍" },
         ];
 
       case 'issue':
         return [
-          { label: "Rédiger l'éditorial du Directeur de la publication", icon: "📖" },
-          { label: "Structurer le sommaire du numéro mensuel", icon: "📑" },
-          { label: "Calculer le décompte consolidé des sources", icon: "📚" },
+          { label: "Structurer le sommaire du prochain numéro mensuel", icon: "📑" },
+          { label: "Rédiger une proposition d'éditorial pour la parution", icon: "📖" },
+          { label: "Consolider la liste des enquêtes incluses", icon: "📚" },
         ];
 
       case 'une':
         return [
-          { label: "Optimiser la hiérarchie visuelle de la Une", icon: "⭐" },
+          { label: "Évaluer l'équilibre thématique de la page d'accueil", icon: "⚖️" },
           { label: "Proposer une citation éditoriale pour la semaine", icon: "💬" },
+          { label: "Suggérer une meilleure hiérarchie pour le sujet lead", icon: "⭐" },
+        ];
+
+      case 'rubriques':
+        return [
+          { label: "Auditer la cohérence de la rubrique Histoire", icon: "📜" },
+          { label: "Vérifier la répartition des articles par rubrique", icon: "📊" },
+          { label: "Proposer des thématiques d'archives et de mémoire", icon: "🏛️" },
+        ];
+
+      case 'corrections':
+        return [
+          { label: "Rédiger une note de transparence déontologique", icon: "⚖️" },
+          { label: "Vérifier la conformité de l'erratum avec la charte", icon: "🛡️" },
         ];
 
       case 'signalements':
         return [
-          { label: "Auditer la pertinence d'un signalement d'erreur", icon: "⚖️" },
+          { label: "Auditer la pertinence d'un signalement lecteur", icon: "🔍" },
+          { label: "Évaluer le niveau de preuve potentiel (A, B ou C)", icon: "🛡️" },
           { label: "Rédiger un accusé de réception déontologique", icon: "✉️" },
         ];
 
+      case 'newsletter':
+        return [
+          { label: "Analyser la dynamique de croissance des abonnés", icon: "📈" },
+          { label: "Rédiger l'objet et l'accroche de la prochaine lettre", icon: "✉️" },
+        ];
+
+      case 'users':
+        return [
+          { label: "Rappel des responsabilités selon les rôles éditoriaux", icon: "👥" },
+          { label: "Auditer les règles de validation avant publication", icon: "🔒" },
+        ];
+
+      case 'dashboard':
       default:
         return [
-          { label: "Faire le point sur l'actualité de la rédaction", icon: "📰" },
-          { label: "Rappel des 3 niveaux de preuve de la charte", icon: "🛡️" },
-          { label: "Guide des capacités et insertion de Micum", icon: "🤖" },
+          { label: "Synthèse générale des priorités de la rédaction", icon: "📊" },
+          { label: "Quels chantiers ou enquêtes nécessitent un suivi urgent ?", icon: "⚠️" },
+          { label: "Bilan des indicateurs et alertes en cours", icon: "📈" },
         ];
     }
   };
@@ -278,41 +308,45 @@ export default function MicumSidePanel() {
     setIsLoading(true);
 
     try {
-      const action = resolvedSection.sectionId === 'project' ? 'extract_project' :
-                     resolvedSection.sectionId === 'fil' ? 'compile_fil' :
-                     resolvedSection.sectionId === 'indicator' ? 'extract_indicators' : 'extract_article';
-
       const res = await fetch('/api/admin/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action,
+          action: 'chat',
           payload: {
-            text,
-            instructions: text,
-            section: resolvedSection.sectionTitle,
-            canInsert: resolvedSection.canInsert,
-            attachments: attachedFiles.map(f => ({ name: f.name, url: f.url, type: f.type, size: f.size })),
-            currentContext: resolvedSection.currentData
+            message: text,
+            history: messages.slice(-8).map(m => ({ role: m.role, content: m.content })),
+            screen: {
+              pathname,
+              sectionId: resolvedSection.sectionId,
+              sectionTitle: resolvedSection.sectionTitle,
+              canInsert: resolvedSection.canInsert
+            },
+            activeEditorData: resolvedSection.currentData,
+            attachments: attachedFiles.map(f => ({ name: f.name, url: f.url, type: f.type, size: f.size }))
           }
         })
       });
 
-      if (!res.ok) throw new Error("Erreur lors de l'analyse");
-
       const json = await res.json();
-      const data = json.data || {};
-
-      let responseText = '';
-      if (data.title) responseText += `**Titre proposé :**\n${data.title}\n\n`;
-      if (data.excerpt) responseText += `**Chapô / Résumé :**\n${data.excerpt}\n\n`;
-      if (data.content || data.body || data.description) {
-        const body = data.content || data.body || data.description;
-        responseText += `**Corps / Description :**\n${body}\n\n`;
+      if (!res.ok) {
+        throw new Error(json.error || "Erreur lors de la communication avec Micum");
       }
-      if (data.titleEn) responseText += `**Titre (EN) :**\n${data.titleEn}\n\n`;
-      if (data.excerptEn) responseText += `**Chapô (EN) :**\n${data.excerptEn}\n\n`;
-      if (data.analysis) responseText += `**Analyse éditoriale :**\n${data.analysis}\n\n`;
+
+      const data = json.data || {};
+      let responseText = json.text || '';
+
+      if (!responseText) {
+        if (data.title) responseText += `**Titre proposé :**\n${data.title}\n\n`;
+        if (data.excerpt) responseText += `**Chapô / Résumé :**\n${data.excerpt}\n\n`;
+        if (data.content || data.body || data.description) {
+          const body = data.content || data.body || data.description;
+          responseText += `**Corps / Description :**\n${body}\n\n`;
+        }
+        if (data.titleEn) responseText += `**Titre (EN) :**\n${data.titleEn}\n\n`;
+        if (data.excerptEn) responseText += `**Chapô (EN) :**\n${data.excerptEn}\n\n`;
+        if (data.analysis) responseText += `**Analyse éditoriale :**\n${data.analysis}\n\n`;
+      }
 
       if (!responseText.trim()) {
         responseText = json.message || "Analyse terminée avec succès par Micum.";
@@ -331,7 +365,7 @@ export default function MicumSidePanel() {
       const errMsg: ChatMessage = {
         id: `msg-${Date.now()}-e`,
         role: 'assistant',
-        content: `❌ Erreur : ${err.message || 'Impossible de contacter Micum.'}`,
+        content: `❌ ${err.message || 'Impossible de contacter Micum.'}`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errMsg]);
@@ -394,14 +428,8 @@ export default function MicumSidePanel() {
   // ─────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/40 z-50 backdrop-blur-xs transition-opacity"
-        onClick={closeMicum}
-      />
-
-      {/* Drawer Panel */}
-      <div className="fixed top-0 right-0 bottom-0 w-full sm:w-[440px] md:w-[480px] z-50 bg-white flex flex-col h-full shadow-2xl border-l border-[#e6dfd5] animate-in slide-in-from-right duration-200">
+      {/* Drawer Panel - Clean, un-shadowed floating copilot drawer */}
+      <div className="fixed top-0 right-0 bottom-0 w-full sm:w-[450px] md:w-[490px] z-50 bg-white flex flex-col h-full shadow-2xl border-l border-[#e6dfd5] animate-in slide-in-from-right duration-200">
         
         {/* Header */}
         <div className="shrink-0 px-4 py-3 border-b border-[#e6dfd5] bg-[#faf8f5]">
@@ -510,8 +538,8 @@ export default function MicumSidePanel() {
                       <MicumIcon size={16} />
                       <span className="text-[10px] font-mono font-bold text-[#087443] uppercase">Micum</span>
                     </div>
-                    <div className="text-xs font-serif text-[#222] whitespace-pre-wrap leading-relaxed">
-                      {msg.content}
+                    <div className="text-xs text-[#222]">
+                      <MicumMarkdown content={msg.content} hideJsonBlocks={Boolean(resolvedSection.canInsert && msg.rawData)} />
                     </div>
                   </div>
 

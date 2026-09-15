@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import Tooltip from '@/components/ui/Tooltip';
 import MicumIcon from '@/components/admin/MicumIcon';
+import { useAdminAuth } from './AuthGuard';
+import { normalizeRoleCode } from '@/lib/api';
 
 interface AdminSidebarProps {
   mobileOpen?: boolean;
@@ -40,6 +42,9 @@ export default function AdminSidebar({
   onToggleCollapse = () => {}
 }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { user } = useAdminAuth();
+  const roleCode = normalizeRoleCode(user?.role || '');
+  const canManageUsers = roleCode === 'superadmin' || roleCode === 'editorial_director';
 
   const navItems = [
     { label: "Vue d'ensemble", href: "/admin", icon: LayoutDashboard },
@@ -53,7 +58,9 @@ export default function AdminSidebar({
     { label: "Registre Corrections", href: "/admin/corrections", icon: Scale },
     { label: "Signalements Lecteurs", href: "/admin/signalements", icon: AlertCircle, count: unreadReportsCount },
     { label: "Abonnés Newsletter", href: "/admin/newsletter", icon: Mail },
-    { label: "Équipe & Accès", href: "/admin/utilisateurs", icon: Users, badge: "Sécurité" },
+    ...(canManageUsers
+      ? [{ label: "Équipe & Accès", href: "/admin/utilisateurs", icon: Users, badge: "Sécurité" }]
+      : []),
   ];
 
   // Sidebar internal content

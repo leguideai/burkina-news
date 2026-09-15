@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, 
   UserPlus, 
@@ -18,90 +18,119 @@ import {
   Mail, 
   Briefcase, 
   Clock, 
-  Info,
-  Lock,
-  Sparkles
+  Info, 
+  Lock, 
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw
 } from 'lucide-react';
-import { AdminUser, AdminRole } from '@/data/admin-store';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
 import ImageUploader from '@/components/admin/ImageUploader';
+import { useAdminAuth } from '@/components/admin/AuthGuard';
+import { 
+  usersApi, 
+  AdminUserDTO, 
+  BackendAdminRole, 
+  OFFICIAL_ROLES, 
+  normalizeRoleCode, 
+  getRoleLabel,
+  ApiClientError,
+  PaginationMeta
+} from '@/lib/api';
 
 export default function AdminUsersPage() {
+  const { user: currentUser, updateUserSession } = useAdminAuth();
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [users, setUsers] = useState<AdminUserDTO[]>([]);
+  const [meta, setMeta] = useState<PaginationMeta>({ page: 1, limit: 20, total: 0, total_pages: 1 });
 
   // Filtering & Search
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-  const [isDeletingUser, setIsDeletingUser] = useState<AdminUser | null>(null);
+  const [editingUser, setEditingUser] = useState<AdminUserDTO | null>(null);
+  const [isDeletingUser, setIsDeletingUser] = useState<AdminUserDTO | null>(null);
   const [showRoleGuide, setShowRoleGuide] = useState(false);
 
   // Form State
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
-  const [formRole, setFormRole] = useState<AdminRole>('Rédacteur / Enquêteur');
+  const [formRole, setFormRole] = useState<BackendAdminRole>('journalist');
   const [formTitle, setFormTitle] = useState('');
   const [formAvatar, setFormAvatar] = useState('');
-  const [formPassword, setFormPassword] = useState('faso2026');
+  const [formPassword, setFormPassword] = useState('');
   const [formStatus, setFormStatus] = useState<'active' | 'suspended'>('active');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Load users from API
-  const loadUsers = async () => {
+  // Load users from Go API
+  const loadUsers = useCallback(async (page = currentPage) => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger la liste des utilisateurs.');
-      const data = await res.json();
-      setUsers(data.users || []);
+      const res = await usersApi.listUsers({
+        page,
+        limit: 20,
+        search: searchTerm,
+        role: roleFilter,
+        status: statusFilter,
+      });
+      setUsers(res.users);
+      if (res.meta) {
+        setMeta(res.meta);
+      }
     } catch (err: any) {
-      error('Erreur', err.message);
+      const msg = err instanceof ApiClientError ? err.getLocalizedMessage('fr') : (err.message || 'Impossible de charger la liste des utilisateurs.');
+      error('Erreur de chargement', msg);
     } finally {
-      setTimeout(() => setLoading(false), 250);
+      setTimeout(() => setLoading(false), 200);
     }
-  };
+  }, [currentPage, searchTerm, roleFilter, statusFilter, error]);
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
   // Open Create Modal
   const handleOpenCreate = () => {
     setEditingUser(null);
     setFormName('');
     setFormEmail('');
-    setFormRole('Rédacteur / Enquêteur');
+    setFormRole('journalist');
     setFormTitle('');
     setFormAvatar('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80');
-    setFormPassword('faso2026');
+    setFormPassword('BurkinaAdmin2026!');
     setFormStatus('active');
+    setFieldErrors({});
     setIsModalOpen(true);
   };
 
   // Open Edit Modal
-  const handleOpenEdit = (user: AdminUser) => {
+  const handleOpenEdit = (user: AdminUserDTO) => {
     setEditingUser(user);
     setFormName(user.name);
     setFormEmail(user.email);
-    setFormRole(user.role);
+    setFormRole(normalizeRoleCode(user.role));
     setFormTitle(user.title || '');
     setFormAvatar(user.avatar || '');
-    setFormPassword(user.password || 'faso2026');
+    setFormPassword(''); // Empty password = keep existing
     setFormStatus(user.status);
+    setFieldErrors({});
     setIsModalOpen(true);
   };
 
   // Submit User Create or Update
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
+
     if (!formName.trim() || !formEmail.trim()) {
       warning('Champs requis', 'Veuillez renseigner au minimum le nom et l\'adresse email.');
       return;
@@ -109,141 +138,137 @@ export default function AdminUsersPage() {
 
     setIsSubmitting(true);
     try {
-      const isEdit = !!editingUser;
-      const action = isEdit ? 'update_user' : 'create_user';
-      const payload = isEdit
-        ? {
-            id: editingUser.id,
+      if (editingUser) {
+        // Mode Mise à jour
+        const updatePayload: any = {
+          name: formName.trim(),
+          email: formEmail.trim().toLowerCase(),
+          role: formRole,
+          title: formTitle.trim(),
+          avatar: formAvatar,
+          status: formStatus,
+        };
+        if (formPassword.trim()) {
+          updatePayload.password = formPassword.trim();
+        }
+
+        await usersApi.updateUser(editingUser.id, updatePayload);
+
+        // Si l'utilisateur modifié est l'utilisateur actuellement connecté, on synchronise sa session
+        if (currentUser && editingUser.id === currentUser.id) {
+          updateUserSession({
             name: formName.trim(),
             email: formEmail.trim().toLowerCase(),
-            role: formRole,
             title: formTitle.trim(),
             avatar: formAvatar,
-            password: formPassword.trim(),
-            status: formStatus
-          }
-        : {
-            name: formName.trim(),
-            email: formEmail.trim().toLowerCase(),
-            role: formRole,
-            title: formTitle.trim(),
-            avatar: formAvatar,
-            password: formPassword.trim(),
-            status: formStatus
-          };
+          });
+        }
 
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, payload })
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de l\'enregistrement.');
-
-      success(
-        isEdit ? 'Profil mis à jour' : 'Compte créé avec succès',
-        result.message || `Le compte de ${formName} est opérationnel.`
-      );
+        success('Profil mis à jour', `Le compte de ${formName} a été actualisé avec succès.`);
+      } else {
+        // Mode Création
+        await usersApi.createUser({
+          name: formName.trim(),
+          email: formEmail.trim().toLowerCase(),
+          role: formRole,
+          title: formTitle.trim(),
+          avatar: formAvatar,
+          password: formPassword.trim() || 'BurkinaAdmin2026!',
+          status: formStatus,
+        });
+        success('Compte créé avec succès', `Le compte de ${formName} est maintenant opérationnel.`);
+      }
 
       setIsModalOpen(false);
-      loadUsers();
+      loadUsers(1);
     } catch (err: any) {
-      error('Erreur', err.message);
+      if (err instanceof ApiClientError) {
+        if (err.details && err.details.length > 0) {
+          const mapped: Record<string, string> = {};
+          err.details.forEach((d) => {
+            mapped[d.field] = d.message_fr;
+          });
+          setFieldErrors(mapped);
+        }
+        error('Erreur d\'enregistrement', err.getLocalizedMessage('fr'));
+      } else {
+        error('Erreur', err.message || 'Une erreur inattendue est survenue.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // Toggle User Status (Active / Suspended)
-  const handleToggleStatus = async (user: AdminUser) => {
+  const handleToggleStatus = async (user: AdminUserDTO) => {
+    const newStatus = user.status === 'active' ? 'suspended' : 'active';
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'toggle_user_status',
-          payload: { id: user.id }
-        })
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors du changement de statut.');
-
-      if (result.user && result.user.status === 'active') {
+      await usersApi.updateUserStatus(user.id, newStatus);
+      if (newStatus === 'active') {
         success('Compte réactivé', `L'accès pour ${user.name} a été rétabli.`);
       } else {
         warning('Compte suspendu', `L'accès pour ${user.name} a été verrouillé.`);
       }
-
       loadUsers();
     } catch (err: any) {
-      error('Action impossible', err.message);
+      const msg = err instanceof ApiClientError ? err.getLocalizedMessage('fr') : (err.message || 'Action impossible.');
+      error('Action impossible', msg);
     }
   };
 
   // Delete User
-  const handleDelete = async (user: AdminUser) => {
+  const handleDelete = async (user: AdminUserDTO) => {
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'delete_user',
-          payload: { id: user.id }
-        })
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur de suppression.');
-
-      success('Compte supprimé', `Le compte de ${user.name} a été retiré.`);
+      await usersApi.deleteUser(user.id);
+      success('Compte supprimé', `Le compte de ${user.name} a été définitivement retiré.`);
       setIsDeletingUser(null);
       loadUsers();
     } catch (err: any) {
-      error('Suppression impossible', err.message);
+      const msg = err instanceof ApiClientError ? err.getLocalizedMessage('fr') : (err.message || 'Erreur lors de la suppression.');
+      error('Suppression impossible', msg);
     }
   };
 
   // Helper to render role badge
-  const renderRoleBadge = (role: AdminRole) => {
-    switch (role) {
-      case 'Superadmin':
+  const renderRoleBadge = (role: string) => {
+    const code = normalizeRoleCode(role);
+    switch (code) {
+      case 'superadmin':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#c2410c] text-white text-[10px] font-mono font-bold uppercase rounded tracking-wider shadow-xs">
             <ShieldCheck size={11} />
             <span>★ Superadmin</span>
           </span>
         );
-      case 'Directeur éditorial':
+      case 'editorial_director':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#087443] text-white text-[10px] font-mono font-bold uppercase rounded tracking-wider">
             <Shield size={11} />
             <span>Directeur éditorial</span>
           </span>
         );
-      case 'Rédacteur / Enquêteur':
+      case 'journalist':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#1e3a8a] text-white text-[10px] font-mono font-bold uppercase rounded tracking-wider">
             <Briefcase size={11} />
             <span>Enquêteur</span>
           </span>
         );
-      case 'Desk Données & Tracker':
+      case 'tracker_data':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#d97706] text-white text-[10px] font-mono font-bold uppercase rounded tracking-wider">
             <Sparkles size={11} />
             <span>Desk Tracker</span>
           </span>
         );
-      case 'Desk IA & Veille':
+      case 'desk_ai':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#7c3aed] text-white text-[10px] font-mono font-bold uppercase rounded tracking-wider">
             <Sparkles size={11} />
             <span>Desk IA</span>
           </span>
         );
-      case 'Auditeur Déontologique':
+      case 'auditor':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#475569] text-white text-[10px] font-mono font-bold uppercase rounded tracking-wider">
             <Info size={11} />
@@ -259,28 +284,14 @@ export default function AdminUsersPage() {
     }
   };
 
-  // Filtered Users List
-  const filteredUsers = users.filter((u) => {
-    const matchesSearch = 
-      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (u.title && u.title.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    const matchesRole = roleFilter === 'all' || u.role === roleFilter;
-    const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
-
   // Statistics
-  const totalUsers = users.length;
-  const activeUsers = users.filter(u => u.status === 'active').length;
-  const suspendedUsers = users.filter(u => u.status === 'suspended').length;
-  const superadminCount = users.filter(u => u.role === 'Superadmin').length;
+  const totalUsers = meta.total || users.length;
+  const activeUsers = users.filter((u) => u.status === 'active').length;
+  const suspendedUsers = users.filter((u) => u.status === 'suspended').length;
+  const superadminCount = users.filter((u) => normalizeRoleCode(u.role) === 'superadmin').length;
 
   return (
     <div className="space-y-6">
-      
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e6dfd5] pb-5">
         <div>
@@ -297,6 +308,17 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Tooltip position="bottom" content="Actualiser la liste">
+            <button
+              type="button"
+              onClick={() => loadUsers()}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#e6dfd5] text-xs font-mono font-bold text-[#141414] hover:bg-[#faf8f5] rounded transition-colors cursor-pointer"
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin text-[#087443]' : 'text-[#087443]'} />
+              <span>Actualiser</span>
+            </button>
+          </Tooltip>
+
           <Tooltip position="bottom" content="Consulter le guide des permissions et des rôles">
             <button
               type="button"
@@ -327,7 +349,7 @@ export default function AdminUsersPage() {
           <div className="flex items-center justify-between border-b border-[#e6dfd5] pb-2">
             <h3 className="font-serif font-bold text-sm text-[#141414] flex items-center gap-2">
               <ShieldCheck size={16} className="text-[#087443]" />
-              <span>Matrice Déontologique des Rôles sur Burkina News</span>
+              <span>Matrice Déontologique des Rôles sur Burkina News (API Go)</span>
             </h3>
             <button
               onClick={() => setShowRoleGuide(false)}
@@ -339,65 +361,17 @@ export default function AdminUsersPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-serif text-[#333333]">
-            <div className="bg-white p-3 rounded border border-[#e6dfd5] space-y-1">
-              <div className="font-mono font-bold text-[11px] text-[#c2410c] uppercase flex items-center gap-1">
-                <ShieldCheck size={12} />
-                <span>★ Superadmin</span>
+            {Object.entries(OFFICIAL_ROLES).map(([key, roleInfo]) => (
+              <div key={key} className="bg-white p-3 rounded border border-[#e6dfd5] space-y-1">
+                <div className="font-mono font-bold text-[11px] uppercase flex items-center gap-1" style={{ color: roleInfo.color }}>
+                  <ShieldCheck size={12} />
+                  <span>{roleInfo.labelFr}</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-[#555]">
+                  {roleInfo.descriptionFr}
+                </p>
               </div>
-              <p className="text-[11px] leading-relaxed text-[#555]">
-                Accès sans restriction. Création, modification et suspension des comptes. Validation des corrections publiques et supervision de la sécurité.
-              </p>
-            </div>
-
-            <div className="bg-white p-3 rounded border border-[#e6dfd5] space-y-1">
-              <div className="font-mono font-bold text-[11px] text-[#087443] uppercase flex items-center gap-1">
-                <Shield size={12} />
-                <span>Directeur Éditorial</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#555]">
-                Validation finale des enquêtes et de la vitrine (Slot 1 & Analyses). Publication des Numéros mensuels et engagement de la signature de la rédaction.
-              </p>
-            </div>
-
-            <div className="bg-white p-3 rounded border border-[#e6dfd5] space-y-1">
-              <div className="font-mono font-bold text-[11px] text-[#1e3a8a] uppercase flex items-center gap-1">
-                <Briefcase size={12} />
-                <span>Rédacteur / Enquêteur</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#555]">
-                Rédaction, téléversement de preuves et documentation des sources primaires. Proposition de nouveaux faits pour Le Fil hebdomadaire.
-              </p>
-            </div>
-
-            <div className="bg-white p-3 rounded border border-[#e6dfd5] space-y-1">
-              <div className="font-mono font-bold text-[11px] text-[#d97706] uppercase flex items-center gap-1">
-                <Sparkles size={12} />
-                <span>Desk Données & Tracker</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#555]">
-                Suivi des jalons des chantiers nationaux et actualisation des métriques stratégiques du Baromètre RELANCE.
-              </p>
-            </div>
-
-            <div className="bg-white p-3 rounded border border-[#e6dfd5] space-y-1">
-              <div className="font-mono font-bold text-[11px] text-[#7c3aed] uppercase flex items-center gap-1">
-                <Sparkles size={12} />
-                <span>Desk IA & Veille</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#555]">
-                Veille continue des arrêtés et conseils des ministres. Synthèse des rapports volumineux et préparation des brouillons de dépêches.
-              </p>
-            </div>
-
-            <div className="bg-white p-3 rounded border border-[#e6dfd5] space-y-1">
-              <div className="font-mono font-bold text-[11px] text-[#475569] uppercase flex items-center gap-1">
-                <Info size={12} />
-                <span>Auditeur Déontologique</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#555]">
-                Audit indépendant en lecture seule. Vérification croisée des sources, examen des signalements lecteurs et traçabilité des rectifications.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       )}
@@ -445,14 +419,14 @@ export default function AdminUsersPage() {
 
         <div className="bg-white border border-[#e6dfd5] p-4 rounded-lg shadow-xs space-y-1">
           <div className="flex items-center justify-between text-[#736c62] text-xs font-mono">
-            <span>Sécurité Session</span>
+            <span>Sécurité Backend</span>
             <Lock size={15} className="text-[#087443]" />
           </div>
           <div className="text-base font-serif font-bold text-[#141414] pt-1 truncate">
-            Cookie HTTP-Lax
+            JWT Bearer + RBAC
           </div>
           <div className="text-[10px] font-mono text-[#087443] font-semibold">
-            Expiration 7 jours
+            PostgreSQL 16 Sécurisé
           </div>
         </div>
       </div>
@@ -466,14 +440,20 @@ export default function AdminUsersPage() {
             type="text"
             placeholder="Rechercher par nom, email ou fonction..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-9 pr-8 py-1.5 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
           />
           {searchTerm && (
             <Tooltip position="left" content="Effacer la recherche">
               <button
                 type="button"
-                onClick={() => setSearchTerm('')}
+                onClick={() => {
+                  setSearchTerm('');
+                  setCurrentPage(1);
+                }}
                 className="absolute right-2.5 top-2 text-[#736c62] hover:text-[#141414] cursor-pointer"
               >
                 <X size={14} />
@@ -487,22 +467,28 @@ export default function AdminUsersPage() {
           {/* Role Filter */}
           <select
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="px-2.5 py-1.5 text-xs font-mono border border-[#e6dfd5] rounded bg-white focus:outline-none focus:border-[#087443] cursor-pointer"
           >
             <option value="all">Tous les rôles</option>
-            <option value="Superadmin">★ Superadmin</option>
-            <option value="Directeur éditorial">Directeur éditorial</option>
-            <option value="Rédacteur / Enquêteur">Rédacteur / Enquêteur</option>
-            <option value="Desk Données & Tracker">Desk Tracker</option>
-            <option value="Desk IA & Veille">Desk IA</option>
-            <option value="Auditeur Déontologique">Auditeur</option>
+            <option value="superadmin">★ Superadmin</option>
+            <option value="editorial_director">Directeur éditorial</option>
+            <option value="journalist">Rédacteur / Enquêteur</option>
+            <option value="tracker_data">Desk Tracker</option>
+            <option value="desk_ai">Desk IA</option>
+            <option value="auditor">Auditeur</option>
           </select>
 
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="px-2.5 py-1.5 text-xs font-mono border border-[#e6dfd5] rounded bg-white focus:outline-none focus:border-[#087443] cursor-pointer"
           >
             <option value="all">Tous les statuts</option>
@@ -512,10 +498,10 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Users Table / Grid */}
+      {/* Users Table / Grid with Skeleton Support */}
       {loading ? (
         <SkeletonTable rows={5} />
-      ) : filteredUsers.length === 0 ? (
+      ) : users.length === 0 ? (
         <div className="bg-white border border-[#e6dfd5] p-12 text-center rounded-lg space-y-3">
           <div className="w-12 h-12 rounded-full bg-[#f4eee3] flex items-center justify-center mx-auto text-[#087443]">
             <Users size={24} />
@@ -524,7 +510,7 @@ export default function AdminUsersPage() {
             Aucun utilisateur trouvé
           </h3>
           <p className="text-xs font-mono text-[#736c62] max-w-sm mx-auto">
-            Aucun compte ne correspond aux filtres appliqués. Essayez d'élargir votre recherche.
+            Aucun compte ne correspond aux filtres appliqués dans PostgreSQL. Essayez d'élargir votre recherche.
           </p>
           {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all') && (
             <button
@@ -532,6 +518,7 @@ export default function AdminUsersPage() {
                 setSearchTerm('');
                 setRoleFilter('all');
                 setStatusFilter('all');
+                setCurrentPage(1);
               }}
               className="inline-flex items-center gap-1 text-xs font-mono text-[#087443] hover:underline font-bold cursor-pointer"
             >
@@ -554,10 +541,9 @@ export default function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e6dfd5] font-mono">
-                {filteredUsers.map((user) => (
+                {users.map((user) => (
                   <tr key={user.id} className="hover:bg-[#faf8f5]/60 transition-colors">
-                    
-                    {/* User Identity (Avatar + Name + Email) */}
+                    {/* User Identity */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <img
@@ -571,7 +557,7 @@ export default function AdminUsersPage() {
                         <div className="min-w-0">
                           <div className="font-bold text-[#141414] truncate flex items-center gap-1.5">
                             <span>{user.name}</span>
-                            {user.role === 'Superadmin' && (
+                            {normalizeRoleCode(user.role) === 'superadmin' && (
                               <span className="text-[9px] text-[#c2410c] font-bold">★</span>
                             )}
                           </div>
@@ -595,7 +581,7 @@ export default function AdminUsersPage() {
                       </span>
                     </td>
 
-                    {/* Status Pill with 1-click toggle */}
+                    {/* Status Toggle */}
                     <td className="py-3 px-4 text-center">
                       <Tooltip
                         position="top"
@@ -618,10 +604,17 @@ export default function AdminUsersPage() {
 
                     {/* Last Login */}
                     <td className="py-3 px-4 text-[11px] text-[#736c62] hidden lg:table-cell">
-                      {user.lastLogin ? (
+                      {user.last_login_at ? (
                         <div className="flex items-center gap-1">
                           <Clock size={12} className="text-[#087443]" />
-                          <span>{new Date(user.lastLogin).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                          <span>
+                            {new Date(user.last_login_at).toLocaleDateString('fr-FR', {
+                              day: '2-digit',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
                         </div>
                       ) : (
                         <span className="text-neutral-400 italic">Jamais connecté</span>
@@ -646,8 +639,7 @@ export default function AdminUsersPage() {
                           <button
                             type="button"
                             onClick={() => setIsDeletingUser(user)}
-                            disabled={user.role === 'Superadmin' && users.filter(u => u.role === 'Superadmin').length <= 1}
-                            className="p-1.5 text-[#555] hover:text-[#d32f2f] hover:bg-rose-50 rounded border border-[#e6dfd5] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="p-1.5 text-[#555] hover:text-[#d32f2f] hover:bg-rose-50 rounded border border-[#e6dfd5] transition-colors cursor-pointer"
                             aria-label={`Supprimer ${user.name}`}
                           >
                             <Trash2 size={14} />
@@ -655,12 +647,48 @@ export default function AdminUsersPage() {
                         </Tooltip>
                       </div>
                     </td>
-
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {meta.total_pages > 1 && (
+            <div className="p-3 bg-[#faf8f5] border-t border-[#e6dfd5] flex items-center justify-between text-xs font-mono">
+              <span className="text-[#736c62]">
+                Page {meta.page} sur {meta.total_pages} ({meta.total} membres au total)
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={meta.page <= 1}
+                  onClick={() => {
+                    const newP = meta.page - 1;
+                    setCurrentPage(newP);
+                    loadUsers(newP);
+                  }}
+                  className="px-2 py-1 border border-[#e6dfd5] rounded bg-white hover:bg-neutral-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1"
+                >
+                  <ChevronLeft size={13} />
+                  <span>Précédent</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={meta.page >= meta.total_pages}
+                  onClick={() => {
+                    const newP = meta.page + 1;
+                    setCurrentPage(newP);
+                    loadUsers(newP);
+                  }}
+                  className="px-2 py-1 border border-[#e6dfd5] rounded bg-white hover:bg-neutral-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1"
+                >
+                  <span>Suivant</span>
+                  <ChevronRight size={13} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -668,7 +696,6 @@ export default function AdminUsersPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white border-t-2 sm:border-2 border-[#141414] rounded-t-xl sm:rounded-none max-w-lg w-full max-h-[92vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-5">
-            
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#e6dfd5] pb-3">
               <div className="flex items-center gap-2">
@@ -693,7 +720,6 @@ export default function AdminUsersPage() {
 
             {/* Modal Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              
               {/* Name and Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -706,8 +732,13 @@ export default function AdminUsersPage() {
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="ex: Aminata Traoré"
-                    className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
+                    className={`w-full px-3 py-2 text-xs font-mono border rounded focus:outline-none ${
+                      fieldErrors.name ? 'border-rose-500 bg-rose-50' : 'border-[#e6dfd5] focus:border-[#087443]'
+                    }`}
                   />
+                  {fieldErrors.name && (
+                    <span className="text-[10px] font-mono text-rose-600 mt-1 block">{fieldErrors.name}</span>
+                  )}
                 </div>
 
                 <div>
@@ -720,8 +751,13 @@ export default function AdminUsersPage() {
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
                     placeholder="nom@burkinanews.bf"
-                    className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
+                    className={`w-full px-3 py-2 text-xs font-mono border rounded focus:outline-none ${
+                      fieldErrors.email ? 'border-rose-500 bg-rose-50' : 'border-[#e6dfd5] focus:border-[#087443]'
+                    }`}
                   />
+                  {fieldErrors.email && (
+                    <span className="text-[10px] font-mono text-rose-600 mt-1 block">{fieldErrors.email}</span>
+                  )}
                 </div>
               </div>
 
@@ -746,48 +782,55 @@ export default function AdminUsersPage() {
                 </label>
                 <select
                   value={formRole}
-                  onChange={(e) => setFormRole(e.target.value as AdminRole)}
+                  onChange={(e) => setFormRole(e.target.value as BackendAdminRole)}
                   className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded bg-[#faf8f5] focus:outline-none focus:border-[#087443] font-bold cursor-pointer"
                 >
-                  <option value="Superadmin">★ Superadmin — Accès total & sécurité (Samba Diop)</option>
-                  <option value="Directeur éditorial">Directeur éditorial — Validation, Une, Numéros (Alfred Ouédraogo)</option>
-                  <option value="Rédacteur / Enquêteur">Rédacteur / Enquêteur — Articles d'enquêtes & faits du Fil</option>
-                  <option value="Desk Données & Tracker">Desk Données & Tracker — Chantiers PND & Baromètre RELANCE</option>
-                  <option value="Desk IA & Veille">Desk IA & Veille — Synthèses & veille automatisée</option>
-                  <option value="Auditeur Déontologique">Auditeur Déontologique — Contrôle qualité (Lecture seule)</option>
+                  <option value="superadmin">★ Superadmin — Accès total & architecture système</option>
+                  <option value="editorial_director">Directeur éditorial — Validation, Une, Numéros</option>
+                  <option value="journalist">Rédacteur / Enquêteur — Articles d'enquêtes & faits du Fil</option>
+                  <option value="tracker_data">Desk Données & Tracker — Chantiers PND & Baromètre RELANCE</option>
+                  <option value="desk_ai">Desk IA & Veille — Synthèses & veille documentaire automatisée</option>
+                  <option value="auditor">Auditeur Déontologique — Contrôle qualité (Lecture seule)</option>
                 </select>
                 <p className="text-[10px] font-mono text-[#736c62] mt-1">
-                  Chaque rôle délimite les actions de publication, modification et suppression autorisées.
+                  Chaque rôle délimite les actions autorisées par le middleware RBAC du backend Go.
                 </p>
               </div>
 
               {/* Password */}
               <div>
                 <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                  Mot de passe de session
+                  {editingUser ? 'Nouveau mot de passe (laisser vide pour conserver)' : 'Mot de passe sécurisé *'}
                 </label>
                 <div className="relative">
                   <Key size={14} className="absolute left-3 top-2.5 text-[#736c62]" />
                   <input
                     type="text"
+                    required={!editingUser}
                     value={formPassword}
                     onChange={(e) => setFormPassword(e.target.value)}
-                    placeholder="faso2026"
-                    className="w-full pl-9 pr-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
+                    placeholder={editingUser ? '•••••••• (inchangé)' : 'BurkinaAdmin2026!'}
+                    className={`w-full pl-9 pr-3 py-2 text-xs font-mono border rounded focus:outline-none ${
+                      fieldErrors.password ? 'border-rose-500 bg-rose-50' : 'border-[#e6dfd5] focus:border-[#087443]'
+                    }`}
                   />
                 </div>
+                {fieldErrors.password && (
+                  <span className="text-[10px] font-mono text-rose-600 mt-1 block">{fieldErrors.password}</span>
+                )}
                 <p className="text-[10px] font-mono text-[#736c62] mt-1">
-                  Mot de passe par défaut : <code className="bg-[#f4eee3] px-1 py-0.5 rounded">faso2026</code> ou <code className="bg-[#f4eee3] px-1 py-0.5 rounded">admin</code>.
+                  Le mot de passe sera haché avec Bcrypt (coût 12) avant stockage en base.
                 </p>
               </div>
 
-              {/* Avatar Uploader (Local Computer or URL) */}
+              {/* Avatar Uploader */}
               <div>
                 <ImageUploader
                   label="Photo de profil / Avatar"
                   value={formAvatar}
                   onChange={setFormAvatar}
-                  helperText="Importez un fichier local depuis votre ordinateur (PNG, JPG, WebP) ou collez une URL."
+                  folder="avatars"
+                  helperText="Importez un fichier local depuis votre ordinateur ou collez une URL d'image."
                 />
               </div>
 
@@ -826,7 +869,6 @@ export default function AdminUsersPage() {
                   {isSubmitting ? 'Enregistrement...' : editingUser ? 'Mettre à jour' : 'Créer le compte'}
                 </button>
               </div>
-
             </form>
           </div>
         </div>
@@ -844,7 +886,7 @@ export default function AdminUsersPage() {
               Êtes-vous certain de vouloir supprimer définitivement le compte de <strong>{isDeletingUser.name}</strong> ({isDeletingUser.email}) ?
             </p>
             <p className="text-[11px] font-mono text-[#c2410c] bg-rose-50 p-2 rounded border border-rose-200">
-              Cette action est irréversible. Toutes les sessions actives associées seront closes.
+              Cette action est irréversible. Toutes les sessions actives associées seront immédiatement closes.
             </p>
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
               <button
@@ -865,7 +907,6 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
