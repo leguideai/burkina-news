@@ -29,6 +29,7 @@ import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
 import ImageUploader from '@/components/admin/ImageUploader';
+import { useAdminAuth } from '@/components/admin/AuthGuard';
 import { 
   usersApi, 
   AdminUserDTO, 
@@ -41,6 +42,7 @@ import {
 } from '@/lib/api';
 
 export default function AdminUsersPage() {
+  const { user: currentUser, updateUserSession } = useAdminAuth();
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<AdminUserDTO[]>([]);
@@ -151,6 +153,17 @@ export default function AdminUsersPage() {
         }
 
         await usersApi.updateUser(editingUser.id, updatePayload);
+
+        // Si l'utilisateur modifié est l'utilisateur actuellement connecté, on synchronise sa session
+        if (currentUser && editingUser.id === currentUser.id) {
+          updateUserSession({
+            name: formName.trim(),
+            email: formEmail.trim().toLowerCase(),
+            title: formTitle.trim(),
+            avatar: formAvatar,
+          });
+        }
+
         success('Profil mis à jour', `Le compte de ${formName} a été actualisé avec succès.`);
       } else {
         // Mode Création
@@ -816,6 +829,7 @@ export default function AdminUsersPage() {
                   label="Photo de profil / Avatar"
                   value={formAvatar}
                   onChange={setFormAvatar}
+                  folder="avatars"
                   helperText="Importez un fichier local depuis votre ordinateur ou collez une URL d'image."
                 />
               </div>

@@ -14,10 +14,12 @@ import {
 } from 'lucide-react';
 import { useToast } from './Toast';
 import Tooltip from '@/components/ui/Tooltip';
+import { mediaApi, MediaFolder, ApiClientError } from '@/lib/api';
 
 interface ImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
+  folder?: MediaFolder;
   label?: string;
   helperText?: string;
   required?: boolean;
@@ -27,6 +29,7 @@ interface ImageUploaderProps {
 export default function ImageUploader({
   value,
   onChange,
+  folder = 'content',
   label = "Image",
   helperText = "Glissez une image locale ou collez une URL externe (JPG, PNG, WebP, max 10 Mo)",
   required = false,
@@ -64,57 +67,21 @@ export default function ImageUploader({
     setIsUploading(true);
 
     try {
-      // 1. Try uploading to server via /api/admin/upload
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          onChange(data.url);
-          setUrlInput(data.url);
-          success('Image locale téléversée', file.name);
-          setIsUploading(false);
-          return;
-        }
-      }
-
-      // 2. Fallback to Base64 data URL if API endpoint is unreachable or static
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        onChange(base64);
-        setUrlInput(base64);
-        info('Image locale prête', file.name);
-        setIsUploading(false);
-      };
-      reader.onerror = () => {
-        throw new Error('Erreur de lecture locale');
-      };
-      reader.readAsDataURL(file);
-
+      // Téléversement réel vers le Backend Go (Cloudflare R2 ou Fallback local)
+      const media = await mediaApi.upload(file, folder);
+      onChange(media.url);
+      setUrlInput(media.url);
+      const storageLabel = media.storage_type === 'r2' ? 'Cloudflare R2' : 'Stockage local';
+      success('Image téléversée avec succès', `${file.name} • ${storageLabel}`);
     } catch (err: any) {
       console.error('Upload error:', err);
-      // Fallback base64
-      try {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64 = reader.result as string;
-          onChange(base64);
-          setUrlInput(base64);
-          info('Image locale chargée en mémoire', file.name);
-          setIsUploading(false);
-        };
-        reader.readAsDataURL(file);
-      } catch (e) {
-        error('Erreur', "Échec du téléversement de l'image locale.");
-        setIsUploading(false);
-      }
+      const msg =
+        err instanceof ApiClientError
+          ? err.getLocalizedMessage('fr')
+          : err.message || "Échec du téléversement de l'image.";
+      error('Erreur de téléversement', msg);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -174,6 +141,7 @@ export default function ImageUploader({
   const isLocalUpload = value?.startsWith('/uploads/');
   const isInternal = value?.startsWith('/images/');
   const isBase64 = value?.startsWith('data:image/');
+  const isR2 = value?.includes('r2.dev') || value?.includes('r2.cloudflarestorage.com');
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -233,7 +201,10 @@ export default function ImageUploader({
                 alt="Aperçu de l'image"
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = '/images/lead.jpeg';
+                  (e.currentTarget as HTMLImageElement).src =
+                    folder === 'avatars'
+                      ? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
+                      : '/images/lead.jpeg';
                 }}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -255,7 +226,9 @@ export default function ImageUploader({
             <div className="flex-1 min-w-0 space-y-1 w-full">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                  isLocalUpload
+                  isR2
+                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                    : isLocalUpload
                     ? 'bg-emerald-100 text-emerald-800'
                     : isBase64
                     ? 'bg-amber-100 text-amber-800'
@@ -264,7 +237,9 @@ export default function ImageUploader({
                     : 'bg-slate-100 text-slate-700'
                 }`}>
                   <Check size={10} />
-                  {isLocalUpload
+                  {isR2
+                    ? 'Cloudflare R2 (CDN)'
+                    : isLocalUpload
                     ? 'Téléversé en local (/uploads/)'
                     : isBase64
                     ? 'Fichier local intégré (Base64)'

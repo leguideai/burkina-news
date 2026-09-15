@@ -23,6 +23,7 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (userData: AdminUserSession) => void;
   logout: () => Promise<void>;
+  updateUserSession: (data: Partial<AdminUserSession>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -79,6 +80,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     router.push('/admin');
   };
 
+  const updateUserSession = (data: Partial<AdminUserSession>) => {
+    setUser((prev) => (prev ? { ...prev, ...data } : null));
+  };
+
   const logout = async () => {
     try {
       await authApi.logout();
@@ -105,7 +110,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   // If on login page, render login page
   if (isLoginPage) {
     return (
-      <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout }}>
+      <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, updateUserSession }}>
         {children}
       </AuthContext.Provider>
     );
@@ -117,7 +122,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: true, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: true, isLoading, login, logout, updateUserSession }}>
       {children}
     </AuthContext.Provider>
   );

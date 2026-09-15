@@ -174,3 +174,24 @@ export function getRoleLabel(role: string, lang: 'fr' | 'en' = 'fr'): string {
   if (!info) return role;
   return lang === 'en' ? info.labelEn : info.labelFr;
 }
+
+// ─── Médias & Stockage Cloudflare R2 / Local (Semaine 3) ─────────────────
+
+export type MediaFolder = 'avatars' | 'content' | 'sources' | 'projects' | 'issues';
+export type StorageType = 'r2' | 'local';
+
+export interface MediaFileDTO {
+  id: string;
+  filename: string;
+  original_name: string;
+  folder: MediaFolder;
+  mime_type: string;
+  size: number;
+  url: string;
+  storage_type: StorageType;
+  uploaded_by_id?: string | null;
+  uploaded_by?: AdminUserDTO | null;
+  created_at: string;
+  updated_at?: string;
+}
+

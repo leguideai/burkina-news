@@ -55,4 +55,33 @@
 
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F3 à F10 synchronisées avec les semaines backend)*
+### 👑 Extension F2.1 : Interface d'Édition du Compte Personnel (Superadmin & Desk)
+- **Date :** 15 Septembre 2026
+- **Objectif :** Offrir au Superadmin et à l'ensemble des journalistes la possibilité d'éditer directement leurs informations personnelles (nom, adresse email, titre, avatar, mot de passe) depuis l'en-tête de l'administration et depuis la table des utilisateurs, avec rafraîchissement temps réel de la session active sans déconnexion.
+- **Fichiers modifiés :**
+  - `lib/api/auth.ts` : Ajout de la méthode `updateMe(input)` communicant avec l'endpoint `PUT /api/v1/auth/me`.
+  - `components/admin/AuthGuard.tsx` : Ajout de la fonction `updateUserSession(data)` dans `AuthContext` permettant de propager instantanément les modifications de profil dans l'état React sans recharger la page.
+  - `components/admin/AdminHeader.tsx` : Rendu de la capsule utilisateur interactif (bouton d'édition) et ouverture d'une modale dédiée "Mon Profil Rédactionnel" avec formulaire de saisie, gestion du chargement et alertes d'erreur/succès.
+  - `app/admin/utilisateurs/page.tsx` : Câblage de la mise à jour directe dans la table : lorsqu'un utilisateur modifie sa propre fiche, la session courante est automatiquement synchronisée avec les nouvelles informations.
+- **Vérifications :** Validation du typage TypeScript (`tsc --noEmit`), contrôle des flux de requêtes et mise à jour dynamique du nom/avatar dans le header.
+- **État :** Validé et terminé.
+
+---
+
+### 📦 Phase F3 : Médias, Téléversement Cloudflare R2 / Local & Photos de Profil
+- **Date :** 15 Septembre 2026
+- **Objectif :** Raccorder le frontend Next.js 16 au système de stockage médias du backend Go (Semaine 3), avec téléversement réel des fichiers vers Cloudflare R2 ou en local, et modification dynamique de la photo de profil (Avatar).
+- **Fichiers créés / modifiés :**
+  - `lib/api/types.ts` : Types `MediaFileDTO`, `MediaFolder` (`avatars`, `content`, `sources`, `projects`, `issues`) et `StorageType`.
+  - `lib/api/media.ts` : Service `mediaApi` avec méthodes `upload(file, folder)`, `uploadAvatar(file)`, `list(folder, page, limit)`, `delete(id)`.
+  - `lib/api/index.ts` : Export de `mediaApi`.
+  - `components/admin/ImageUploader.tsx` : Remplacement du faux mock base64 par l'appel à `mediaApi.upload(file, folder)`. Support du dossier cible et notification du moteur utilisé (Cloudflare R2 ou local).
+  - `components/admin/AdminHeader.tsx` : Intégration de `ImageUploader` avec `folder="avatars"` dans la modale "Mon Profil Rédactionnel" pour le Superadmin et tous les membres connectés.
+  - `app/admin/utilisateurs/page.tsx` : Intégration de `ImageUploader` avec `folder="avatars"` dans le formulaire de création et modification d'utilisateur.
+- **Vérifications :** Typage TypeScript sans erreur (`npx tsc --noEmit` = code 0).
+- **État :** Validé et terminé.
+
+---
+
+*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F4 à F10 synchronisées avec les semaines backend)*
+

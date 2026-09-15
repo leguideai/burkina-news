@@ -60,4 +60,18 @@ export const authApi = {
   hasToken(): boolean {
     return !!tokenStorage.getAccessToken();
   },
+
+  /**
+   * Met à jour le profil personnel de l'utilisateur connecté (PUT /api/v1/auth/me)
+   */
+  async updateMe(input: {
+    name?: string;
+    email?: string;
+    title?: string;
+    avatar?: string;
+    password?: string;
+  }): Promise<AdminUserDTO> {
+    const res = await apiClient.put<AdminUserDTO>('/auth/me', input);
+    return res.data;
+  },
 };

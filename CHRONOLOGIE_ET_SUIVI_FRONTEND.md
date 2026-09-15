@@ -57,11 +57,20 @@
 
 ---
 
-## 📅 PHASES F3 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 3 À 10)
+## 📅 PHASE F3 : Intégration Médias, Upload Cloudflare R2 / Local & Photos de Profil
 
-*(Ces phases seront exécutées dès que les semaines backend correspondantes seront achevées)*
+> **🎯 Objectif :** Connecter l'upload d'images et de fichiers vers le backend Go avec sélection automatique Cloudflare R2 / Local et gestion complète de la photo de profil (Avatar).
 
-- **Phase F3 (Semaine 3) :** Intégration Médiathèque & Upload Cloudflare R2 / Local (`ImageUploader.tsx`).
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F3.1** | `[x]` | Développer le client API médias (`mediaApi`) avec méthodes `upload`, `uploadAvatar`, `list` et `delete`. | `lib/api/media.ts`, `lib/api/types.ts` | `POST /api/v1/media/upload`<br>`GET /api/v1/media`<br>`DELETE /api/v1/media/:id` | Support complet multipart avec conservation du jeton Bearer JWT. |
+| **F3.2** | `[x]` | Connecter le composant universel `ImageUploader` à l'API Go réelle avec support du dossier cible. | `components/admin/ImageUploader.tsx` | `POST /api/v1/media/upload` | Fin des simulations base64/mocks, upload vers Cloudflare R2 ou repli local avec notification toast. |
+| **F3.3** | `[x]` | Raccorder l'upload de photo de profil dans la modale "Mon Profil Rédactionnel" et la page utilisateurs. | `components/admin/AdminHeader.tsx`, `app/admin/utilisateurs/page.tsx` | `POST /api/v1/media/upload?folder=avatars`<br>`PUT /api/v1/auth/me` | Téléversement direct, prévisualisation et mise à jour dynamique de l'avatar sans déconnexion. |
+
+---
+
+## 📅 PHASES F4 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 4 À 10)
+
 - **Phase F4 (Semaine 4) :** Intégration Articles & Grandes Enquêtes (`/fr/[rubrique]/[slug]`, `/admin/articles`).
 - **Phase F5 (Semaine 5) :** Intégration Le Fil & Flux SSE temps réel (`/fr/fil`, `/admin/fil`).
 - **Phase F6 (Semaine 6) :** Intégration Tracker Chantiers (6 Statuts) & Baromètre RELANCE (`/fr/tracker`, `/admin/projets`).
