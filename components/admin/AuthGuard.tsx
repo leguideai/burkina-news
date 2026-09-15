@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { SkeletonForm } from './Skeleton';
+import { authApi } from '@/lib/api/auth';
+import { AdminUserDTO, getRoleLabel } from '@/lib/api/types';
 
 export interface AdminUserSession {
   id: string;
@@ -10,6 +12,8 @@ export interface AdminUserSession {
   email: string;
   role: string;
   avatar: string;
+  title?: string;
+  status?: string;
   loggedInAt: string;
 }
 
@@ -32,22 +36,24 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
-    // Check authentication from session API or cookie
+    // Vérification de la session auprès du Backend Go
     const checkAuth = async () => {
       try {
-        const res = await fetch('/api/admin/auth', { method: 'GET' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.authenticated && data.user) {
-            setUser(data.user);
-            if (isLoginPage) {
-              router.push('/admin');
-            }
-          } else {
-            setUser(null);
-            if (!isLoginPage) {
-              router.push('/admin/login');
-            }
+        const currentUser = await authApi.getMe();
+        if (currentUser) {
+          const session: AdminUserSession = {
+            id: currentUser.id,
+            name: currentUser.name,
+            email: currentUser.email,
+            role: currentUser.role,
+            avatar: currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+            title: currentUser.title,
+            status: currentUser.status,
+            loggedInAt: currentUser.last_login_at || new Date().toISOString(),
+          };
+          setUser(session);
+          if (isLoginPage) {
+            router.push('/admin');
           }
         } else {
           setUser(null);
@@ -75,7 +81,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/admin/auth', { method: 'DELETE' });
+      await authApi.logout();
     } catch (e) {
       console.error(e);
     }

@@ -1,0 +1,71 @@
+# 🇧🇫 BURKINA NEWS · CHRONOLOGIE & JOURNAL DE BORD DU FRONTEND
+**Projet : `burkina-news` | Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS v4**  
+*Guide opérationnel pas-à-pas — Synchronisation en temps réel avec le Backend Go*
+
+---
+
+## 📌 Mode d'emploi de ce document
+- `[ ]` : Non démarré
+- `[/]` : En cours d'intégration
+- `[x]` : Validé & Terminé
+
+---
+
+## 📊 Résumé Global de la Synchronisation Frontend / Backend
+
+| Phase | Périmètre Backend associé | Statut Intégration Frontend |
+| :--- | :--- | :---: |
+| **Phase F1** | **Semaine 1 :** Socle API, Client HTTP centralisé, Healthcheck & Diagnostic | `[x] Validé & Terminé` |
+| **Phase F2** | **Semaine 2 :** Authentification JWT (`login`, `refresh`, `logout`, `me`), AuthGuard & CRUD Utilisateurs Desk | `[x] Validé & Terminé` |
+| **Phase F3** | **Semaine 3 :** Médiathèque & Upload de fichiers (Cloudflare R2 / Local) | `[ ] En attente` |
+| **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (Workflow éditorial, Preuves A/B/C, bilinguisme) | `[ ] En attente` |
+| **Phase F5** | **Semaine 5 :** API Le Fil (Dépêches 60s, Éditions hebdo, Streaming SSE en direct) | `[ ] En attente` |
+| **Phase F6** | **Semaine 6 :** API Tracker des Chantiers (6 Statuts, cartographie, PV) & Baromètre RELANCE | `[ ] En attente` |
+| **Phase F7** | **Semaine 7 :** Numéros PDF, Registre public des Corrections & Moteur de Recherche Globale | `[ ] En attente` |
+| **Phase F8** | **Semaine 8 :** Curation Une, Rubriques, Formulaires Publics (Signalements/Contact) & IA Micum | `[ ] En attente` |
+| **Phase F9** | **Semaine 9 :** Durcissement, Tests E2E, Gestion du mode dégradé hors-ligne | `[ ] En attente` |
+| **Phase F10** | **Semaine 10 :** Recette Finale, Optimisations CWV (LCP/INP) & Déploiement Production | `[ ] En attente` |
+
+---
+
+## 📅 PHASE F1 : Socle Client HTTP, Typage DTO & Diagnostic Système (Semaine 1 Backend)
+
+> **🎯 Objectif :** Établir la couche de communication unique avec l'API Go, définir les types TypeScript stricts et valider la connectivité réseau via les endpoints Healthcheck et Ping.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints Backend | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F1.1** | `[x]` | Définir les interfaces DTO et types TypeScript conformes aux payloads JSON du Backend Go. | `lib/api/types.ts` | Tous | Types `ApiResponse<T>`, `ApiErrorResponse`, `PaginationMeta`, `AdminUserDTO`, etc. |
+| **F1.2** | `[x]` | Créer le client HTTP Singleton avec injection automatique du Bearer token et gestion des erreurs bilingues. | `lib/api/client.ts` | `http://localhost:8080/api/v1` | Interception 401, auto-refresh JWT, typage générique des requêtes GET, POST, PUT, PATCH, DELETE. |
+| **F1.3** | `[x]` | Configurer les variables d'environnement frontend pour cibler l'API backend. | `.env.local`, `.env.example` | `NEXT_PUBLIC_API_URL` | Définit `http://localhost:8080/api/v1` pour dev local. |
+| **F1.4** | `[x]` | Créer le service de santé (`health.ts`) pour tester la connectivité et la latence de PostgreSQL. | `lib/api/health.ts` | `GET /health`<br>`GET /api/v1/ping` | Utilisable pour afficher l'indicateur de statut système en direct. |
+
+---
+
+## 📅 PHASE F2 : Authentification JWT, Garde de Session & Desk Utilisateurs (Semaine 2 Backend)
+
+> **🎯 Objectif :** Connecter la mire de connexion `/admin/login`, le contexte d'authentification `AuthGuard`, le profil connecté `/api/v1/auth/me` et la gestion complète de l'équipe rédactionnelle `/admin/utilisateurs` avec les vraies données PostgreSQL, les états Skeletons et les gardes-fous déontologiques.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints Backend | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F2.1** | `[x]` | Développer le service d'authentification API (`login`, `refresh`, `logout`, `getMe`). | `lib/api/auth.ts` | `POST /api/v1/auth/*`<br>`GET /api/v1/auth/me` | Gestion sécurisée des cookies `bn_access_token` et `bn_refresh_token`. |
+| **F2.2** | `[x]` | Connecter la page de connexion administrative avec le Superadmin Go (`samba@leguideai.com`). | `app/admin/login/page.tsx` | `POST /api/v1/auth/login` | Remplacement du faux login mock, affichage des erreurs bilingues réelles et état `isSubmitting`. |
+| **F2.3** | `[x]` | Refondre le composant `AuthGuard` et le hook `useAdminAuth` pour valider la session via `GET /auth/me`. | `components/admin/AuthGuard.tsx` | `GET /api/v1/auth/me` | Rendu de `SkeletonForm` pendant la vérification, redirection fluide sans clignotement. |
+| **F2.4** | `[x]` | Développer le service de gestion des utilisateurs du Desk (`usersApi`). | `lib/api/users.ts` | `CRUD /api/v1/admin/users` | Méthodes `listUsers`, `getUser`, `createUser`, `updateUser`, `updateStatus`, `deleteUser`. |
+| **F2.5** | `[x]` | Connecter l'écran `/admin/utilisateurs` à l'API réelle avec `SkeletonTable` au chargement. | `app/admin/utilisateurs/page.tsx` | `GET /api/v1/admin/users` | Fin du recours à `app/api/admin/data`, affichage des membres réels en base de données. |
+| **F2.6** | `[x]` | Intégrer les opérations de création, modification, suspension et suppression avec gestion d'erreurs déontologiques. | `app/admin/utilisateurs/page.tsx` | `POST/PUT/PATCH/DELETE /admin/users` | Affichage du blocage explicite lors d'une tentative sur le dernier Superadmin. |
+
+
+---
+
+## 📅 PHASES F3 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 3 À 10)
+
+*(Ces phases seront exécutées dès que les semaines backend correspondantes seront achevées)*
+
+- **Phase F3 (Semaine 3) :** Intégration Médiathèque & Upload Cloudflare R2 / Local (`ImageUploader.tsx`).
+- **Phase F4 (Semaine 4) :** Intégration Articles & Grandes Enquêtes (`/fr/[rubrique]/[slug]`, `/admin/articles`).
+- **Phase F5 (Semaine 5) :** Intégration Le Fil & Flux SSE temps réel (`/fr/fil`, `/admin/fil`).
+- **Phase F6 (Semaine 6) :** Intégration Tracker Chantiers (6 Statuts) & Baromètre RELANCE (`/fr/tracker`, `/admin/projets`).
+- **Phase F7 (Semaine 7) :** Intégration Numéros PDF & Registre des Corrections (`/fr/numeros`, `/admin/corrections`).
+- **Phase F8 (Semaine 8) :** Intégration Curation Une, Formulaires Signalements & Assistant Micum.
+- **Phase F9 (Semaine 9) :** Durcissement, gestion du mode hors-ligne, audit de résilience.
+- **Phase F10 (Semaine 10) :** Recette finale de performance CWV & Mise en production.
