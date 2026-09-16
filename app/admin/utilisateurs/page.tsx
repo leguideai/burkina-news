@@ -48,6 +48,9 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUserDTO[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>({ page: 1, limit: 20, total: 0, total_pages: 1 });
 
+  // Règle déontologique : Déterminer si l'utilisateur connecté est Superadmin
+  const isCurrentUserSuperadmin = normalizeRoleCode(currentUser?.role || '') === 'superadmin';
+
   // Filtering & Search
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -541,7 +544,13 @@ export default function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e6dfd5] font-mono">
-                {users.map((user) => (
+                {users.map((user) => {
+                  const isTargetSuperadmin = normalizeRoleCode(user.role) === 'superadmin';
+                  const isSelf = currentUser ? currentUser.id === user.id : false;
+                  // Seul le Superadmin peut modifier son propre compte
+                  const canModifyThisUser = !isTargetSuperadmin || isSelf;
+
+                  return (
                   <tr key={user.id} className="hover:bg-[#faf8f5]/60 transition-colors">
                     {/* User Identity */}
                     <td className="py-3 px-4">
@@ -585,19 +594,29 @@ export default function AdminUsersPage() {
                     <td className="py-3 px-4 text-center">
                       <Tooltip
                         position="top"
-                        content={user.status === 'active' ? 'Cliquer pour suspendre l\'accès' : 'Cliquer pour réactiver l\'accès'}
+                        content={
+                          !canModifyThisUser
+                            ? "Seul ce Superadmin peut modifier son propre compte"
+                            : user.status === 'active'
+                            ? "Cliquer pour suspendre l'accès"
+                            : "Cliquer pour réactiver l'accès"
+                        }
                       >
                         <button
                           type="button"
-                          onClick={() => handleToggleStatus(user)}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all cursor-pointer ${
-                            user.status === 'active'
-                              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                              : 'bg-rose-100 text-rose-800 hover:bg-rose-200'
+                          disabled={!canModifyThisUser}
+                          onClick={() => canModifyThisUser && handleToggleStatus(user)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all ${
+                            !canModifyThisUser
+                              ? 'opacity-60 cursor-not-allowed bg-neutral-100 text-neutral-500'
+                              : user.status === 'active'
+                              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 cursor-pointer'
+                              : 'bg-rose-100 text-rose-800 hover:bg-rose-200 cursor-pointer'
                           }`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-emerald-600' : 'bg-rose-600'}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${!canModifyThisUser ? 'bg-neutral-400' : user.status === 'active' ? 'bg-emerald-600' : 'bg-rose-600'}`} />
                           <span>{user.status === 'active' ? 'Actif' : 'Suspendu'}</span>
+                          {!canModifyThisUser && <Lock size={10} className="ml-0.5 text-neutral-400" />}
                         </button>
                       </Tooltip>
                     </td>
@@ -624,22 +643,46 @@ export default function AdminUsersPage() {
                     {/* Actions */}
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <Tooltip position="top" content="Modifier le profil & rôle">
+                        <Tooltip
+                          position="top"
+                          content={
+                            !canModifyThisUser
+                              ? "Seul ce Superadmin peut modifier son propre compte"
+                              : "Modifier le profil & rôle"
+                          }
+                        >
                           <button
                             type="button"
-                            onClick={() => handleOpenEdit(user)}
-                            className="p-1.5 text-[#555] hover:text-[#087443] hover:bg-[#faf8f5] rounded border border-[#e6dfd5] transition-colors cursor-pointer"
+                            disabled={!canModifyThisUser}
+                            onClick={() => canModifyThisUser && handleOpenEdit(user)}
+                            className={`p-1.5 rounded border transition-colors ${
+                              !canModifyThisUser
+                                ? 'opacity-40 cursor-not-allowed text-neutral-400 border-[#e6dfd5] bg-neutral-50'
+                                : 'text-[#555] hover:text-[#087443] hover:bg-[#faf8f5] border-[#e6dfd5] cursor-pointer'
+                            }`}
                             aria-label={`Modifier ${user.name}`}
                           >
-                            <Edit3 size={14} />
+                            {!canModifyThisUser ? <Lock size={14} /> : <Edit3 size={14} />}
                           </button>
                         </Tooltip>
 
-                        <Tooltip position="top" content="Supprimer définitivement ce compte">
+                        <Tooltip
+                          position="top"
+                          content={
+                            !canModifyThisUser
+                              ? "Seul ce Superadmin peut supprimer ou gérer son propre compte"
+                              : "Supprimer définitivement ce compte"
+                          }
+                        >
                           <button
                             type="button"
-                            onClick={() => setIsDeletingUser(user)}
-                            className="p-1.5 text-[#555] hover:text-[#d32f2f] hover:bg-rose-50 rounded border border-[#e6dfd5] transition-colors cursor-pointer"
+                            disabled={!canModifyThisUser}
+                            onClick={() => canModifyThisUser && setIsDeletingUser(user)}
+                            className={`p-1.5 rounded border transition-colors ${
+                              !canModifyThisUser
+                                ? 'opacity-40 cursor-not-allowed text-neutral-400 border-[#e6dfd5] bg-neutral-50'
+                                : 'text-[#555] hover:text-[#d32f2f] hover:bg-rose-50 border-[#e6dfd5] cursor-pointer'
+                            }`}
                             aria-label={`Supprimer ${user.name}`}
                           >
                             <Trash2 size={14} />
@@ -648,7 +691,8 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -785,7 +829,9 @@ export default function AdminUsersPage() {
                   onChange={(e) => setFormRole(e.target.value as BackendAdminRole)}
                   className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded bg-[#faf8f5] focus:outline-none focus:border-[#087443] font-bold cursor-pointer"
                 >
-                  <option value="superadmin">★ Superadmin — Accès total & architecture système</option>
+                  {isCurrentUserSuperadmin && (
+                    <option value="superadmin">★ Superadmin — Accès total & architecture système</option>
+                  )}
                   <option value="editorial_director">Directeur éditorial — Validation, Une, Numéros</option>
                   <option value="journalist">Rédacteur / Enquêteur — Articles d'enquêtes & faits du Fil</option>
                   <option value="tracker_data">Desk Données & Tracker — Chantiers PND & Baromètre RELANCE</option>

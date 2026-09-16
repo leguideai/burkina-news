@@ -4,7 +4,8 @@ import { indicators as initialIndicators } from './mock/indicators';
 import { briefs as initialBriefs } from './mock/briefs';
 import { issues as initialIssues } from './mock/issues';
 import { categories as initialCategories } from './mock/categories';
-import { Article, Project, Indicator, Brief, Issue, Category, Correction, ProjectStatus } from './types';
+import { SUB_CATEGORIES } from './mock/referentiel';
+import { Article, Project, Indicator, Brief, Issue, Category, SubCategory, Correction, ProjectStatus } from './types';
 import fs from 'fs';
 import path from 'path';
 
@@ -154,6 +155,7 @@ interface AdminState {
   briefs: Brief[];
   issues: Issue[];
   categories: Category[];
+  subCategories: SubCategory[];
   corrections: Correction[];
   homepageConfig: HomepageConfig;
   users: AdminUser[];
@@ -347,6 +349,50 @@ export function getPersistedHomepageConfig(): HomepageConfig | null {
   return null;
 }
 
+export function saveSubCategories(subCategories: SubCategory[]) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'subcategories.json'), JSON.stringify(subCategories, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving subcategories.json', e);
+  }
+}
+
+export function getPersistedSubCategories(): SubCategory[] | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'subcategories.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading subcategories.json', e);
+  }
+  return null;
+}
+
+export function saveCategories(categories: Category[]) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'categories.json'), JSON.stringify(categories, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving categories.json', e);
+  }
+}
+
+export function getPersistedCategories(): Category[] | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'categories.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading categories.json', e);
+  }
+  return null;
+}
+
 function getInitialState(): AdminState {
   const persistedConfig = getPersistedHomepageConfig();
   const persistedUsers = getPersistedAdminUsers();
@@ -356,6 +402,15 @@ function getInitialState(): AdminState {
   const persistedBriefs = getPersistedBriefs();
   const persistedIssues = getPersistedIssues();
   const persistedCorrections = getPersistedCorrections();
+  const persistedCategories = getPersistedCategories();
+  const persistedSubCategories = getPersistedSubCategories();
+
+  const activeSubCategories: SubCategory[] = persistedSubCategories || [...SUB_CATEGORIES];
+  const baseCategories: Category[] = persistedCategories || [...initialCategories];
+  const dynamicCategories: Category[] = baseCategories.map(cat => ({
+    ...cat,
+    subCategories: activeSubCategories.filter(sc => sc.categoryCode === cat.code),
+  }));
 
   return {
     articles: persistedArticles || [...initialArticles],
@@ -363,7 +418,8 @@ function getInitialState(): AdminState {
     indicators: persistedIndicators || [...initialIndicators],
     briefs: persistedBriefs || [...initialBriefs],
     issues: persistedIssues || [...initialIssues],
-    categories: [...initialCategories],
+    categories: dynamicCategories,
+    subCategories: activeSubCategories,
     corrections: persistedCorrections || [...initialCorrections],
     homepageConfig: persistedConfig || { ...initialHomepageConfig },
     users: persistedUsers || [...ADMIN_USERS],
