@@ -1,5 +1,5 @@
 import { getIndicatorByCode, indicators } from '@/data/mock/indicators';
-import { getProjectsByCategory } from '@/data/mock/projects';
+import { getProjects, getProjectsByCategory } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowRight, ArrowLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -20,7 +20,14 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
     notFound();
   }
 
-  const relatedProjects = getProjectsByCategory(indicator.category, 'en').slice(0, 3);
+  const allProjects = getProjects('en');
+  const directLinkedProjects = allProjects.filter(p => 
+    p.linkedIndicatorCodes?.includes(indicator.code) || 
+    indicator.linkedProjectSlugs?.includes(p.slug)
+  );
+  const relatedProjects = directLinkedProjects.length > 0 
+    ? directLinkedProjects 
+    : getProjectsByCategory(indicator.category, 'en').slice(0, 3);
   
   const progressPercent = indicator.target2030 && indicator.baselineValue
     ? Math.min(100, Math.max(0, ((indicator.currentValue - indicator.baselineValue) / (indicator.target2030 - indicator.baselineValue)) * 100))
@@ -48,6 +55,14 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
               <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">{indicator.code}</span>
               <span>·</span>
               <span className="text-[#555555]">Sector: {indicator.category}</span>
+              {(indicator.pillarEn || indicator.pillar) && (
+                <>
+                  <span>·</span>
+                  <span className="bg-[#0b4627] text-white px-2 py-0.5">
+                    {indicator.pillarEn || indicator.pillar}
+                  </span>
+                </>
+              )}
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight mb-4">
@@ -213,7 +228,14 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
                   {relatedProjects.map(proj => (
                     <div key={proj.id} className="pb-3 border-b border-[#e6dfd5] last:border-0 last:pb-0">
                       <div className="flex items-center justify-between text-[10px] font-mono text-[#737373] mb-1">
-                        <span>{proj.region}</span>
+                        <div className="flex items-center gap-1.5">
+                          {proj.code && (
+                            <span className="font-bold text-[#0b4627] bg-[#f4eee3] px-1 py-0.2 border border-[#e6dfd5]">
+                              {proj.code}
+                            </span>
+                          )}
+                          <span>{proj.province ? `${proj.province} (${proj.region})` : proj.region}</span>
+                        </div>
                         <StatusBadge status={proj.currentStatus} size="sm" lang="en" />
                       </div>
                       <h4 className="font-serif font-bold text-xs text-[#141414] hover:text-[#0b4627] mb-1 leading-snug">

@@ -1,5 +1,6 @@
 import { projects, getProjectBySlug } from '@/data/mock/projects';
 import { getArticles } from '@/data/mock/articles';
+import { getIndicators } from '@/data/mock/indicators';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { PROJECT_STATUS_LABELS_EN, PROJECT_STATUS_ORDER } from '@/data/types';
 import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight } from 'lucide-react';
@@ -27,6 +28,11 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
     .map(id => enArticles.find(a => a.id === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
+  const allIndicators = getIndicators('en');
+  const linkedIndicators = (project.linkedIndicatorCodes || [])
+    .map(code => allIndicators.find(i => i.code === code))
+    .filter((i): i is NonNullable<typeof i> => i !== undefined);
+
   return (
     <div className="bg-[#faf8f5] min-h-screen pb-20">
       
@@ -39,14 +45,25 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
             <span>/</span>
             <Link href="/en/tracker" className="hover:text-[#0b4627]">The Tracker</Link>
             <span>/</span>
+            {project.code && (
+              <>
+                <span className="text-[#0b4627] font-mono">{project.code}</span>
+                <span>/</span>
+              </>
+            )}
             <span className="text-[#141414] font-bold truncate max-w-xs">{project.title}</span>
           </nav>
 
           <div className="pb-6 border-b border-[#141414]">
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <StatusBadge status={project.currentStatus} size="md" lang="en" />
+              {project.code && (
+                <span className="font-mono text-xs font-bold px-2 py-0.5 bg-[#f4eee3] text-[#0b4627] border border-[#e6dfd5]">
+                  {project.code}
+                </span>
+              )}
               <span className="text-xs font-mono text-[#555555]">
-                Region: {project.region} · Sector: {project.sector}
+                {project.province ? `Province of ${project.province} · Region ${project.region}` : `Region ${project.region}`} · Sector: {project.sector}
               </span>
             </div>
 
@@ -161,6 +178,57 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
               </div>
             </section>
 
+            {/* Linked RELANCE Indicators (Many-to-Many) */}
+            {linkedIndicators.length > 0 && (
+              <section className="space-y-4">
+                <div className="flex justify-between items-center pb-2 border-b border-[#141414]">
+                  <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
+                    Linked RELANCE Barometer Indicators ({linkedIndicators.length})
+                  </h3>
+                  <Link href="/en/tracker/indicateurs" className="text-xs font-mono font-bold text-[#0b4627] hover:underline">
+                    All Barometer Indicators →
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {linkedIndicators.map((ind: any) => (
+                    <Link
+                      key={ind.code}
+                      href={`/en/tracker/indicateurs/${ind.code}`}
+                      className="p-4 bg-white border border-[#e6dfd5] hover:border-[#0b4627] transition-all flex flex-col justify-between group shadow-xs"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <span className="text-[10px] font-mono font-bold uppercase bg-[#f4eee3] px-2 py-0.5 text-[#0b4627] border border-[#e6dfd5]">
+                            {ind.code}
+                          </span>
+                          <span className="text-[10px] font-mono text-[#737373]">
+                            {ind.pillarEn || ind.pillar || ind.category}
+                          </span>
+                        </div>
+                        <h4 className="font-serif font-bold text-sm text-[#141414] group-hover:text-[#0b4627] transition-colors mb-2 leading-snug">
+                          {ind.name}
+                        </h4>
+                        <div className="flex items-baseline justify-between text-xs font-mono bg-[#faf8f5] p-2 border border-[#e6dfd5] mb-2">
+                          <span className="text-[#555555]">Documented Value:</span>
+                          <span className="font-bold text-[#0b4627] text-sm">{ind.currentValue} {ind.unit}</span>
+                        </div>
+                        {ind.target2030 && (
+                          <div className="text-[10px] font-mono text-[#737373] text-right">
+                            2030 Target: <strong className="text-[#141414]">{ind.target2030} {ind.unit}</strong>
+                          </div>
+                        )}
+                      </div>
+                      <div className="pt-2 mt-2 border-t border-[#e6dfd5] text-xs font-mono font-bold text-[#0b4627] flex items-center justify-between">
+                        <span>View Indicator Dossier</span>
+                        <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Linked Articles / Investigations */}
             {linkedArticles.length > 0 && (
               <section className="space-y-4">
@@ -201,6 +269,12 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
               </h3>
 
               <dl className="divide-y divide-[#e6dfd5] text-xs font-mono">
+                {project.code && (
+                  <div className="py-2.5 flex justify-between items-center">
+                    <dt className="text-[#737373]">Project ID:</dt>
+                    <dd className="font-bold text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">{project.code}</dd>
+                  </div>
+                )}
                 <div className="py-2.5 flex justify-between">
                   <dt className="text-[#737373]">Current Status:</dt>
                   <dd className="font-bold text-[#141414]">{PROJECT_STATUS_LABELS_EN[project.currentStatus]}</dd>
@@ -213,6 +287,18 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
                   <dt className="text-[#737373]">Region:</dt>
                   <dd className="font-semibold text-[#141414]">{project.region}</dd>
                 </div>
+                {project.province && (
+                  <div className="py-2.5 flex justify-between">
+                    <dt className="text-[#737373]">Province:</dt>
+                    <dd className="font-semibold text-[#141414]">{project.province}</dd>
+                  </div>
+                )}
+                {project.pndProgram && (
+                  <div className="py-2.5 flex justify-between">
+                    <dt className="text-[#737373]">PND Program:</dt>
+                    <dd className="font-semibold text-[#141414]">{project.pndProgram}</dd>
+                  </div>
+                )}
                 {project.amount && (
                   <div className="py-2.5 flex justify-between">
                     <dt className="text-[#737373]">Estimated Budget:</dt>

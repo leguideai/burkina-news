@@ -17,7 +17,8 @@
 | :--- | :--- | :---: |
 | **Phase F1** | **Semaine 1 :** Socle API, Client HTTP centralisé, Healthcheck & Diagnostic | `[x] Validé & Terminé` |
 | **Phase F2** | **Semaine 2 :** Authentification JWT (`login`, `refresh`, `logout`, `me`), AuthGuard & CRUD Utilisateurs Desk | `[x] Validé & Terminé` |
-| **Phase F3** | **Semaine 3 :** Médiathèque & Upload de fichiers (Cloudflare R2 / Local) | `[ ] En attente` |
+| **Phase F3** | **Semaine 3 :** Médiathèque & Upload de fichiers (Cloudflare R2 / Local) | `[x] Validé & Terminé` |
+| **🚀 DevOps** | Vercel (frontend) + Railway (backend + PostgreSQL) + Cloudflare R2 en production | `[x] Validé & Terminé` |
 | **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (Workflow éditorial, Preuves A/B/C, bilinguisme) | `[ ] En attente` |
 | **Phase F5** | **Semaine 5 :** API Le Fil (Dépêches 60s, Éditions hebdo, Streaming SSE en direct) | `[ ] En attente` |
 | **Phase F6** | **Semaine 6 :** API Tracker des Chantiers (6 Statuts, cartographie, PV) & Baromètre RELANCE | `[ ] En attente` |

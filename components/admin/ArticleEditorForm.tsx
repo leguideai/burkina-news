@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useImperativeHandle, forwardRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -13,6 +13,7 @@ import {
   Languages,
 } from 'lucide-react';
 import { Article, CategoryCode, ContentType } from '@/data/types';
+import { SUB_CATEGORIES } from '@/data/mock/referentiel';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
@@ -66,6 +67,7 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
       body: '',
       bodyEn: '',
       category: 'economie',
+      subCategory: '',
       type: 'decryptage',
       author: 'La Rédaction',
       readTime: '7 min',
@@ -83,6 +85,10 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
     );
     const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
     const [isSaving, setIsSaving] = useState(false);
+
+    const availableSubCategories = useMemo(() => {
+      return SUB_CATEGORIES.filter(s => s.categoryCode === (formData.category || 'economie'));
+    }, [formData.category]);
 
     const { registerEditor, updateEditorData } = useMicum();
 
@@ -240,11 +246,34 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
                 </div>
 
                 {/* Metadata Row */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   <div>
                     <label className={labelClass}>Rubrique *</label>
-                    <select value={formData.category || 'economie'} onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as CategoryCode }))} className={selectClass}>
+                    <select 
+                      value={formData.category || 'economie'} 
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        category: e.target.value as CategoryCode,
+                        subCategory: '' 
+                      }))} 
+                      className={selectClass}
+                    >
                       {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Sous-rubrique</label>
+                    <select 
+                      value={formData.subCategory || ''} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, subCategory: e.target.value }))} 
+                      className={selectClass}
+                    >
+                      <option value="">(Aucune)</option>
+                      {availableSubCategories.map(sc => (
+                        <option key={sc.code} value={sc.code}>
+                          {sc.nameFr}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -274,6 +303,13 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
                   value={formData.image || formData.imageUrl || ''}
                   onChange={(url) => setFormData(prev => ({ ...prev, image: url, imageUrl: url }))}
                   label="Photo de couverture"
+                  namingContext={{
+                    type: 'editorial',
+                    rubriqueOrCode: formData.category || 'ECONOMIE',
+                    sujet: formData.slug || formData.title || 'article',
+                    lang: activeTab === 'fr' ? 'FR' : 'EN',
+                    statut: 'PUBLIE',
+                  }}
                 />
 
                 {/* Excerpt / Chapô */}

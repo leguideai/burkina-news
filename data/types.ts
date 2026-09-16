@@ -1,6 +1,17 @@
 // ─── Catégories (les 6 rubriques de la Charte V3) ─────────────────────────
 export type CategoryCode = 'economie' | 'securite' | 'chantiers' | 'agriculture' | 'societe' | 'histoire' | 'idees'
 
+export interface SubCategory {
+  code: string
+  nameFr: string
+  nameEn: string
+  categoryCode: CategoryCode
+  descriptionFr?: string
+  descriptionEn?: string
+  publishedCount?: number
+  isActivated?: boolean
+}
+
 export interface Category {
   code: CategoryCode
   nameFr: string
@@ -9,6 +20,7 @@ export interface Category {
   descriptionEn: string
   slug: string
   color: string
+  subCategories?: SubCategory[]
 }
 
 // ─── Contenus éditoriaux ──────────────────────────────────────────────────
@@ -35,6 +47,7 @@ export interface Article {
   body: string
   bodyEn?: string
   category: CategoryCode
+  subCategory?: string
   image: string
   author: string
   publishedAt: string
@@ -112,6 +125,7 @@ export interface ProjectSource {
 
 export interface Project {
   id: string
+  code?: string // Identifiant normé BKN-CH-NNNN (ex: BKN-CH-0007)
   title: string
   titleEn?: string
   slug: string
@@ -119,6 +133,7 @@ export interface Project {
   descriptionEn?: string
   category: CategoryCode
   region: string
+  province?: string
   sector: string
   currentStatus: ProjectStatus
   statusHistory: ProjectStatusEntry[]
@@ -129,6 +144,9 @@ export interface Project {
   lastVerifiedAt: string
   sources: ProjectSource[]
   linkedArticleIds: string[]
+  linkedIndicatorCodes?: string[] // Codes des indicateurs RELANCE liés (Many-to-Many)
+  pndProgram?: string
+  reliability?: 'A' | 'B' | 'C'
   image: string
 }
 
@@ -158,8 +176,11 @@ export interface Indicator {
   category: CategoryCode
   program?: string
   programEn?: string
+  pillar?: string
+  pillarEn?: string
   image?: string
   history: DataPoint[]
+  linkedProjectSlugs?: string[] // Slugs des chantiers du Tracker associés (Many-to-Many)
 }
 
 // ─── Numéros (Issues) ────────────────────────────────────────────────────
@@ -222,3 +243,45 @@ export interface NavItem {
   href: string
   highlight?: boolean
 }
+
+// ─── Nomenclature Documentaire & Médias (Charte v3.1 & Note Samba) ──────────
+/**
+ * Génère un nom de fichier normalisé conforme à la Charte documentaire v3.1 et Note Samba :
+ * - Sans accents, minuscules ou majuscules normées, tirets au lieu d'espaces
+ * - Format éditorial : AAAA-MM-JJ_BKN_RUBRIQUE_Sujet_LANG_STATUT.ext
+ * - Format chantier : AAAA-MM-JJ_BKN-CH-NNNN_ETAT_Nature.ext
+ */
+export function generateMediaFilename(options: {
+  date?: string // AAAA-MM-JJ (par défaut date du jour)
+  type: 'editorial' | 'chantier'
+  rubriqueOrCode: string // ex: ECONOMIE, BKN-CH-0007
+  sujet: string // ex: investissements-miniers, preuve-terrain
+  lang?: 'FR' | 'EN' | 'BILINGUE'
+  statut?: 'v01' | 'v02' | 'RELU' | 'VERIF' | 'VALIDE' | 'PUBLIE' | 'Preuve-terrain' | 'PV' | 'Decret'
+  extension?: string // ex: .jpg, .pdf, .webp
+}): string {
+  const sanitize = (str: string) =>
+    str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9-_]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+
+  const dateStr = options.date || new Date().toISOString().slice(0, 10)
+  const ext = options.extension ? `.${sanitize(options.extension.replace(/^\./, ''))}` : ''
+
+  if (options.type === 'editorial') {
+    const rub = sanitize(options.rubriqueOrCode.toUpperCase())
+    const subj = sanitize(options.sujet)
+    const lang = options.lang || 'FR'
+    const st = options.statut || 'PUBLIE'
+    return `${dateStr}_BKN_${rub}_${subj}_${lang}_${st}${ext}`
+  } else {
+    const code = sanitize(options.rubriqueOrCode.toUpperCase())
+    const st = options.statut || 'Preuve-terrain'
+    const nature = sanitize(options.sujet)
+    return `${dateStr}_${code}_${st}_${nature}${ext}`
+  }
+}
+

@@ -27,11 +27,16 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
             alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute top-2.5 left-2.5">
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
             <StatusBadge status={project.currentStatus} size="sm" lang={lang} />
+            {project.code && (
+              <span className="bg-[#141414]/90 text-white px-1.5 py-0.5 text-[9px] font-mono font-bold tracking-wider rounded-xs">
+                {project.code}
+              </span>
+            )}
           </div>
           <div className="absolute bottom-2.5 right-2.5 bg-[#141414]/90 text-white px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider">
-            {project.region}
+            {project.province ? `${project.province} · ${project.region}` : project.region}
           </div>
         </div>
 

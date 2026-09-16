@@ -1,7 +1,7 @@
 import { getIndicatorByCode, indicators } from '@/data/mock/indicators';
-import { getProjectsByCategory } from '@/data/mock/projects';
+import { getProjects, getProjectsByCategory, getProjectBySlug } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
-import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowRight, ArrowLeft, ExternalLink } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowRight, ArrowLeft, ExternalLink, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSourceUrl } from '@/data/sources';
@@ -20,7 +20,15 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
     notFound();
   }
 
-  const relatedProjects = getProjectsByCategory(indicator.category).slice(0, 3);
+  // Chantiers concrets du Tracker associés (Many-to-Many bidirectionnel, Brief Samba v5)
+  const allProjects = getProjects('fr');
+  const directLinkedProjects = allProjects.filter(p => 
+    p.linkedIndicatorCodes?.includes(indicator.code) || 
+    indicator.linkedProjectSlugs?.includes(p.slug)
+  );
+  const relatedProjects = directLinkedProjects.length > 0
+    ? directLinkedProjects
+    : getProjectsByCategory(indicator.category).slice(0, 3);
   
   const progressPercent = indicator.target2030 && indicator.baselineValue
     ? Math.min(100, Math.max(0, ((indicator.currentValue - indicator.baselineValue) / (indicator.target2030 - indicator.baselineValue)) * 100))
@@ -48,6 +56,12 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
               <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">{indicator.code}</span>
               <span>·</span>
               <span className="text-[#555555]">Secteur : {indicator.category}</span>
+              {indicator.pillar && (
+                <>
+                  <span>·</span>
+                  <span className="bg-[#0b4627] text-white px-2 py-0.5">{indicator.pillar}</span>
+                </>
+              )}
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight mb-4">
