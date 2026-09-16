@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams, usePathname } from 'next/navigation';
 import { CategoryCode } from '@/data/types';
 import { getCategoryByCode, getActiveSubCategories } from '@/data/mock/categories';
 import { getArticlesByCategory } from '@/data/mock/articles';
@@ -16,42 +17,14 @@ interface CategoryLayoutProps {
   lang?: 'fr' | 'en';
 }
 
-export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProps) {
+function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProps) {
   const category = getCategoryByCode(categoryCode);
   const isEn = lang === 'en';
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
-
-  const handleSelectSub = (subCode: string) => {
-    setSelectedSubCategory(subCode);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      if (subCode === 'all') {
-        url.searchParams.delete('sub');
-      } else {
-        url.searchParams.set('sub', subCode);
-      }
-      window.history.replaceState({}, '', url.toString());
-    }
-  };
-
-  useEffect(() => {
-    const handleUrlSync = () => {
-      if (typeof window !== 'undefined') {
-        const params = new URLSearchParams(window.location.search);
-        const sub = params.get('sub');
-        if (sub) {
-          setSelectedSubCategory(sub);
-        } else {
-          setSelectedSubCategory('all');
-        }
-      }
-    };
-
-    handleUrlSync();
-    window.addEventListener('popstate', handleUrlSync);
-    return () => window.removeEventListener('popstate', handleUrlSync);
-  }, []);
+  // Directly driven by URL search params (?sub=...) for instant Header & tab responsiveness
+  const selectedSubCategory = searchParams.get('sub') || 'all';
 
   const allArticles = useMemo(() => {
     return getArticlesByCategory(categoryCode, lang);
@@ -118,8 +91,9 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
               <span>{isEn ? "Sub-sections:" : "Sous-rubriques :"}</span>
             </div>
 
-            <button
-              onClick={() => handleSelectSub('all')}
+            <Link
+              href={pathname}
+              scroll={false}
               className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 rounded-xs cursor-pointer ${
                 selectedSubCategory === 'all'
                   ? 'bg-[#0b4627] text-white font-bold shadow-xs'
@@ -127,7 +101,7 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
               }`}
             >
               {isEn ? "All Investigations" : "Toutes les enquêtes"} ({allArticles.length})
-            </button>
+            </Link>
 
             {category.subCategories && category.subCategories.map((sub) => {
               const pubCount = allArticles.filter(a => a.subCategory === sub.code).length;
@@ -135,9 +109,10 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
               const isSelected = selectedSubCategory === sub.code;
 
               return (
-                <button
+                <Link
                   key={sub.code}
-                  onClick={() => handleSelectSub(sub.code)}
+                  href={`${pathname}?sub=${sub.code}`}
+                  scroll={false}
                   className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 rounded-xs flex items-center gap-1.5 cursor-pointer ${
                     isSelected
                       ? 'bg-[#0b4627] text-white font-bold shadow-xs'
@@ -148,7 +123,7 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
                   <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${isSelected ? 'bg-white/20 text-white' : 'bg-[#e6dfd5] text-[#555555]'}`}>
                     {pubCount}
                   </span>
-                </button>
+                </Link>
               );
             })}
           </div>
@@ -176,12 +151,13 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
                     ? "Our investigative desk is currently finalizing new cross-checked reports for this section. Check back shortly."
                     : "Notre pôle d'enquête finalise actuellement de nouveaux dossiers et analyses pour cette sous-rubrique. Les prochaines publications apparaîtront ici."}
                 </p>
-                <button
-                  onClick={() => handleSelectSub('all')}
+                <Link
+                  href={pathname}
+                  scroll={false}
                   className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#0b4627] text-white text-xs font-mono uppercase tracking-wider font-bold"
                 >
                   {isEn ? "View all articles" : "Voir toutes les enquêtes"}
-                </button>
+                </Link>
               </div>
             ) : (
               <>
@@ -280,5 +256,13 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
       </div>
 
     </div>
+  );
+}
+
+export function CategoryLayout(props: CategoryLayoutProps) {
+  return (
+    <Suspense fallback={<div className="flex flex-col min-h-screen bg-[#faf8f5]" />}>
+      <CategoryLayoutContent {...props} />
+    </Suspense>
   );
 }
