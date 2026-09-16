@@ -10,9 +10,11 @@ import {
   saveIndicators,
   saveBriefs,
   saveIssues,
-  saveCorrections
+  saveCorrections,
+  saveCategories,
+  saveSubCategories
 } from '@/data/admin-store';
-import { Article, Project, ProjectStatus, Indicator, Brief, Issue, Correction } from '@/data/types';
+import { Article, Project, ProjectStatus, Indicator, Brief, Issue, Correction, SubCategory } from '@/data/types';
 
 export async function GET(request: Request) {
   const store = getAdminStore();
@@ -26,6 +28,7 @@ export async function GET(request: Request) {
     briefs: store.briefs,
     issues: store.issues,
     categories: store.categories,
+    subCategories: store.subCategories,
     corrections: store.corrections,
     homepageConfig: store.homepageConfig,
     users: store.users,
@@ -231,7 +234,127 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Rubrique introuvable.' }, { status: 404 });
         }
         store.categories[index] = { ...store.categories[index], ...payload };
+        saveCategories(store.categories);
         return NextResponse.json({ success: true, message: 'Cadrage de la rubrique mis à jour.', item: store.categories[index] });
+      }
+
+      // ── SOUS-RUBRIQUES (SUB-CATEGORIES) CRUD DYNAMIQUE ─────
+      case 'create_subcategory': {
+        const nameFr = (payload.nameFr || '').trim();
+        const categoryCode = payload.categoryCode;
+        if (!nameFr) {
+          return NextResponse.json({ error: 'Le nom en français est requis.' }, { status: 400 });
+        }
+        if (!categoryCode) {
+          return NextResponse.json({ error: 'La rubrique parente est requise.' }, { status: 400 });
+        }
+
+        const rawCode = (payload.code || nameFr)
+          .toLowerCase()
+          .trim()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+
+        if (!rawCode) {
+          return NextResponse.json({ error: 'Le code technique de la sous-rubrique est invalide.' }, { status: 400 });
+        }
+
+        if (store.subCategories.some(sc => sc.code === rawCode)) {
+          return NextResponse.json({ error: `Une sous-rubrique avec le code "${rawCode}" existe déjà.` }, { status: 400 });
+        }
+
+        const newSubCategory: SubCategory = {
+          code: rawCode,
+          nameFr,
+          nameEn: (payload.nameEn || nameFr).trim(),
+          categoryCode,
+          descriptionFr: (payload.descriptionFr || '').trim(),
+          descriptionEn: (payload.descriptionEn || '').trim(),
+        };
+
+        store.subCategories.push(newSubCategory);
+        saveSubCategories(store.subCategories);
+
+        // Synchroniser dans categories
+        const catIndex = store.categories.findIndex(c => c.code === categoryCode);
+        if (catIndex !== -1) {
+          store.categories[catIndex].subCategories = store.subCategories.filter(sc => sc.categoryCode === categoryCode);
+          saveCategories(store.categories);
+        }
+
+        return NextResponse.json({ 
+          success: true, 
+          message: `Sous-rubrique "${newSubCategory.nameFr}" créée avec succès.`, 
+          item: newSubCategory,
+          subCategories: store.subCategories 
+        });
+      }
+
+      case 'update_subcategory': {
+        const { code } = payload;
+        const index = store.subCategories.findIndex(sc => sc.code === code);
+        if (index === -1) {
+          return NextResponse.json({ error: 'Sous-rubrique introuvable.' }, { status: 404 });
+        }
+
+        store.subCategories[index] = {
+          ...store.subCategories[index],
+          nameFr: payload.nameFr !== undefined ? payload.nameFr.trim() : store.subCategories[index].nameFr,
+          nameEn: payload.nameEn !== undefined ? payload.nameEn.trim() : store.subCategories[index].nameEn,
+          descriptionFr: payload.descriptionFr !== undefined ? payload.descriptionFr.trim() : store.subCategories[index].descriptionFr,
+          descriptionEn: payload.descriptionEn !== undefined ? payload.descriptionEn.trim() : store.subCategories[index].descriptionEn,
+          categoryCode: payload.categoryCode || store.subCategories[index].categoryCode,
+        };
+
+        saveSubCategories(store.subCategories);
+
+        // Synchroniser dans categories
+        store.categories.forEach(cat => {
+          cat.subCategories = store.subCategories.filter(sc => sc.categoryCode === cat.code);
+        });
+        saveCategories(store.categories);
+
+        return NextResponse.json({ 
+          success: true, 
+          message: `Sous-rubrique "${store.subCategories[index].nameFr}" mise à jour.`, 
+          item: store.subCategories[index],
+          subCategories: store.subCategories 
+        });
+      }
+
+      case 'delete_subcategory': {
+        const { code, force } = payload;
+        const index = store.subCategories.findIndex(sc => sc.code === code);
+        if (index === -1) {
+          return NextResponse.json({ error: 'Sous-rubrique introuvable.' }, { status: 404 });
+        }
+
+        // Vérification déontologique : Vérifier si des articles sont rattachés
+        const attachedArticles = store.articles.filter(a => a.subCategory === code);
+        if (attachedArticles.length > 0 && !force) {
+          return NextResponse.json({ 
+            error: `Impossible de supprimer : ${attachedArticles.length} article(s) sont classés dans cette sous-rubrique.`, 
+            articlesCount: attachedArticles.length 
+          }, { status: 409 });
+        }
+
+        const removedName = store.subCategories[index].nameFr;
+        store.subCategories = store.subCategories.filter(sc => sc.code !== code);
+        saveSubCategories(store.subCategories);
+
+        // Synchroniser dans categories
+        store.categories.forEach(cat => {
+          cat.subCategories = store.subCategories.filter(sc => sc.categoryCode === cat.code);
+        });
+        saveCategories(store.categories);
+
+        return NextResponse.json({ 
+          success: true, 
+          message: `Sous-rubrique "${removedName}" supprimée avec succès.`,
+          subCategories: store.subCategories 
+        });
       }
 
       // ── LE FIL HEBDO (BRIEFS) ─────────────────────────────

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { 
   Landmark, 
   Edit3, 
+  Trash2,
   ExternalLink, 
   FileText, 
   Construction, 
@@ -23,10 +24,13 @@ import {
   BookMarked,
   Newspaper,
   ChevronRight,
-  Info
+  Info,
+  AlertTriangle,
+  FolderPlus,
+  Loader2
 } from 'lucide-react';
-import { Category, Article, Project } from '@/data/types';
-import { SUB_CATEGORIES, JOURNAL_PRODUCTS, isSubCategoryActive } from '@/data/mock/referentiel';
+import { Category, Article, Project, SubCategory, CategoryCode } from '@/data/types';
+import { SUB_CATEGORIES as defaultSubCategories, JOURNAL_PRODUCTS, isSubCategoryActive } from '@/data/mock/referentiel';
 import { categories as defaultCategories } from '@/data/mock/categories';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonStat } from '@/components/admin/Skeleton';
@@ -36,13 +40,30 @@ export default function AdminRubriquesPage() {
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>(defaultCategories);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>(defaultSubCategories);
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedView, setSelectedView] = useState<string>('all');
 
-  // Modal State
+  // Category Modal State
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
   const [formData, setFormData] = useState<Partial<Category>>({});
+
+  // SubCategory Modal State (CRUD Dynamique)
+  const [isSubModalOpen, setIsSubModalOpen] = useState(false);
+  const [editingSubCategory, setEditingSubCategory] = useState<SubCategory | null>(null);
+  const [subFormData, setSubFormData] = useState<Partial<SubCategory>>({
+    categoryCode: 'economie',
+    code: '',
+    nameFr: '',
+    nameEn: '',
+    descriptionFr: '',
+    descriptionEn: '',
+  });
+  const [subActiveTab, setSubActiveTab] = useState<'fr' | 'en'>('fr');
+  const [isSubmittingSub, setIsSubmittingSub] = useState(false);
+  const [deletingSubCategory, setDeletingSubCategory] = useState<SubCategory | null>(null);
+  const [deleteAttachedCount, setDeleteAttachedCount] = useState<number>(0);
 
   // Editorial Framing ("Regard de la Rédaction") extra states
   const [regardFr, setRegardFr] = useState<string>('');
@@ -85,6 +106,9 @@ export default function AdminRubriquesPage() {
       if (data.categories && data.categories.length > 0) {
         setCategories(data.categories);
       }
+      if (data.subCategories && data.subCategories.length > 0) {
+        setSubCategories(data.subCategories);
+      }
       setArticles(data.articles || []);
     } catch (err: any) {
       error('Erreur', err.message);
@@ -97,24 +121,24 @@ export default function AdminRubriquesPage() {
     loadData();
   }, []);
 
-  // Compute stats per subcategory
+  // Compute stats per subcategory dynamically
   const subCategoryStats = useMemo(() => {
     const stats: Record<string, number> = {};
-    SUB_CATEGORIES.forEach(sc => {
+    subCategories.forEach(sc => {
       stats[sc.code] = articles.filter(a => a.subCategory === sc.code).length;
     });
     return stats;
-  }, [articles]);
+  }, [articles, subCategories]);
 
   const activeSubCatsCount = useMemo(() => {
-    return SUB_CATEGORIES.filter(sc => (subCategoryStats[sc.code] || 0) >= 2).length;
-  }, [subCategoryStats]);
+    return subCategories.filter(sc => (subCategoryStats[sc.code] || 0) >= 2).length;
+  }, [subCategories, subCategoryStats]);
 
   const pendingSubCatsCount = useMemo(() => {
-    return SUB_CATEGORIES.length - activeSubCatsCount;
-  }, [activeSubCatsCount]);
+    return subCategories.length - activeSubCatsCount;
+  }, [subCategories.length, activeSubCatsCount]);
 
-  // Open Edit Modal
+  // Open Edit Category Modal
   const handleOpenEdit = (cat: Category) => {
     setEditingCategory(cat);
     setFormData({ ...cat });
@@ -158,6 +182,102 @@ export default function AdminRubriquesPage() {
     }
   };
 
+  // Open Create SubCategory Modal
+  const handleOpenCreateSubCategory = (defaultCatCode: CategoryCode = 'economie') => {
+    setEditingSubCategory(null);
+    setSubFormData({
+      categoryCode: defaultCatCode,
+      code: '',
+      nameFr: '',
+      nameEn: '',
+      descriptionFr: '',
+      descriptionEn: '',
+    });
+    setSubActiveTab('fr');
+    setIsSubModalOpen(true);
+  };
+
+  // Open Edit SubCategory Modal
+  const handleOpenEditSubCategory = (sub: SubCategory) => {
+    setEditingSubCategory(sub);
+    setSubFormData({ ...sub });
+    setSubActiveTab('fr');
+    setIsSubModalOpen(true);
+  };
+
+  // Submit SubCategory (Create or Update)
+  const handleSubmitSubCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subFormData.nameFr?.trim()) {
+      warning('Champ requis', 'Le nom en français de la sous-rubrique est requis.');
+      return;
+    }
+
+    try {
+      setIsSubmittingSub(true);
+      const isEdit = Boolean(editingSubCategory);
+      const action = isEdit ? 'update_subcategory' : 'create_subcategory';
+
+      const payload = {
+        ...subFormData,
+        code: editingSubCategory ? editingSubCategory.code : subFormData.code,
+      };
+
+      const res = await fetch('/api/admin/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, payload }),
+      });
+
+      const result = await res.json();
+      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de l\'enregistrement.');
+
+      success(
+        isEdit ? 'Sous-rubrique actualisée' : 'Sous-rubrique créée',
+        result.message || `La sous-rubrique "${subFormData.nameFr}" a été enregistrée avec succès.`
+      );
+
+      setIsSubModalOpen(false);
+      setEditingSubCategory(null);
+      loadData();
+    } catch (err: any) {
+      error('Erreur', err.message);
+    } finally {
+      setIsSubmittingSub(false);
+    }
+  };
+
+  // Prompt delete subcategory
+  const handlePromptDeleteSubCategory = (sub: SubCategory) => {
+    const attachedCount = articles.filter(a => a.subCategory === sub.code).length;
+    setDeletingSubCategory(sub);
+    setDeleteAttachedCount(attachedCount);
+  };
+
+  // Confirm delete subcategory
+  const handleConfirmDeleteSubCategory = async (force = false) => {
+    if (!deletingSubCategory) return;
+    try {
+      const res = await fetch('/api/admin/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete_subcategory',
+          payload: { code: deletingSubCategory.code, force }
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de la suppression.');
+
+      success('Sous-rubrique supprimée', `La sous-rubrique "${deletingSubCategory.nameFr}" a été retirée.`);
+      setDeletingSubCategory(null);
+      loadData();
+    } catch (err: any) {
+      error('Suppression impossible', err.message);
+    }
+  };
+
   const displayedCategories = useMemo(() => {
     if (selectedView === 'all' || selectedView === 'produits') {
       return categories;
@@ -175,17 +295,26 @@ export default function AdminRubriquesPage() {
         <div>
           <div className="flex items-center gap-2 font-mono text-xs text-[#087443] font-bold uppercase tracking-wider">
             <Layers size={15} />
-            <span>Architecture Éditoriale & Référentiel Fermé</span>
+            <span>Architecture Éditoriale & Référentiel Dynamique</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
-            Gouvernance des 6 Rubriques & 24 Sous-rubriques
+            Gouvernance des 6 Rubriques & {subCategories.length} Sous-rubriques
           </h1>
           <p className="text-xs font-mono text-[#5a554e] mt-0.5">
-            Conforme au brief de la direction éditoriale (Alfred) & charte documentaire v3.1 (Samba).
+            Gestion dynamique et CRUD des sous-rubriques (conforme au brief éditorial et à la charte documentaire).
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => handleOpenCreateSubCategory()}
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#087443] text-[#087443] hover:bg-[#087443] hover:text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
+          >
+            <FolderPlus size={15} />
+            <span>+ Nouvelle Sous-rubrique</span>
+          </button>
+
           <Link
             href="/admin/articles/nouveau"
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
@@ -212,17 +341,17 @@ export default function AdminRubriquesPage() {
           </div>
 
           <div className="bg-white border border-[#e6dfd5] p-4">
-            <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Sous-rubriques Fermées</div>
+            <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Sous-rubriques Définies</div>
             <div className="text-2xl font-mono font-bold text-[#141414] mt-1">
-              {SUB_CATEGORIES.length}
+              {subCategories.length}
             </div>
-            <div className="text-[10px] font-mono text-[#736c62] mt-0.5">4 par rubrique en moyenne</div>
+            <div className="text-[10px] font-mono text-[#736c62] mt-0.5">Gérées en base dynamique</div>
           </div>
 
           <div className="bg-white border border-[#e6dfd5] p-4">
             <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Sous-rubriques Actives</div>
             <div className="text-2xl font-mono font-bold text-[#087443] mt-1">
-              {activeSubCatsCount} <span className="text-xs text-[#736c62] font-normal">/ {SUB_CATEGORIES.length}</span>
+              {activeSubCatsCount} <span className="text-xs text-[#736c62] font-normal">/ {subCategories.length}</span>
             </div>
             <div className="text-[10px] font-mono text-[#087443] mt-0.5">Seuil ≥ 2 articles atteint</div>
           </div>
@@ -303,7 +432,7 @@ export default function AdminRubriquesPage() {
         <div className="space-y-8">
           {displayedCategories.map(cat => {
             const catArticles = articles.filter(a => a.category === cat.code || (cat.code === 'histoire' && a.category === 'idees'));
-            const subCats = SUB_CATEGORIES.filter(sc => sc.categoryCode === cat.code);
+            const subCats = subCategories.filter(sc => sc.categoryCode === cat.code);
             const regardText = defaultRegards[cat.code]?.fr || cat.descriptionFr;
 
             return (
@@ -362,9 +491,19 @@ export default function AdminRubriquesPage() {
                 {/* Sub-rubrics List */}
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                      Sous-rubriques fermées ({subCats.length})
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
+                        Sous-rubriques ({subCats.length})
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenCreateSubCategory(cat.code as CategoryCode)}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#087443]/10 hover:bg-[#087443] text-[#087443] hover:text-white rounded text-[10px] font-mono font-bold transition-colors cursor-pointer"
+                      >
+                        <Plus size={11} />
+                        <span>Ajouter</span>
+                      </button>
+                    </div>
                     <span className="text-[11px] font-mono text-[#736c62]">
                       Articles dans cette rubrique : <strong>{catArticles.length}</strong>
                     </span>
@@ -403,30 +542,56 @@ export default function AdminRubriquesPage() {
                             </div>
 
                             <p className="text-[11px] font-serif text-[#736c62] line-clamp-2">
-                              {sc.descriptionFr}
+                              {sc.descriptionFr || 'Aucun descriptif pour cette sous-rubrique.'}
                             </p>
 
                             <div className="mt-2 text-[10px] font-mono text-[#999] flex justify-between items-center">
                               <span>Code : <code className="text-[#141414] font-bold">{sc.code}</code></span>
-                              <span>EN : {sc.nameEn}</span>
+                              <span className="truncate max-w-[120px]">EN : {sc.nameEn}</span>
                             </div>
                           </div>
 
                           <div className="pt-2.5 mt-2.5 border-t border-[#e6dfd5] flex items-center justify-between text-xs font-mono">
-                            <Link
-                              href={`/admin/articles/nouveau?category=${cat.code}&subCategory=${sc.code}`}
-                              className="text-[11px] text-[#087443] hover:underline inline-flex items-center gap-1 font-bold"
-                            >
-                              <Plus size={11} />
-                              <span>+ Rédiger</span>
-                            </Link>
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/admin/articles/nouveau?category=${cat.code}&subCategory=${sc.code}`}
+                                className="text-[11px] text-[#087443] hover:underline inline-flex items-center gap-1 font-bold"
+                              >
+                                <Plus size={11} />
+                                <span>Rédiger</span>
+                              </Link>
 
-                            <Link
-                              href={`/admin/articles?category=${cat.code}`}
-                              className="text-[11px] text-[#736c62] hover:text-[#141414]"
-                            >
-                              {count} article{count > 1 ? 's' : ''} →
-                            </Link>
+                              <Link
+                                href={`/admin/articles?category=${cat.code}`}
+                                className="text-[11px] text-[#736c62] hover:text-[#141414]"
+                              >
+                                {count} art.
+                              </Link>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              <Tooltip position="top" content="Modifier la sous-rubrique">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditSubCategory(sc)}
+                                  className="p-1 text-[#555] hover:text-[#087443] hover:bg-[#faf8f5] rounded border border-[#e6dfd5] transition-colors cursor-pointer"
+                                  aria-label={`Modifier ${sc.nameFr}`}
+                                >
+                                  <Edit3 size={12} />
+                                </button>
+                              </Tooltip>
+
+                              <Tooltip position="top" content="Supprimer la sous-rubrique">
+                                <button
+                                  type="button"
+                                  onClick={() => handlePromptDeleteSubCategory(sc)}
+                                  className="p-1 text-[#555] hover:text-[#d32f2f] hover:bg-rose-50 rounded border border-[#e6dfd5] transition-colors cursor-pointer"
+                                  aria-label={`Supprimer ${sc.nameFr}`}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </Tooltip>
+                            </div>
                           </div>
                         </div>
                       );
@@ -706,6 +871,274 @@ export default function AdminRubriquesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ──────────────────────────────────────────────────────────
+          6. MODAL DYNAMIQUE : CRÉATION / ÉDITION SOUS-RUBRIQUE
+      ────────────────────────────────────────────────────────── */}
+      {isSubModalOpen && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+        >
+          <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-2xl max-w-lg w-full overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="bg-[#1e3a5f] text-white p-4 sm:p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <Layers size={18} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-base sm:text-lg">
+                    {editingSubCategory ? `Modifier : ${editingSubCategory.nameFr}` : 'Nouvelle Sous-rubrique'}
+                  </h3>
+                  <p className="text-[11px] text-white/80">
+                    {editingSubCategory 
+                      ? 'Ajustez le rattachement ou les libellés bilingues'
+                      : 'Créez une nouvelle sous-rubrique dynamique'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsSubModalOpen(false)}
+                className="text-white/70 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                title="Fermer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body / Form */}
+            <form onSubmit={handleSubmitSubCategory} className="p-4 sm:p-6 space-y-4">
+              {/* Category Parent & Code */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                    Rubrique Parente <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={subFormData.categoryCode || 'economie'}
+                    onChange={(e) => setSubFormData(prev => ({ ...prev, categoryCode: e.target.value as CategoryCode }))}
+                    className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded text-xs focus:outline-none focus:border-[#1e3a5f] bg-white font-medium"
+                    required
+                  >
+                    {categories.map(cat => (
+                      <option key={cat.code} value={cat.code}>
+                        {cat.nameFr}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                    Code Identifiant (Slug)
+                  </label>
+                  <input
+                    type="text"
+                    disabled={Boolean(editingSubCategory)}
+                    value={subFormData.code || ''}
+                    onChange={(e) => setSubFormData(prev => ({ ...prev, code: e.target.value }))}
+                    placeholder={editingSubCategory ? editingSubCategory.code : "auto (généré si vide)"}
+                    className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded text-xs font-mono focus:outline-none focus:border-[#1e3a5f] bg-white disabled:bg-[#f1f5f9] disabled:text-[#94a3b8]"
+                  />
+                  {!editingSubCategory && (
+                    <span className="text-[10px] text-[#736c62] block mt-0.5">
+                      Ex: filiere-coton (laisser vide pour auto-générer)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Language Tabs */}
+              <div className="border-b border-[#e6dfd5] flex items-center justify-between pt-1">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSubActiveTab('fr')}
+                    className={`pb-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-colors ${
+                      subActiveTab === 'fr'
+                        ? 'border-[#087443] text-[#087443]'
+                        : 'border-transparent text-[#736c62] hover:text-[#141414]'
+                    }`}
+                  >
+                    <Languages size={13} /> Français (FR)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSubActiveTab('en')}
+                    className={`pb-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-colors ${
+                      subActiveTab === 'en'
+                        ? 'border-[#1e3a5f] text-[#1e3a5f]'
+                        : 'border-transparent text-[#736c62] hover:text-[#141414]'
+                    }`}
+                  >
+                    <Languages size={13} /> English (EN)
+                  </button>
+                </div>
+              </div>
+
+              {/* FR Fields */}
+              {subActiveTab === 'fr' && (
+                <div className="space-y-3 animate-in fade-in duration-100">
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                      Nom de la sous-rubrique (Français) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={subFormData.nameFr || ''}
+                      onChange={(e) => setSubFormData(prev => ({ ...prev, nameFr: e.target.value }))}
+                      placeholder="Ex: Filière Coton, Mines & Or..."
+                      className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded focus:outline-none focus:border-[#087443] bg-white font-serif text-sm font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                      Descriptif éditorial (Français)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={subFormData.descriptionFr || ''}
+                      onChange={(e) => setSubFormData(prev => ({ ...prev, descriptionFr: e.target.value }))}
+                      placeholder="Ex: Analyse approfondie des dynamiques et productions de la filière..."
+                      className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded text-xs focus:outline-none focus:border-[#087443] bg-white"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* EN Fields */}
+              {subActiveTab === 'en' && (
+                <div className="space-y-3 animate-in fade-in duration-100">
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                      Sub-rubric Name (English)
+                    </label>
+                    <input
+                      type="text"
+                      value={subFormData.nameEn || ''}
+                      onChange={(e) => setSubFormData(prev => ({ ...prev, nameEn: e.target.value }))}
+                      placeholder="Ex: Cotton Sector, Mining & Gold..."
+                      className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded focus:outline-none focus:border-[#1e3a5f] bg-white font-serif text-sm font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                      Editorial Description (English)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={subFormData.descriptionEn || ''}
+                      onChange={(e) => setSubFormData(prev => ({ ...prev, descriptionEn: e.target.value }))}
+                      placeholder="Ex: In-depth analysis of supply chain dynamics and agricultural output..."
+                      className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded text-xs focus:outline-none focus:border-[#1e3a5f] bg-white"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Rule reminder */}
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg flex items-start gap-2.5 text-[11px] text-[#736c62]">
+                <Info size={16} className="text-[#1e3a5f] shrink-0 mt-0.5" />
+                <p>
+                  <strong>Règle d'activation automatique (Brief Samba v5) :</strong> Une sous-rubrique devient active et visible sur le site public dès qu'elle compte au minimum <strong>2 articles publiés</strong>.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-3 border-t border-[#e6dfd5] flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsSubModalOpen(false)}
+                  disabled={isSubmittingSub}
+                  className="px-4 py-2 border border-[#cbd5e1] text-xs font-bold hover:bg-[#faf8f5] rounded cursor-pointer disabled:opacity-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingSub}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087443] text-white text-xs font-bold uppercase rounded hover:bg-[#075f37] cursor-pointer disabled:opacity-50 transition-colors"
+                >
+                  {isSubmittingSub ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} />
+                      {editingSubCategory ? 'Mettre à jour' : 'Créer la sous-rubrique'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ──────────────────────────────────────────────────────────
+          7. MODAL DE CONFIRMATION DE SUPPRESSION SOUS-RUBRIQUE
+      ────────────────────────────────────────────────────────── */}
+      {deletingSubCategory && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
+        >
+          <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-2xl max-w-md w-full overflow-hidden p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-red-100 text-red-600 rounded-full shrink-0">
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 className="font-serif font-bold text-base text-[#141414]">
+                  Supprimer la sous-rubrique ?
+                </h3>
+                <p className="text-xs text-[#736c62]">
+                  Action sur <strong>{deletingSubCategory.nameFr}</strong> ({deletingSubCategory.code})
+                </p>
+              </div>
+            </div>
+
+            {deleteAttachedCount > 0 ? (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <AlertTriangle size={15} className="text-amber-700 shrink-0" />
+                  <span>Articles rattachés détectés ({deleteAttachedCount})</span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  Cette sous-rubrique est actuellement assignée à <strong>{deleteAttachedCount} article(s)</strong>. La supprimer détachera ces articles de cette sous-rubrique.
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-[#4b5563]">
+                Cette sous-rubrique ne contient aucun article rattaché. Vous pouvez la supprimer en toute sécurité.
+              </p>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e6dfd5]">
+              <button
+                type="button"
+                onClick={() => setDeletingSubCategory(null)}
+                className="px-3.5 py-1.5 border border-[#cbd5e1] text-xs font-bold rounded hover:bg-[#faf8f5] cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={() => handleConfirmDeleteSubCategory(deleteAttachedCount > 0)}
+                className="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded hover:bg-red-700 cursor-pointer transition-colors"
+              >
+                {deleteAttachedCount > 0 ? 'Forcer la suppression' : 'Confirmer la suppression'}
+              </button>
+            </div>
           </div>
         </div>
       )}
