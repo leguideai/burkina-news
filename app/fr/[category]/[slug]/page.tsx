@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { articles, getArticleBySlug, getArticles } from '@/data/mock/articles';
 import { categories, getCategoryByCode } from '@/data/mock/categories';
+import { getSubCategoryByCode } from '@/data/mock/referentiel';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import ArticleBodyRenderer from '@/components/editorial/ArticleBodyRenderer';
@@ -22,6 +23,7 @@ export default async function ArticleDetailPage({
   const { category: categoryCode, slug } = await params;
   const article = getArticleBySlug(slug);
   const category = getCategoryByCode(categoryCode as any);
+  const subCategory = article?.subCategory ? getSubCategoryByCode(article.subCategory) : undefined;
 
   if (!article) {
     notFound();
@@ -47,21 +49,40 @@ export default async function ArticleDetailPage({
         <div className="max-w-4xl mx-auto">
           
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#737373] mb-4" aria-label="Breadcrumb">
+          <nav className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#737373] mb-4 flex-wrap" aria-label="Breadcrumb">
             <Link href="/fr" className="hover:text-[#0b4627]">Accueil</Link>
             <span>/</span>
             <Link href={`/fr/${article.category}`} className="hover:text-[#0b4627]">
               {category?.nameFr || article.category}
             </Link>
+            {subCategory && (
+              <>
+                <span>/</span>
+                <Link href={`/fr/${article.category}?sub=${subCategory.code}`} className="text-[#0b4627] font-semibold hover:underline">
+                  {subCategory.nameFr}
+                </Link>
+              </>
+            )}
             <span>/</span>
             <span className="text-[#141414] font-bold truncate max-w-xs">{article.type}</span>
           </nav>
 
           {/* Category & Metadata */}
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono uppercase tracking-wider mb-3">
-            <span className="bg-[#0b4627] text-white px-2.5 py-0.5 font-bold">
+          <div className="flex flex-wrap items-center gap-2.5 text-[11px] font-mono uppercase tracking-wider mb-3">
+            <Link 
+              href={`/fr/${article.category}`}
+              className="bg-[#0b4627] text-white px-2.5 py-0.5 font-bold hover:bg-[#072e1a] transition-colors"
+            >
               {category?.nameFr || article.category}
-            </span>
+            </Link>
+            {subCategory && (
+              <Link 
+                href={`/fr/${article.category}?sub=${subCategory.code}`}
+                className="bg-[#f4eee3] text-[#0b4627] border border-[#0b4627]/30 px-2 py-0.5 font-bold hover:bg-[#0b4627] hover:text-white transition-colors"
+              >
+                {subCategory.nameFr}
+              </Link>
+            )}
             <span className="text-[#737373]">·</span>
             <span className="font-bold text-[#141414]">{article.type.replace('-', ' ')}</span>
             <span className="text-[#737373]">·</span>

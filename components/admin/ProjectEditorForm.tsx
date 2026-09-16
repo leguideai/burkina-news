@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useMemo, useImperativeHandle, forwardRef } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -13,8 +13,11 @@ import {
   ShieldCheck,
   FileText,
   History,
+  Activity,
 } from 'lucide-react';
 import { Project, ProjectStatus, PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, ProjectActor, ProjectSource, ProjectStatusEntry } from '@/data/types';
+import { ALL_PROVINCES, getProvincesByRegion } from '@/data/mock/referentiel';
+import { indicators } from '@/data/mock/indicators';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 import { useMicum } from '@/components/admin/MicumContext';
@@ -65,10 +68,14 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
       title: '',
       titleEn: '',
       slug: '',
+      code: '',
       description: '',
       descriptionEn: '',
       sector: 'Énergie',
       region: 'Centre (Ouagadougou)',
+      province: 'Kadiogo',
+      pndProgram: '',
+      reliability: 'A',
       category: 'chantiers',
       currentStatus: 'annonce',
       amount: '',
@@ -77,12 +84,21 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
       actors: [],
       sources: [],
       statusHistory: [],
+      linkedIndicatorCodes: [],
       ...initialData,
     };
 
     const [formData, setFormData] = useState<Partial<Project>>(defaultData);
     const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
     const [isSaving, setIsSaving] = useState(false);
+
+    const availableProvinces = useMemo(() => {
+      if (formData.region && formData.region !== 'National (Multi-régions)') {
+        const list = getProvincesByRegion(formData.region);
+        return list.length > 0 ? list : ALL_PROVINCES;
+      }
+      return ALL_PROVINCES;
+    }, [formData.region]);
 
     const { registerEditor, updateEditorData } = useMicum();
 
@@ -312,24 +328,54 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                   /{formData.slug || 'url-du-projet'}
                 </div>
 
-                {/* Sector & Region */}
+                {/* Code Chantier & Secteur */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Identifiant Unique (Code BKN-CH-NNNN) *</label>
+                    <input
+                      type="text"
+                      value={formData.code || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
+                      className={`${inputClass} font-bold text-[#087443]`}
+                      placeholder="BKN-CH-0001"
+                    />
+                    <p className="text-[10px] font-mono text-[#736c62] mt-1">Nomenclature Charte v3.1 : code immuable</p>
+                  </div>
                   <div>
                     <label className={labelClass}>Secteur</label>
                     <select value={formData.sector || ''} onChange={(e) => setFormData(prev => ({ ...prev, sector: e.target.value }))} className={selectClass}>
                       {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
+                </div>
+
+                {/* Région & Province */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}><MapPin size={10} className="inline mr-1" />Région</label>
-                    <select value={formData.region || ''} onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value }))} className={selectClass}>
+                    <select 
+                      value={formData.region || ''} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value, province: '' }))} 
+                      className={selectClass}
+                    >
                       {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Province ({availableProvinces.length} options)</label>
+                    <select 
+                      value={formData.province || ''} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, province: e.target.value }))} 
+                      className={selectClass}
+                    >
+                      <option value="">Sélectionner une province</option>
+                      {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                 </div>
 
-                {/* Amount & Capacity */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Montant, Capacité, Statut & Fiabilité */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className={labelClass}>Montant / Budget</label>
                     <input type="text" value={formData.amount || ''} onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))} className={inputClass} placeholder="45 milliards FCFA" />
@@ -338,16 +384,91 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                     <label className={labelClass}>Capacité</label>
                     <input type="text" value={formData.capacity || ''} onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))} className={inputClass} placeholder="50 MWc" />
                   </div>
+                  <div>
+                    <label className={labelClass}>Statut (6 états)</label>
+                    <select value={formData.currentStatus || 'annonce'} onChange={(e) => setFormData(prev => ({ ...prev, currentStatus: e.target.value as ProjectStatus }))} className={selectClass}>
+                      {PROJECT_STATUS_ORDER.map(s => (
+                        <option key={s} value={s}>{PROJECT_STATUS_LABELS[s]}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}><ShieldCheck size={10} className="inline mr-1" />Niveau d'audit</label>
+                    <select 
+                      value={formData.reliability || 'A'} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, reliability: e.target.value as 'A' | 'B' | 'C' }))} 
+                      className={selectClass}
+                    >
+                      <option value="A">A — Document officiel vérifié</option>
+                      <option value="B">B — Déclaration recoupée</option>
+                      <option value="C">C — Annonce non auditée</option>
+                    </select>
+                  </div>
                 </div>
 
-                {/* Status */}
+                {/* Programme PND RELANCE */}
                 <div>
-                  <label className={labelClass}>Statut actuel</label>
-                  <select value={formData.currentStatus || 'annonce'} onChange={(e) => setFormData(prev => ({ ...prev, currentStatus: e.target.value as ProjectStatus }))} className={selectClass}>
-                    {PROJECT_STATUS_ORDER.map(s => (
-                      <option key={s} value={s}>{PROJECT_STATUS_LABELS[s]}</option>
-                    ))}
-                  </select>
+                  <label className={labelClass}>Programme de rattachement PND RELANCE</label>
+                  <input 
+                    type="text" 
+                    value={formData.pndProgram || ''} 
+                    onChange={(e) => setFormData(prev => ({ ...prev, pndProgram: e.target.value }))} 
+                    className={inputClass} 
+                    placeholder="ex: Programme 3.2 — Infrastructures énergétiques et transition solaire" 
+                  />
+                </div>
+
+                {/* Indicateurs RELANCE Liés (Many-to-Many) */}
+                <div className="bg-[#faf8f5] p-4 border border-[#e6dfd5] rounded space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-mono uppercase text-[#087443] font-bold block">
+                      Indicateurs du Baromètre RELANCE impactés (Relation Many-to-Many)
+                    </label>
+                    <span className="text-[10px] font-mono text-[#736c62]">
+                      {(formData.linkedIndicatorCodes || []).length} indicateur(s) sélectionné(s)
+                    </span>
+                  </div>
+                  <p className="text-[11px] font-serif text-[#736c62]">
+                    Cochez les indicateurs macroéconomiques ou sectoriels reliés à la livraison de cette infrastructure :
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    {indicators.map(ind => {
+                      const isChecked = (formData.linkedIndicatorCodes || []).includes(ind.code);
+                      return (
+                        <label 
+                          key={ind.code} 
+                          className={`flex items-start gap-2.5 p-2.5 border rounded cursor-pointer transition-colors ${
+                            isChecked ? 'bg-white border-[#087443] shadow-xs' : 'bg-white/60 border-[#e6dfd5] hover:border-[#141414]'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const current = formData.linkedIndicatorCodes || [];
+                              if (e.target.checked) {
+                                setFormData(prev => ({ ...prev, linkedIndicatorCodes: [...current, ind.code] }));
+                              } else {
+                                setFormData(prev => ({ ...prev, linkedIndicatorCodes: current.filter(c => c !== ind.code) }));
+                              }
+                            }}
+                            className="mt-0.5 accent-[#087443]"
+                          />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 bg-[#f4eee3] text-[#087443] border border-[#e6dfd5]">
+                                {ind.code}
+                              </span>
+                              <span className="font-mono text-[10px] text-[#736c62]">{ind.category}</span>
+                            </div>
+                            <p className="font-serif text-xs font-bold text-[#141414] truncate mt-0.5">
+                              {ind.name}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Image */}
@@ -355,6 +476,12 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                   value={formData.image || ''}
                   onChange={(url) => setFormData(prev => ({ ...prev, image: url }))}
                   label="Photo du chantier"
+                  namingContext={{
+                    type: 'chantier',
+                    rubriqueOrCode: formData.code || 'BKN-CH-0001',
+                    sujet: formData.slug || 'chantier-image',
+                    statut: 'Preuve-terrain',
+                  }}
                 />
 
                 {/* Description */}

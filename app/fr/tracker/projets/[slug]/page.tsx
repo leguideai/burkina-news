@@ -1,8 +1,9 @@
 import { projects, getProjectBySlug } from '@/data/mock/projects';
 import { getArticles } from '@/data/mock/articles';
+import { getIndicatorByCode } from '@/data/mock/indicators';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_ORDER } from '@/data/types';
-import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSourceUrl } from '@/data/sources';
@@ -27,6 +28,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     .map(id => allArticles.find(a => a.id === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
+  // Indicateurs RELANCE liés (Brief Samba v5, Section 4.1)
+  const linkedIndicators = (project.linkedIndicatorCodes || [])
+    .map(code => getIndicatorByCode(code, 'fr'))
+    .filter((ind): ind is NonNullable<typeof ind> => ind !== undefined);
+
   return (
     <div className="bg-[#faf8f5] min-h-screen pb-20">
       
@@ -45,8 +51,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <div className="pb-6 border-b border-[#141414]">
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <StatusBadge status={project.currentStatus} size="md" />
+              {project.code && (
+                <span className="bg-[#141414] text-white px-2 py-0.5 text-xs font-mono font-bold tracking-wider">
+                  {project.code}
+                </span>
+              )}
               <span className="text-xs font-mono text-[#555555]">
-                Région {project.region} · Secteur {project.sector}
+                {project.province ? `Province du ${project.province} · Région ${project.region}` : `Région ${project.region}`} · Secteur {project.sector}
               </span>
             </div>
 
@@ -184,6 +195,57 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                         Lire l'article →
                       </Link>
                     </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Linked RELANCE Indicators (Brief Samba v5, Section 4.1) */}
+            {linkedIndicators.length > 0 && (
+              <section className="space-y-4">
+                <div className="flex justify-between items-center pb-2 border-b border-[#141414]">
+                  <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
+                    Indicateurs du Baromètre RELANCE impactés ({linkedIndicators.length})
+                  </h3>
+                  <Link href="/fr/tracker/indicateurs" className="text-xs font-mono font-bold text-[#0b4627] hover:underline">
+                    Tout le Baromètre →
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {linkedIndicators.map((ind: any) => (
+                    <Link
+                      key={ind.code}
+                      href={`/fr/tracker/indicateurs/${ind.code}`}
+                      className="p-4 bg-white border border-[#e6dfd5] hover:border-[#0b4627] transition-all flex flex-col justify-between group shadow-xs"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <span className="text-[10px] font-mono font-bold uppercase bg-[#f4eee3] px-2 py-0.5 text-[#0b4627] border border-[#e6dfd5]">
+                            {ind.code}
+                          </span>
+                          <span className="text-[10px] font-mono text-[#737373]">
+                            {ind.pillar || ind.category}
+                          </span>
+                        </div>
+                        <h4 className="font-serif font-bold text-sm text-[#141414] group-hover:text-[#0b4627] transition-colors mb-2 leading-snug">
+                          {ind.name}
+                        </h4>
+                        <div className="flex items-baseline justify-between text-xs font-mono bg-[#faf8f5] p-2 border border-[#e6dfd5] mb-2">
+                          <span className="text-[#555555]">Valeur constatée :</span>
+                          <span className="font-bold text-[#0b4627] text-sm">{ind.currentValue} {ind.unit}</span>
+                        </div>
+                        {ind.target2030 && (
+                          <div className="text-[10px] font-mono text-[#737373] text-right">
+                            Cible PND 2030 : <strong className="text-[#141414]">{ind.target2030} {ind.unit}</strong>
+                          </div>
+                        )}
+                      </div>
+                      <div className="pt-2 mt-2 border-t border-[#e6dfd5] text-xs font-mono font-bold text-[#0b4627] flex items-center justify-between">
+                        <span>Consulter la fiche indicateur</span>
+                        <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </Link>
                   ))}
                 </div>
               </section>

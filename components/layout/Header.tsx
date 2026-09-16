@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper } from 'lucide-react';
+import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper, ChevronDown } from 'lucide-react';
 import { NAV_CATEGORIES, UI_STRINGS } from '@/data/mock/translations';
+import { JOURNAL_PRODUCTS } from '@/data/mock/referentiel';
+import { categories as ALL_CATEGORIES } from '@/data/mock/categories';
 import Tooltip from '@/components/ui/Tooltip';
 
 export default function Header() {
@@ -25,6 +27,13 @@ export default function Header() {
     label: isEn ? cat.labelEn : cat.labelFr,
     href: isEn ? cat.hrefEn : cat.hrefFr
   }));
+
+  const currentCategory = ALL_CATEGORIES.find(c => 
+    pathname === `/fr/${c.code}` || 
+    pathname === `/en/${c.code}` || 
+    pathname.startsWith(`/fr/${c.code}/`) || 
+    pathname.startsWith(`/en/${c.code}/`)
+  );
 
   const homeHref = isEn ? '/en' : '/fr';
   const trackerHref = isEn ? '/en/tracker' : '/fr/tracker';
@@ -222,16 +231,46 @@ export default function Header() {
 
             {categories.map((cat) => {
               const active = pathname.startsWith(cat.href);
+              const catCode = cat.href.split('/').pop();
+              const categoryData = ALL_CATEGORIES.find(c => c.code === catCode);
               return (
-                <Link
-                  key={cat.href}
-                  href={cat.href}
-                  className={`py-2.5 px-4 text-xs font-semibold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] ${
-                    active ? 'text-[#0b4627] bg-[#f4eee3] font-bold' : 'text-[#333333] hover:text-[#141414] hover:bg-neutral-50'
-                  }`}
-                >
-                  {cat.label}
-                </Link>
+                <div key={cat.href} className="relative group">
+                  <Link
+                    href={cat.href}
+                    className={`py-2.5 px-3.5 text-xs font-semibold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] flex items-center gap-1.5 ${
+                      active ? 'text-[#0b4627] bg-[#f4eee3] font-bold' : 'text-[#333333] hover:text-[#141414] hover:bg-neutral-50'
+                    }`}
+                  >
+                    <span>{cat.label}</span>
+                    <ChevronDown size={11} className="text-[#888888] group-hover:text-[#141414] group-hover:rotate-180 transition-transform" />
+                  </Link>
+
+                  {/* Desktop Dropdown with sub-categories */}
+                  {categoryData && categoryData.subCategories && categoryData.subCategories.length > 0 && (
+                    <div className="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 absolute top-full left-0 z-50 min-w-[220px] bg-white border-2 border-[#141414] shadow-xl py-2">
+                      <div className="px-3 pb-1.5 mb-1 border-b border-[#e6dfd5] font-mono text-[10px] font-bold uppercase text-[#737373] tracking-wider">
+                        {isEn ? "Sub-rubrics" : "Sous-rubriques"}
+                      </div>
+                      {categoryData.subCategories.map((sub) => (
+                        <Link
+                          key={sub.code}
+                          href={`${cat.href}?sub=${sub.code}`}
+                          className="block px-3 py-1.5 text-xs font-serif text-[#333333] hover:bg-[#f4eee3] hover:text-[#0b4627] hover:font-bold transition-colors"
+                        >
+                          {isEn ? sub.nameEn : sub.nameFr}
+                        </Link>
+                      ))}
+                      <div className="mt-1 pt-1.5 px-3 border-t border-[#e6dfd5]">
+                        <Link
+                          href={cat.href}
+                          className="text-[11px] font-mono font-bold text-[#0b4627] hover:underline block"
+                        >
+                          {isEn ? "All investigations →" : "Toutes les enquêtes →"}
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
 
@@ -261,6 +300,68 @@ export default function Header() {
 
         </div>
       </nav>
+
+      {/* 3.1 CONTEXTUAL CATEGORY SUB-BAR (When viewing any of the 6 sections) */}
+      {currentCategory && (
+        <div className="hidden md:block bg-[#f4eee3] border-b border-[#e6dfd5] text-[11px] font-mono py-1.5 px-8">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-[#0b4627] font-bold uppercase shrink-0">
+              <span>{isEn ? currentCategory.nameEn : currentCategory.nameFr} :</span>
+            </div>
+            <div className="flex items-center gap-3 overflow-x-auto scrollbar-none">
+              <Link
+                href={isEn ? `/en/${currentCategory.code}` : `/fr/${currentCategory.code}`}
+                className="px-2 py-0.5 whitespace-nowrap text-[#555555] hover:text-[#0b4627] hover:underline"
+              >
+                {isEn ? "All" : "Tout voir"}
+              </Link>
+              {currentCategory.subCategories?.map((sub) => (
+                <Link
+                  key={sub.code}
+                  href={isEn ? `/en/${currentCategory.code}?sub=${sub.code}` : `/fr/${currentCategory.code}?sub=${sub.code}`}
+                  className="px-2 py-0.5 whitespace-nowrap text-[#555555] hover:text-[#0b4627] hover:underline font-medium"
+                >
+                  {isEn ? sub.nameEn : sub.nameFr}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3.1 CONTEXTUAL PRODUCT SUB-BAR (Brief Samba v5, Section 3) */}
+      {pathname.includes('/tracker') && (
+        <div className="hidden md:block bg-[#f4eee3] border-b border-[#e6dfd5] text-[11px] font-mono py-1.5 px-8">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-[#0b4627] font-bold uppercase shrink-0">
+              <span>{pathname.includes('/indicateurs') ? "RELANCE 2026-2030" : "Le Tracker"} :</span>
+            </div>
+            <div className="flex items-center gap-4 overflow-x-auto scrollbar-none">
+              {pathname.includes('/indicateurs') ? (
+                JOURNAL_PRODUCTS.find(p => p.code === 'relance')?.subMenus.map(m => (
+                  <Link
+                    key={m.code}
+                    href={isEn ? m.hrefEn : m.hrefFr}
+                    className="text-[#555555] hover:text-[#0b4627] whitespace-nowrap transition-colors"
+                  >
+                    {isEn ? m.labelEn : m.labelFr}
+                  </Link>
+                ))
+              ) : (
+                JOURNAL_PRODUCTS.find(p => p.code === 'tracker')?.subMenus.map(m => (
+                  <Link
+                    key={m.code}
+                    href={isEn ? m.hrefEn : m.hrefFr}
+                    className="text-[#555555] hover:text-[#0b4627] whitespace-nowrap transition-colors"
+                  >
+                    {isEn ? m.labelEn : m.labelFr}
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 4. MOBILE DRAWER WITH RICH NAVIGATION & LANGUAGE PICKER */}
       {mobileMenuOpen && (
@@ -345,21 +446,43 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Editorial Categories List */}
+          {/* Editorial Categories with Sub-Categories */}
           <div className="border-t border-[#e6dfd5] pt-3">
             <div className="font-mono text-[10px] uppercase font-bold text-[#737373] mb-2 tracking-wider">
-              {isEn ? "Investigative Sections" : "Rubriques de la Rédaction"}
+              {isEn ? "Investigative Sections & Sub-Rubrics" : "Rubriques & Sous-Rubriques d'Enquête"}
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.href}
-                  href={cat.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="min-h-[44px] flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#141414] hover:bg-[#faf8f5] active:bg-[#f4eee3] transition-colors rounded-sm"
-                >
-                  {cat.label}
-                </Link>
+            <div className="space-y-2">
+              {ALL_CATEGORIES.map((cat) => (
+                <div key={cat.code} className="border border-[#e6dfd5] bg-[#faf8f5] p-2.5 rounded-xs">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <Link
+                      href={isEn ? `/en/${cat.code}` : `/fr/${cat.code}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="font-mono text-xs font-bold uppercase text-[#0b4627] hover:underline"
+                    >
+                      {isEn ? cat.nameEn : cat.nameFr}
+                    </Link>
+                    <Link
+                      href={isEn ? `/en/${cat.code}` : `/fr/${cat.code}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-[10px] font-mono text-[#737373] hover:text-[#141414]"
+                    >
+                      {isEn ? "View all →" : "Voir tout →"}
+                    </Link>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {cat.subCategories?.map((sub) => (
+                      <Link
+                        key={sub.code}
+                        href={isEn ? `/en/${cat.code}?sub=${sub.code}` : `/fr/${cat.code}?sub=${sub.code}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-[11px] px-2 py-1 bg-white border border-[#e6dfd5] text-[#333333] hover:border-[#0b4627] hover:text-[#0b4627] transition-colors"
+                      >
+                        {isEn ? sub.nameEn : sub.nameFr}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>

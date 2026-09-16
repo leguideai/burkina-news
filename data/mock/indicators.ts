@@ -21,6 +21,9 @@ export const indicators: Indicator[] = [
     category: 'economie',
     program: 'Programme 4.4 — Développement du commerce',
     programEn: 'Program 4.4 — Trade & Macroeconomic Expansion',
+    pillar: 'Pilier 4 — Économie productive & Finances',
+    pillarEn: 'Pillar 4 — Productive Economy & Public Finance',
+    linkedProjectSlugs: ['usine-transformation-mangues-bobo', 'centrale-solaire-koudougou'],
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyCcxg1qoIcaR4KuGS9ZXaHgA6mhYKzmSsrdsydcolKA5F9lJxE6qtOWo&s=10',
     history: [
       { year: 2022, value: 1.5, source: 'INSD' },
@@ -49,6 +52,9 @@ export const indicators: Indicator[] = [
     category: 'chantiers',
     program: 'Programme 4.2 — Souveraineté énergétique',
     programEn: 'Program 4.2 — National Energy Sovereignty',
+    pillar: 'Pilier 3 — Infrastructures & Souveraineté énergétique',
+    pillarEn: 'Pillar 3 — Infrastructure & Energy Sovereignty',
+    linkedProjectSlugs: ['centrale-solaire-koudougou', 'centrale-solaire-kaya'],
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVB4DulX6wVRhMEzd9fOmj5BoTaj8T-A8XDEpH9w1UGTlQ8zy52uYk3bw&s=10',
     history: [
       { year: 2022, value: 380, source: 'SONABEL' },
@@ -77,6 +83,9 @@ export const indicators: Indicator[] = [
     category: 'economie',
     program: 'Programme 4.3 — Valorisation des ressources minières',
     programEn: 'Program 4.3 — Mineral Resource Value Addition',
+    pillar: 'Pilier 4 — Économie productive & Mines',
+    pillarEn: 'Pillar 4 — Productive Economy & Mining Sector',
+    linkedProjectSlugs: ['complexe-minier-sanbrado', 'raffinerie-nationale-or'],
     image: 'https://www.afrik.com/wp-content/uploads/2024/03/lingot-d-or.jpg',
     history: [
       { year: 2022, value: 45.8, source: 'DGMG' },
@@ -105,6 +114,9 @@ export const indicators: Indicator[] = [
     category: 'societe',
     program: 'Programme 3.4 — Travail, emploi et protection sociale',
     programEn: 'Program 3.4 — Employment & Social Safety Nets',
+    pillar: 'Pilier 2 — Capital humain & Inclusion sociale',
+    pillarEn: 'Pillar 2 — Human Capital & Social Inclusion',
+    linkedProjectSlugs: ['perimetre-irrigue-samendeni'],
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYDYIqsuva8bv_GsGw8FYP_AA19ymxBlzb06gkqg0QAQ&s=10',
     history: [
       { year: 2022, value: 45.1, source: 'INSD' },
@@ -133,6 +145,9 @@ export const indicators: Indicator[] = [
     category: 'societe',
     program: 'Programme 3.2 — Éducation et formation',
     programEn: 'Program 3.2 — Quality Universal Education',
+    pillar: 'Pilier 2 — Capital humain & Éducation',
+    pillarEn: 'Pillar 2 — Human Capital & Education',
+    linkedProjectSlugs: ['universite-regionale-fada'],
     image: 'https://www.togofirst.com/media/k2/items/cache/57a563bcafe5adb5a476933fe298e364_L.jpg',
     history: [
       { year: 2022, value: 74.6, source: 'MENAPLN' },
@@ -161,6 +176,9 @@ export const indicators: Indicator[] = [
     category: 'securite',
     program: 'Programme 1.2 — Cohésion sociale et paix',
     programEn: 'Program 1.2 — Social Cohesion & Resettlement',
+    pillar: 'Pilier 1 — Sécurité, Défense & Souveraineté',
+    pillarEn: 'Pillar 1 — Security, Defense & Sovereignty',
+    linkedProjectSlugs: ['rehabilitation-rail-ouaga-kaya'],
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNQDUbCURt_tAlswRcXmBVun33-CXIs8UeJKU9uKk2nw&s=10',
     history: [
       { year: 2022, value: 1.88, source: 'CONASUR' },
@@ -189,6 +207,9 @@ export const indicators: Indicator[] = [
     category: 'agriculture',
     program: 'Programme 4.1 — Développement agro-sylvo-pastoral',
     programEn: 'Program 4.1 — Food Security & Agro-Pastoral Development',
+    pillar: 'Pilier 4 — Souveraineté alimentaire & Agriculture',
+    pillarEn: 'Pillar 4 — Food Sovereignty & Agriculture',
+    linkedProjectSlugs: ['perimetre-irrigue-samendeni', 'usine-transformation-mangues-bobo'],
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSjjPOMoZrOPLLVZYMhqWgrxDeoRuzVlYqJKiszLv3LA&s=10',
     history: [
       { year: 2022, value: 4.2, source: 'DGPV' },
@@ -217,6 +238,9 @@ export const indicators: Indicator[] = [
     category: 'chantiers',
     program: 'Programme 3.5 — Environnement, eau et cadre de vie',
     programEn: 'Program 3.5 — Water Infrastructure & Sanitation',
+    pillar: 'Pilier 3 — Eau, Environnement & Cadre de vie',
+    pillarEn: 'Pillar 3 — Water, Environment & Living Standards',
+    linkedProjectSlugs: ['perimetre-irrigue-samendeni'],
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqnVTjbmIdrCZKjBErRTpNrVjC_4ae8V-66nirOI6baiX6-xOS6MFlNndJ&s=10',
     history: [
       { year: 2022, value: 69.1, source: 'DGRE' },

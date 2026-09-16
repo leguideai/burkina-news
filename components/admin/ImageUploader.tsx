@@ -15,6 +15,15 @@ import {
 import { useToast } from './Toast';
 import Tooltip from '@/components/ui/Tooltip';
 import { mediaApi, MediaFolder, ApiClientError } from '@/lib/api';
+import { generateMediaFilename } from '@/data/types';
+
+export interface MediaNamingContext {
+  type: 'editorial' | 'chantier';
+  rubriqueOrCode: string;
+  sujet: string;
+  lang?: 'FR' | 'EN' | 'BILINGUE';
+  statut?: 'v01' | 'v02' | 'RELU' | 'VERIF' | 'VALIDE' | 'PUBLIE' | 'Preuve-terrain' | 'PV' | 'Decret';
+}
 
 interface ImageUploaderProps {
   value: string;
@@ -24,6 +33,7 @@ interface ImageUploaderProps {
   helperText?: string;
   required?: boolean;
   className?: string;
+  namingContext?: MediaNamingContext;
 }
 
 export default function ImageUploader({
@@ -34,6 +44,7 @@ export default function ImageUploader({
   helperText = "Glissez une image locale ou collez une URL externe (JPG, PNG, WebP, max 10 Mo)",
   required = false,
   className = "",
+  namingContext,
 }: ImageUploaderProps) {
   const { success, error, warning, info } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,12 +78,31 @@ export default function ImageUploader({
     setIsUploading(true);
 
     try {
+      // Normalisation du nom de fichier selon la Charte Documentaire v3.1
+      let fileToUpload = file;
+      let appliedNormalizedName = file.name;
+      if (namingContext) {
+        const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '.jpg';
+        appliedNormalizedName = generateMediaFilename({
+          type: namingContext.type,
+          rubriqueOrCode: namingContext.rubriqueOrCode,
+          sujet: namingContext.sujet,
+          lang: namingContext.lang || 'FR',
+          statut: namingContext.statut,
+          extension: ext,
+        });
+        fileToUpload = new File([file], appliedNormalizedName, { type: file.type });
+      }
+
       // Téléversement réel vers le Backend Go (Cloudflare R2 ou Fallback local)
-      const media = await mediaApi.upload(file, folder);
+      const media = await mediaApi.upload(fileToUpload, folder);
       onChange(media.url);
       setUrlInput(media.url);
       const storageLabel = media.storage_type === 'r2' ? 'Cloudflare R2' : 'Stockage local';
-      success('Image téléversée avec succès', `${file.name} • ${storageLabel}`);
+      success(
+        'Image téléversée avec succès', 
+        `${appliedNormalizedName} • ${storageLabel}${namingContext ? ' • Charte v3.1' : ''}`
+      );
     } catch (err: any) {
       console.error('Upload error:', err);
       const msg =
@@ -247,6 +277,11 @@ export default function ImageUploader({
                     ? 'Image interne (/images/)'
                     : 'URL Web Externe'}
                 </span>
+                {namingContext && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#f4eee3] text-[#087443] border border-[#e6dfd5]">
+                    Charte v3.1 appliquée
+                  </span>
+                )}
               </div>
 
               <p className="text-[11px] font-mono text-[#736c62] truncate max-w-full" title={value}>

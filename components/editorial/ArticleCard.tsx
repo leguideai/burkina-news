@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Article } from '@/data/types';
+import { getSubCategoryByCode } from '@/data/mock/referentiel';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface ArticleCardProps {
@@ -16,6 +17,9 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
   const articleHref = `/${isEn ? 'en' : 'fr'}/${article.category}/${article.slug}`;
   const verifiedSourcesLabel = isEn ? `${article.sourceCount} verified sources` : `${article.sourceCount} sources vérifiées`;
 
+  const subCategoryObj = article.subCategory ? getSubCategoryByCode(article.subCategory) : undefined;
+  const subCategoryName = subCategoryObj ? (isEn ? subCategoryObj.nameEn : subCategoryObj.nameFr) : undefined;
+
   // 1. LEAD VARIANT (Main centerpiece story)
   if (variant === 'lead') {
     return (
@@ -28,8 +32,16 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           />
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-wider text-[#555555] mb-3">
+        <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-wider text-[#555555] mb-3 flex-wrap">
           <span className="font-bold text-[#0b4627]">{article.category}</span>
+          {subCategoryName && (
+            <>
+              <span className="text-[#a3a3a3]">/</span>
+              <span className="bg-[#f4eee3] text-[#0b4627] font-semibold px-2 py-0.5 border border-[#e6dfd5]">
+                {subCategoryName}
+              </span>
+            </>
+          )}
           <span>·</span>
           <span className="text-[#0b4627] font-semibold flex items-center gap-1">
             <ShieldCheck size={13} />
@@ -73,8 +85,16 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
         </div>
         <div className="sm:w-2/3 flex flex-col justify-between">
           <div>
-            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-1">
-              {article.category}
+            <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-1 flex-wrap">
+              <span>{article.category}</span>
+              {subCategoryName && (
+                <>
+                  <span className="text-[#a3a3a3]">/</span>
+                  <span className="bg-[#f4eee3] text-[#0b4627] px-1.5 py-0.2 border border-[#e6dfd5]">
+                    {subCategoryName}
+                  </span>
+                </>
+              )}
             </div>
             <h3 className="text-base font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">
               <Link href={articleHref}>
@@ -108,8 +128,16 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-0.5">
-            {article.category}
+          <div className="flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-0.5 flex-wrap">
+            <span>{article.category}</span>
+            {subCategoryName && (
+              <>
+                <span className="text-[#a3a3a3]">/</span>
+                <span className="bg-[#f4eee3] text-[#0b4627] px-1 py-0.2 border border-[#e6dfd5]">
+                  {subCategoryName}
+                </span>
+              </>
+            )}
           </div>
           <h4 className="text-xs font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-1">
             <Link href={articleHref}>
@@ -136,7 +164,17 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
       <div className="flex flex-col flex-1 justify-between">
         <div>
           <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#555555] mb-2">
-            <span className="font-bold text-[#0b4627]">{article.category}</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-bold text-[#0b4627]">{article.category}</span>
+              {subCategoryName && (
+                <>
+                  <span className="text-[#a3a3a3]">/</span>
+                  <span className="bg-[#f4eee3] text-[#0b4627] font-semibold px-1.5 py-0.5 border border-[#e6dfd5]">
+                    {subCategoryName}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <h3 className="text-lg font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">

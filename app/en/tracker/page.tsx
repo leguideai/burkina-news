@@ -10,6 +10,7 @@ import {
   PROJECT_STATUS_ORDER,
   ProjectStatus 
 } from '@/data/types';
+import { ALL_PROVINCES, getProvincesByRegion } from '@/data/mock/referentiel';
 import { 
   Search, 
   X, 
@@ -31,6 +32,7 @@ export default function TrackerPageEn() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedSector, setSelectedSector] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
+  const [selectedProvince, setSelectedProvince] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   const enProjects = useMemo(() => getProjects('en'), []);
@@ -39,6 +41,13 @@ export default function TrackerPageEn() {
 
   const sectors = useMemo(() => Array.from(new Set(enProjects.map(p => p.sector))), [enProjects]);
   const regions = useMemo(() => Array.from(new Set(enProjects.map(p => p.region))), [enProjects]);
+
+  const availableProvinces = useMemo(() => {
+    if (selectedRegion !== 'all') {
+      return getProvincesByRegion(selectedRegion);
+    }
+    return ALL_PROVINCES;
+  }, [selectedRegion]);
 
   const filteredProjects = useMemo(() => {
     return enProjects.filter(p => {
@@ -54,17 +63,21 @@ export default function TrackerPageEn() {
       if (selectedRegion !== 'all' && p.region !== selectedRegion) {
         return false;
       }
+      if (selectedProvince !== 'all' && p.province !== selectedProvince) {
+        return false;
+      }
       return true;
     });
-  }, [enProjects, search, selectedStatus, selectedSector, selectedRegion]);
+  }, [enProjects, search, selectedStatus, selectedSector, selectedRegion, selectedProvince]);
 
-  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all';
+  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all';
 
   const resetFilters = () => {
     setSearch('');
     setSelectedStatus('all');
     setSelectedSector('all');
     setSelectedRegion('all');
+    setSelectedProvince('all');
   };
 
   return (
@@ -210,7 +223,7 @@ export default function TrackerPageEn() {
               </div>
 
               {/* Dropdown Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3">
                 {/* Sector */}
                 <div>
                   <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
@@ -235,12 +248,32 @@ export default function TrackerPageEn() {
                   </label>
                   <select
                     value={selectedRegion}
-                    onChange={(e) => setSelectedRegion(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedRegion(e.target.value);
+                      setSelectedProvince('all');
+                    }}
                     className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
                   >
-                    <option value="all">All regions</option>
+                    <option value="all">All regions ({regions.length})</option>
                     {regions.map(reg => (
                       <option key={reg} value={reg}>{reg}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Province */}
+                <div>
+                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
+                    Province
+                  </label>
+                  <select
+                    value={selectedProvince}
+                    onChange={(e) => setSelectedProvince(e.target.value)}
+                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+                  >
+                    <option value="all">All provinces ({availableProvinces.length})</option>
+                    {availableProvinces.map(prov => (
+                      <option key={prov} value={prov}>{prov}</option>
                     ))}
                   </select>
                 </div>
@@ -276,6 +309,11 @@ export default function TrackerPageEn() {
                     {selectedRegion !== 'all' && (
                       <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 border border-[#e6dfd5]">
                         Region: {selectedRegion}
+                      </span>
+                    )}
+                    {selectedProvince !== 'all' && (
+                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 border border-[#e6dfd5]">
+                        Province: {selectedProvince}
                       </span>
                     )}
                     {selectedStatus !== 'all' && (

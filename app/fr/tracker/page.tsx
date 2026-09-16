@@ -28,12 +28,14 @@ import {
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
+import { ALL_PROVINCES, getProvincesByRegion } from '@/data/mock/referentiel';
 
 export default function TrackerPage() {
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedSector, setSelectedSector] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
+  const [selectedProvince, setSelectedProvince] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   const projects = useMemo(() => getProjects('fr'), []);
@@ -42,6 +44,13 @@ export default function TrackerPage() {
 
   const sectors = useMemo(() => Array.from(new Set(projects.map(p => p.sector))), [projects]);
   const regions = useMemo(() => Array.from(new Set(projects.map(p => p.region))), [projects]);
+
+  const availableProvinces = useMemo(() => {
+    if (selectedRegion !== 'all') {
+      return getProvincesByRegion(selectedRegion);
+    }
+    return ALL_PROVINCES;
+  }, [selectedRegion]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
@@ -57,17 +66,21 @@ export default function TrackerPage() {
       if (selectedRegion !== 'all' && p.region !== selectedRegion) {
         return false;
       }
+      if (selectedProvince !== 'all' && p.province !== selectedProvince) {
+        return false;
+      }
       return true;
     });
-  }, [projects, search, selectedStatus, selectedSector, selectedRegion]);
+  }, [projects, search, selectedStatus, selectedSector, selectedRegion, selectedProvince]);
 
-  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all';
+  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all';
 
   const resetFilters = () => {
     setSearch('');
     setSelectedStatus('all');
     setSelectedSector('all');
     setSelectedRegion('all');
+    setSelectedProvince('all');
   };
 
   return (
@@ -175,11 +188,23 @@ export default function TrackerPage() {
 
             <select 
               value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
+              onChange={(e) => {
+                setSelectedRegion(e.target.value);
+                setSelectedProvince('all');
+              }}
               className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
             >
-              <option value="all">Toutes les régions</option>
+              <option value="all">Toutes les régions (13)</option>
               {regions.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+
+            <select 
+              value={selectedProvince}
+              onChange={(e) => setSelectedProvince(e.target.value)}
+              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+            >
+              <option value="all">Toutes les provinces ({availableProvinces.length})</option>
+              {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
 
             <select 

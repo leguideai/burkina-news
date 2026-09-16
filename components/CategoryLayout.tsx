@@ -1,12 +1,15 @@
+"use client";
+
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { CategoryCode } from '@/data/types';
-import { getCategoryByCode } from '@/data/mock/categories';
+import { getCategoryByCode, getActiveSubCategories } from '@/data/mock/categories';
 import { getArticlesByCategory } from '@/data/mock/articles';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import { getIndicatorsByCategory } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronRight, Filter } from 'lucide-react';
 
 interface CategoryLayoutProps {
   categoryCode: CategoryCode;
@@ -17,16 +20,62 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
   const category = getCategoryByCode(categoryCode);
   const isEn = lang === 'en';
   
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
+
+  const handleSelectSub = (subCode: string) => {
+    setSelectedSubCategory(subCode);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (subCode === 'all') {
+        url.searchParams.delete('sub');
+      } else {
+        url.searchParams.set('sub', subCode);
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
+  useEffect(() => {
+    const handleUrlSync = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const sub = params.get('sub');
+        if (sub) {
+          setSelectedSubCategory(sub);
+        } else {
+          setSelectedSubCategory('all');
+        }
+      }
+    };
+
+    handleUrlSync();
+    window.addEventListener('popstate', handleUrlSync);
+    return () => window.removeEventListener('popstate', handleUrlSync);
+  }, []);
+
+  const allArticles = useMemo(() => {
+    return getArticlesByCategory(categoryCode, lang);
+  }, [categoryCode, lang]);
+
+  // Sub-categories activées selon la règle de seuil (>= 2 contenus publiés)
+  const activeSubCategories = useMemo(() => {
+    return getActiveSubCategories(categoryCode, allArticles);
+  }, [categoryCode, allArticles]);
+
+  // Filtrage des articles selon la sous-rubrique sélectionnée
+  const filteredArticles = useMemo(() => {
+    if (selectedSubCategory === 'all') return allArticles;
+    return allArticles.filter(a => a.subCategory === selectedSubCategory);
+  }, [allArticles, selectedSubCategory]);
+
   if (!category) {
     return <div>{isEn ? "Category not found" : "Catégorie introuvable"}</div>;
   }
 
-  const articles = getArticlesByCategory(categoryCode, lang);
-
   const projects = getProjectsByCategory(categoryCode, lang).slice(0, 2);
   const indicators = getIndicatorsByCategory(categoryCode, lang).slice(0, 2);
-  const leadArticle = articles[0];
-  const otherArticles = articles.slice(1);
+  const leadArticle = filteredArticles[0];
+  const otherArticles = filteredArticles.slice(1);
 
   const homeHref = isEn ? '/en' : '/fr';
   const categoryName = isEn ? category.nameEn : category.nameFr;
@@ -36,7 +85,7 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
     <div className="flex flex-col min-h-screen bg-[#faf8f5] pb-16">
       
       {/* 1. Category Header with Classic Newspaper Masthead styling */}
-      <header className="bg-white border-b border-[#e6dfd5] pt-8 pb-10 px-4 sm:px-8">
+      <header className="bg-white border-b border-[#e6dfd5] pt-8 pb-6 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto">
           
           <nav className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#737373] mb-4" aria-label="Breadcrumb">
@@ -62,6 +111,48 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
             </p>
           </div>
 
+          {/* Sous-rubriques Tabs Bar (Brief Samba v5, Section 2 & 4.2) */}
+          <div className="mt-5 pt-2 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-[#737373] pr-2 shrink-0 font-semibold">
+              <Filter size={12} />
+              <span>{isEn ? "Sub-sections:" : "Sous-rubriques :"}</span>
+            </div>
+
+            <button
+              onClick={() => handleSelectSub('all')}
+              className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 rounded-xs cursor-pointer ${
+                selectedSubCategory === 'all'
+                  ? 'bg-[#0b4627] text-white font-bold shadow-xs'
+                  : 'bg-[#faf8f5] text-[#141414] border border-[#e6dfd5] hover:border-[#141414]'
+              }`}
+            >
+              {isEn ? "All Investigations" : "Toutes les enquêtes"} ({allArticles.length})
+            </button>
+
+            {category.subCategories && category.subCategories.map((sub) => {
+              const pubCount = allArticles.filter(a => a.subCategory === sub.code).length;
+              const label = isEn ? sub.nameEn : sub.nameFr;
+              const isSelected = selectedSubCategory === sub.code;
+
+              return (
+                <button
+                  key={sub.code}
+                  onClick={() => handleSelectSub(sub.code)}
+                  className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 rounded-xs flex items-center gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#0b4627] text-white font-bold shadow-xs'
+                      : 'bg-[#faf8f5] text-[#141414] border border-[#e6dfd5] hover:border-[#0b4627]'
+                  }`}
+                >
+                  <span>{label}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${isSelected ? 'bg-white/20 text-white' : 'bg-[#e6dfd5] text-[#555555]'}`}>
+                    {pubCount}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
         </div>
       </header>
 
@@ -72,19 +163,25 @@ export function CategoryLayout({ categoryCode, lang = 'fr' }: CategoryLayoutProp
           {/* Main Editorial Articles (Col 8) */}
           <div className="lg:col-span-8 flex flex-col gap-6">
             
-            {articles.length === 0 ? (
+            {filteredArticles.length === 0 ? (
               <div className="bg-white border border-[#e6dfd5] p-10 sm:p-14 text-center my-4">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#be185d] block mb-2">
                   {isEn ? "Editorial Archive" : "Archives Éditoriales"}
                 </span>
                 <h3 className="font-serif font-bold text-xl text-[#141414] mb-3">
-                  {isEn ? `No published investigations in ${categoryName} yet` : `Aucune publication pour le moment dans la rubrique ${categoryName}`}
+                  {isEn ? `No published investigations in this section yet` : `Aucune publication pour le moment dans cette sous-rubrique`}
                 </h3>
                 <p className="text-xs font-serif text-[#555555] max-w-md mx-auto leading-relaxed">
                   {isEn 
                     ? "Our investigative desk is currently finalizing new cross-checked reports for this section. Check back shortly."
-                    : "Notre pôle d'enquête finalise actuellement de nouveaux dossiers et analyses pour cette rubrique. Les prochaines publications apparaîtront ici."}
+                    : "Notre pôle d'enquête finalise actuellement de nouveaux dossiers et analyses pour cette sous-rubrique. Les prochaines publications apparaîtront ici."}
                 </p>
+                <button
+                  onClick={() => handleSelectSub('all')}
+                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#0b4627] text-white text-xs font-mono uppercase tracking-wider font-bold"
+                >
+                  {isEn ? "View all articles" : "Voir toutes les enquêtes"}
+                </button>
               </div>
             ) : (
               <>

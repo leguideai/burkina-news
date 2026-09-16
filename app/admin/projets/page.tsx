@@ -359,17 +359,27 @@ export default function AdminProjectsPage() {
                           className="w-12 h-10 object-cover rounded border border-[#e6dfd5] shrink-0 mt-0.5"
                         />
                         <div className="min-w-0">
-                          <div className="font-serif font-bold text-sm text-[#141414] line-clamp-1 hover:text-[#087443]">
-                            {p.title}
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            {p.code && (
+                              <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 bg-[#f4eee3] text-[#087443] border border-[#e6dfd5]">
+                                {p.code}
+                              </span>
+                            )}
+                            <span className="font-serif font-bold text-sm text-[#141414] line-clamp-1 hover:text-[#087443]">
+                              {p.title}
+                            </span>
                           </div>
                           {p.titleEn && (
-                            <div className="text-[11px] text-[#736c62] italic line-clamp-1 mt-0.5">
+                            <div className="text-[11px] text-[#736c62] italic line-clamp-1">
                               EN: {p.titleEn}
                             </div>
                           )}
                           <div className="flex items-center gap-2 mt-1 text-[10px] text-[#736c62]">
                             <span className="font-bold text-[#087443]">{p.sector}</span>
                             {p.capacity && <span>• {p.capacity}</span>}
+                            {p.linkedIndicatorCodes && p.linkedIndicatorCodes.length > 0 && (
+                              <span>• {p.linkedIndicatorCodes.length} ind. RELANCE</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -378,7 +388,7 @@ export default function AdminProjectsPage() {
                     <td className="py-3 px-3 whitespace-nowrap text-[#5a554e]">
                       <span className="inline-flex items-center gap-1">
                         <MapPin size={11} className="text-[#736c62]" />
-                        {p.region.split('(')[0].trim()}
+                        {p.province ? `${p.province} · ` : ''}{p.region.split('(')[0].trim()}
                       </span>
                     </td>
 
