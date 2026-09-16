@@ -1,13 +1,12 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper, ChevronDown } from 'lucide-react';
 import { NAV_CATEGORIES, UI_STRINGS } from '@/data/mock/translations';
 import { JOURNAL_PRODUCTS } from '@/data/mock/referentiel';
 import { categories as ALL_CATEGORIES } from '@/data/mock/categories';
-import { Category } from '@/data/types';
 import Tooltip from '@/components/ui/Tooltip';
 
 export default function Header() {
@@ -28,13 +27,6 @@ export default function Header() {
     label: isEn ? cat.labelEn : cat.labelFr,
     href: isEn ? cat.hrefEn : cat.hrefFr
   }));
-
-  const currentCategory = ALL_CATEGORIES.find(c => 
-    pathname === `/fr/${c.code}` || 
-    pathname === `/en/${c.code}` || 
-    pathname.startsWith(`/fr/${c.code}/`) || 
-    pathname.startsWith(`/en/${c.code}/`)
-  );
 
   const homeHref = isEn ? '/en' : '/fr';
   const trackerHref = isEn ? '/en/tracker' : '/fr/tracker';
@@ -302,9 +294,6 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* 3.1 CONTEXTUAL CATEGORY SUB-BAR (When viewing any of the 6 sections) */}
-      {currentCategory && <HeaderSubCategoryBar currentCategory={currentCategory} isEn={isEn} />}
-
       {/* 3.1 CONTEXTUAL PRODUCT SUB-BAR (Brief Samba v5, Section 3) */}
       {pathname.includes('/tracker') && (
         <div className="hidden md:block bg-[#f4eee3] border-b border-[#e6dfd5] text-[11px] font-mono py-1.5 px-8">
@@ -491,56 +480,5 @@ export default function Header() {
         </div>
       )}
     </header>
-  );
-}
-
-function HeaderSubCategoryBarInner({ currentCategory, isEn }: { currentCategory: Category; isEn: boolean }) {
-  const searchParams = useSearchParams();
-  const currentSub = searchParams.get('sub');
-
-  return (
-    <div className="hidden md:block bg-[#f4eee3] border-b border-[#e6dfd5] text-[11px] font-mono py-1.5 px-8">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-[#0b4627] font-bold uppercase shrink-0">
-          <span>{isEn ? currentCategory.nameEn : currentCategory.nameFr} :</span>
-        </div>
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-          <Link
-            href={isEn ? `/en/${currentCategory.code}` : `/fr/${currentCategory.code}`}
-            className={`px-2.5 py-0.5 whitespace-nowrap rounded-xs transition-colors ${
-              !currentSub
-                ? 'bg-[#0b4627] text-white font-bold shadow-xs'
-                : 'text-[#555555] hover:text-[#0b4627]'
-            }`}
-          >
-            {isEn ? "All" : "Tout voir"}
-          </Link>
-          {currentCategory.subCategories?.map((sub) => {
-            const isSelected = currentSub === sub.code;
-            return (
-              <Link
-                key={sub.code}
-                href={isEn ? `/en/${currentCategory.code}?sub=${sub.code}` : `/fr/${currentCategory.code}?sub=${sub.code}`}
-                className={`px-2.5 py-0.5 whitespace-nowrap rounded-xs transition-colors ${
-                  isSelected
-                    ? 'bg-[#0b4627] text-white font-bold shadow-xs'
-                    : 'text-[#555555] hover:text-[#0b4627] hover:underline font-medium'
-                }`}
-              >
-                {isEn ? sub.nameEn : sub.nameFr}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HeaderSubCategoryBar({ currentCategory, isEn }: { currentCategory: Category; isEn: boolean }) {
-  return (
-    <Suspense fallback={null}>
-      <HeaderSubCategoryBarInner currentCategory={currentCategory} isEn={isEn} />
-    </Suspense>
   );
 }
