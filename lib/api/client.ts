@@ -214,7 +214,7 @@ class ApiClient {
       // Erreur réseau (ex: serveur éteint ou inaccessible)
       throw new ApiClientError(
         0,
-        'Impossible de joindre le serveur backend. Vérifiez que le service Go est actif.',
+        'Impossible de joindre le serveur backend. Vérifiez que le service est actif.',
         'Unable to reach backend server. Please verify Go service is running.',
         'NETWORK_ERROR'
       );

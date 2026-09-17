@@ -186,35 +186,6 @@ export default function AdminRubriquesPage() {
     loadData();
   }, []);
 
-  // Register rubriques page data with MICUM AI assistant context
-  const { registerEditor, updateEditorData } = useMicum();
-
-  useEffect(() => {
-    const unregister = registerEditor({
-      sectionId: 'rubriques',
-      sectionTitle: 'Rubriques & Sous-rubriques',
-      canInsert: false,
-      currentData: {
-        categories: categories.map(c => ({ code: c.code, nameFr: c.nameFr, nameEn: c.nameEn })),
-        subCategories: subCategories.map(s => ({ code: s.code, nameFr: s.nameFr, nameEn: s.nameEn, categoryCode: s.categoryCode })),
-        totalCategories: categories.length,
-        totalSubCategories: subCategories.length,
-      },
-    });
-    return unregister;
-  }, [registerEditor, categories.length, subCategories.length]);
-
-  useEffect(() => {
-    if (categories.length > 0 || subCategories.length > 0) {
-      updateEditorData({
-        categories: categories.map(c => ({ code: c.code, nameFr: c.nameFr, nameEn: c.nameEn })),
-        subCategories: subCategories.map(s => ({ code: s.code, nameFr: s.nameFr, nameEn: s.nameEn, categoryCode: s.categoryCode })),
-        totalCategories: categories.length,
-        totalSubCategories: subCategories.length,
-      });
-    }
-  }, [categories, subCategories, updateEditorData]);
-
   // Compute stats per subcategory dynamically
   const subCategoryStats = useMemo(() => {
     const stats: Record<string, number> = {};
@@ -231,6 +202,51 @@ export default function AdminRubriquesPage() {
   const pendingSubCatsCount = useMemo(() => {
     return subCategories.length - activeSubCatsCount;
   }, [subCategories.length, activeSubCatsCount]);
+
+  // Register rubriques page data with MICUM AI assistant context
+  const { registerEditor, updateEditorData } = useMicum();
+
+  const micumData = useMemo(() => ({
+    categories: categories.map(c => ({
+      code: c.code,
+      nameFr: c.nameFr,
+      nameEn: c.nameEn,
+      descriptionFr: c.descriptionFr,
+      descriptionEn: c.descriptionEn,
+      slug: c.slug,
+      color: c.color,
+      subCategoriesCount: subCategories.filter(s => s.categoryCode === c.code).length
+    })),
+    subCategories: subCategories.map(s => ({
+      id: s.id,
+      code: s.code,
+      nameFr: s.nameFr,
+      nameEn: s.nameEn,
+      categoryCode: s.categoryCode,
+      descriptionFr: s.descriptionFr,
+      descriptionEn: s.descriptionEn,
+      articlesCount: subCategoryStats[s.code] || 0
+    })),
+    totalCategories: categories.length,
+    totalSubCategories: subCategories.length,
+    activeSubCategoriesCount: activeSubCatsCount,
+  }), [categories, subCategories, subCategoryStats, activeSubCatsCount]);
+
+  useEffect(() => {
+    const unregister = registerEditor({
+      sectionId: 'rubriques',
+      sectionTitle: 'Rubriques & Sous-rubriques',
+      canInsert: false,
+      currentData: micumData,
+    });
+    return unregister;
+  }, [registerEditor, micumData]);
+
+  useEffect(() => {
+    if (categories.length > 0 || subCategories.length > 0) {
+      updateEditorData(micumData);
+    }
+  }, [micumData, updateEditorData, categories.length, subCategories.length]);
 
   // Open Create Category Modal
   const handleOpenCreateCategory = () => {

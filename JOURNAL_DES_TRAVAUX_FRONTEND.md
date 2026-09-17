@@ -228,6 +228,9 @@
     - **UI — Bouton Stop double :**
       - Dans la barre de progression (loading indicator) : bouton rouge « Arrêter » avec icône `Square`.
       - Le bouton d'envoi (coin droit du textarea) se transforme en bouton stop rouge pendant le chargement, remplaçant la flèche par un carré plein.
+  - `app/api/admin/ai/route.ts` :
+    - **Résolution du bug `[undefined] undefined` :** Correction du constructeur de prompt système `buildScreenContext`. Les propriétés utilisées étaient erronées (`cat.id`, `cat.label`, `cat.description`), ce qui générait pour Gemini une liste de rubriques `[undefined] undefined` et sans sous-rubriques, poussant l'IA à rapporter un faux bug système. Remplacement par les vraies propriétés (`cat.code`, `cat.nameFr`, `cat.descriptionFr`, `cat.slug`).
+    - **Priorisation temps réel de PostgreSQL :** Consommation directe de `activeEditorData` (contenant les 6 rubriques et 25 sous-rubriques avec leurs statistiques issues de PostgreSQL) et injection de l'arborescence complète (rubriques + sous-rubriques rattachées + compteurs d'articles) dans le prompt de MICUM.
 - **Vérifications :**
   - Compilation TypeScript sans faute (`npx tsc --noEmit` = code 0).
 - **État :** Validé et terminé.
