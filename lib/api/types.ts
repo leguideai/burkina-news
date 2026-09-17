@@ -74,7 +74,7 @@ export interface AuthLoginData {
 // DTOs de saisie pour le CRUD utilisateurs
 export interface UserCreateInput {
   email: string;
-  password: string;
+  password?: string;
   name: string;
   role: BackendAdminRole | string;
   title?: string;
