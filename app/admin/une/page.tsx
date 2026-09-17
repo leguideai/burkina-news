@@ -13,7 +13,8 @@ import {
   Languages, 
   AlertCircle,
   FileText,
-  MapPin
+  MapPin,
+  Loader2
 } from 'lucide-react';
 import { Article } from '@/data/types';
 import { HomepageConfig } from '@/data/admin-store';
@@ -24,6 +25,7 @@ import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 export default function AdminUnePage() {
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
+  const [isSuggestingQuote, setIsSuggestingQuote] = useState(false);
   const [articles, setArticles] = useState<Article[]>([]);
   const [homepageConfig, setHomepageConfig] = useState<HomepageConfig | null>(null);
 
@@ -82,19 +84,40 @@ export default function AdminUnePage() {
     return articles.find(a => a.id === id || a.id.replace(/^art-0*/, 'art-') === norm);
   };
 
-  // Micum AI Suggestion & Translation for Featured Quote
-  const handleSuggestQuote = () => {
-    setHomepageConfig(prev => prev ? ({
-      ...prev,
-      featuredQuote: {
-        quoteFr: "La souveraineté d'une nation ne se mesure pas à l'éloquence de ses discours, mais à la rigueur de ses comptes et à l'édification méthodique de ses infrastructures.",
-        quoteEn: "A nation's sovereignty is not measured by the eloquence of its rhetoric, but by the rigor of its accounting and the methodical building of its infrastructure.",
-        author: "Alfred Ouédraogo",
-        contextFr: "Directeur éditorial · Cadrage hebdomadaire Burkina News",
-        contextEn: "Editorial Director · Burkina News Weekly Focus"
+  // Micum AI Suggestion for Featured Quote powered by Gemini
+  const handleSuggestQuote = async () => {
+    try {
+      setIsSuggestingQuote(true);
+      const res = await fetch('/api/admin/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'suggest_quote', payload: {} })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erreur lors de la génération de la citation.');
       }
-    }) : null);
-    success('Citation suggérée par Micum', 'Une citation éditoriale bilingue a été insérée.');
+
+      const json = await res.json();
+      if (json.data) {
+        setHomepageConfig(prev => prev ? ({
+          ...prev,
+          featuredQuote: {
+            quoteFr: json.data.quoteFr || prev.featuredQuote.quoteFr,
+            quoteEn: json.data.quoteEn || prev.featuredQuote.quoteEn,
+            author: json.data.author || prev.featuredQuote.author,
+            contextFr: json.data.contextFr || prev.featuredQuote.contextFr,
+            contextEn: json.data.contextEn || prev.featuredQuote.contextEn
+          }
+        }) : null);
+        success('Citation suggérée par Micum', 'Une nouvelle citation bilingue a été composée par l\'IA.');
+      }
+    } catch (err: any) {
+      error('Erreur Micum', err.message || 'Impossible de suggérer une citation.');
+    } finally {
+      setIsSuggestingQuote(false);
+    }
   };
 
   const handleTranslateQuote = (translated: Record<string, string>) => {
@@ -356,10 +379,15 @@ export default function AdminUnePage() {
                   <button
                     type="button"
                     onClick={handleSuggestQuote}
-                    className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-[#087443] text-[10px] font-mono font-bold rounded border border-emerald-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    disabled={isSuggestingQuote}
+                    className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-[#087443] text-[10px] font-mono font-bold rounded border border-emerald-200 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
                   >
-                    <Sparkles size={12} className="text-emerald-600" />
-                    <span>Suggérer avec Micum</span>
+                    {isSuggestingQuote ? (
+                      <Loader2 size={12} className="animate-spin text-emerald-600" />
+                    ) : (
+                      <Sparkles size={12} className="text-emerald-600" />
+                    )}
+                    <span>{isSuggestingQuote ? 'Micum compose...' : 'Suggérer avec Micum'}</span>
                   </button>
 
                   <div className="flex border border-[#e6dfd5] rounded overflow-hidden">

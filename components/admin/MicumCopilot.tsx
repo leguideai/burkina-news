@@ -8,7 +8,6 @@ import {
   X, 
   Loader2, 
   ArrowRight, 
-  Copy, 
   BookOpen, 
   ShieldCheck,
   AlertCircle,
@@ -239,68 +238,6 @@ export default function MicumCopilot({
       case 'indicators': return 'extract_indicators';
       case 'fil': return 'compile_fil';
       default: return 'extract_article';
-    }
-  };
-
-  const getSampleText = () => {
-    if (isEditing) {
-      switch (mode) {
-        case 'article':
-          return `RAPPORT DE CONTRÔLE D'ÉTAT ET NOTE DE RECOUPEMENT (Septembre 2026) :
-- Enveloppe financière : le ministère des Finances confirme le déblocage effectif d'une tranche additionnelle de 12 milliards FCFA.
-- Taux d'exécution physique : les travaux de terrassement et d'ouvrages d'art atteignent 68% d'achèvement.
-- Calendrier : confirmation de la date limite contractuelle fixée à décembre 2027.
-- Source primaire : Bulletin officiel des marchés publics et rapport de mission du contrôle d'État.`;
-        case 'project':
-          return `AVENANT N°1 ET PROCÈS-VERBAL DE CONTRÔLE DE CHANTIER :
-- Taux d'avancement certifié : progression à 65% au 1er septembre 2026.
-- Avenant budgétaire : +3,5 milliards FCFA approuvés en Conseil des ministres pour les raccordements annexes.
-- Entreprise de contrôle technique : Bureau Veritas Faso.`;
-        default:
-          break;
-      }
-    }
-
-    switch (mode) {
-      case 'article':
-        return `COMMUNIQUÉ DU CONSEIL DES MINISTRES DU 28 AOÛT 2026
-
-Le Conseil des ministres s'est réuni ce mercredi sous la présidence du Chef de l'État. Au titre du Ministère des Infrastructures et du Désenclavement, le Conseil a adopté un rapport relatif à la mobilisation d'une enveloppe de 45 milliards FCFA pour la modernisation des axes routiers stratégiques reliant Ouagadougou aux bassins de production agricole.
-
-Ce programme pluriannuel vise à désenclaver les zones de production cotonnière et céréalière de la Boucle du Mouhoun et à réduire les délais de transit logistique vers les marchés sous-régionaux. Le financement est assuré conjointement sur le budget national et un concours de la Banque Ouest Africaine de Développement (BOAD). Le taux d'avancement des études techniques est certifié à 100%.`;
-      
-      case 'project':
-        return `DÉCRET PORTANT APPROBATION DU MARCHÉ DE CONSTRUCTION DE LA CENTRALE SOLAIRE DE KOUDOUGOU
-
-Montant total du marché : 25 milliards FCFA.
-Maître d'ouvrage : Ministère de l'Énergie, des Mines et des Carrières.
-Bailleur principal : Banque Africaine de Développement et État burkinabè.
-Entreprise exécutante : Consortium Énergie Faso.
-Région : Centre-Ouest (Commune de Koudougou).
-Date prévisionnelle de démarrage des travaux : 1er mars 2026.
-Date estimée de mise en service : 31 décembre 2027.
-Capacité installée : 30 MW avec système de stockage par batteries de 15 MWh.
-Taux d'avancement certifié par la mission de contrôle : 42%.`;
-
-      case 'indicators':
-        return `BULLETIN TRIMESTRIEL DE CONJONCTURE ÉCONOMIQUE - INSD / BCEAO (Août 2026)
-
-- Production aurifère industrielle : la production cumulée s'établit à 28,4 tonnes au 30 juin 2026, portant la projection annuelle à 58,4 tonnes (en hausse de 1,4% par rapport à 2025).
-- Capacité électrique installée : la mise sous tension de nouveaux postes porte la capacité globale connectée à 480 MW (+30 MW).
-- Taux de croissance du PIB : estimé à 6,2% pour l'exercice 2026 contre 5,8% initialement anticipé.`;
-
-      case 'fil':
-        return `DÉPÊCHES ET COMMUNIQUÉS OFFICIELS DE LA SEMAINE 35 :
-1. Conseil des ministres : 45 milliards débloqués pour les axes routiers de desserte agricole.
-2. SONABEL : mise en service de la sous-station électrique de Koudougou (30 MW).
-3. Campagne agricole : distribution de 25 000 tonnes d'engrais aux coopératives du Mouhoun.
-4. Mines : 28,4 tonnes d'or extraites au premier semestre 2026 selon la DGMG.
-5. Sécurité : 400 nouveaux agents déployés pour l'escorte des convois marchands dans l'Est.
-6. BRVM : emprunt obligataire de l'État burkinabè souscrit à 112%.
-7. Éducation : ouverture de 12 collèges techniques dans 6 régions.
-8. Santé : 50 ambulances médicalisées remises aux districts sanitaires régionaux.
-9. Mémorial Sankara : inauguration du pavillon d'archives historiques à Ouaga.
-10. SOFITEX : relance de la seconde usine d'égrenage de Bobo-Dioulasso (300 t/j).`;
     }
   };
 
@@ -784,14 +721,6 @@ Taux d'avancement certifié par la mission de contrôle : 42%.`;
                         <FileText className="w-4 h-4 text-emerald-600" />
                         {isEditing ? "Nouveaux éléments textuels ou procès-verbal de contrôle" : "Texte brut ou extrait officiel (Conseil des ministres, décret, rapport...)"}
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => setInputText(getSampleText())}
-                        className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold hover:underline cursor-pointer flex items-center gap-1"
-                      >
-                        <Copy className="w-3 h-3" />
-                        {isEditing ? "Charger un exemple de mise à jour officielle" : "Charger un exemple officiel type"}
-                      </button>
                     </div>
 
                     <textarea
