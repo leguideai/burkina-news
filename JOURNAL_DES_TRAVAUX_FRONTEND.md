@@ -21,11 +21,12 @@
   - **Phase F2.2 :** Gouvernance Déontologique Superadmin & Sécurité RBAC (protection stricte des privilèges).
   - **Phase F2.3 :** Notification par email automatique via Resend & Génération de mots de passe mémorables de 8 caractères.
   - **Phase F2.4 :** Auto-assignation déontologique du titre rédactionnel / fonction selon le rôle choisi.
-  - **Phase F2.5 :** CRUD Complet et Dynamique des Rubriques & Sous-rubriques, préservation et mise en valeur de la Section Histoire.
+  - **Phase F2.5 :** Refonte structurelle du CRUD Rubriques & Sous-rubriques, préservation et mise en valeur de la Section Histoire.
   - **Phase F2.6 :** Éradication totale des données mockées de l'IA Micum & Raccordement 100% réel à Google Gemini 3.5 Flash sur l'ensemble du back-office.
   - **Phase F3 :** Médiathèque & Téléversement Cloudflare R2 / Local, Upload d'avatars.
   - **🚀 DevOps :** Déploiement Vercel (Frontend) synchronisé avec Railway (Backend Go + PostgreSQL) et Cloudflare R2 (Stockage CDN).
-- **Phase prête à être traitée aujourd'hui :** **Phase F4 — Raccordement du Module Articles & Grandes Enquêtes d'Investigation** à l'API Go réelle (synchronisée avec la Semaine 4 du Backend).
+  - **Jalon F4.0 :** Raccordement réel de la gestion des Rubriques & Sous-rubriques (`/admin/rubriques`) à l'API Go (`categoriesApi`) avec persistance PostgreSQL et création dynamique pour alimenter la rédaction d'articles.
+- **Phase prête à être traitée :** **Phase F4.1 — Raccordement du Module Articles & Grandes Enquêtes d'Investigation** à l'API Go réelle (synchronisée avec la Semaine 4 du Backend).
 
 ---
 
@@ -173,6 +174,34 @@
 
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F4 à F10 synchronisées avec les semaines backend)*
+### 🗂️ Jalon F4.0 : Client API Rubriques & Raccordement Dynamique à PostgreSQL
+- **Date :** 17 Septembre 2026
+- **Objectif :** Raccorder la gestion des Rubriques & Sous-rubriques de l'écran `/admin/rubriques` à l'API Go réelle (`categoriesApi`), permettant l'enregistrement, l'édition et la suppression en direct dans la base de données PostgreSQL, indispensable pour alimenter les listes déroulantes lors de la création d'articles.
+- **Fichiers créés / modifiés :**
+  - `lib/api/types.ts` : Ajout des DTOs stricts `CategoryDTO`, `SubCategoryDTO`, `CreateCategoryInput`, `UpdateCategoryInput`, `CreateSubCategoryInput`, `UpdateSubCategoryInput`.
+  - `lib/api/categories.ts` : Nouveau service singleton `categoriesApi` implémentant les méthodes complètes :
+    - `listCategories(includeInactive)`
+    - `getCategory(codeOrSlug)`
+    - `createCategory(input)`
+    - `updateCategory(code, input)`
+    - `deleteCategory(code)`
+    - `createSubCategory(categoryCode, input)`
+    - `updateSubCategory(id, input)`
+    - `deleteSubCategory(id)`
+  - `lib/api/index.ts` : Export de `categoriesApi` et des DTOs associés.
+  - `data/types.ts` : Extension de l'interface `SubCategory` avec le champ optionnel `id?: string`.
+  - `app/admin/rubriques/page.tsx` :
+    - Remplacement de `fetch('/api/admin/data')` par les appels aux méthodes typées de `categoriesApi`.
+    - Mappeurs automatiques DTO ↔ Frontend (`mapCategoryDto`, `mapSubCategoryDto`).
+    - Enregistrement des rubriques et sous-rubriques directement dans PostgreSQL avec notifications de succès explicites.
+    - **Élimination intégrale des mocks (Zero Mock Purge)** : Suppression totale des imports de données mockées (`defaultCategories`, `defaultSubCategories`, `referentiel`), initialisation des états React à tableau vide `[]`, intégration de skeletons de chargement élégants pendant la requête et d'un écran d'état vide (`empty state`) avec bouton d'action si aucune donnée n'est présente. Zéro affichage de données mockées à l'écran.
+- **Vérifications :**
+  - Compilation TypeScript sans faute (`npx tsc --noEmit` = code 0).
+- **État :** Validé et terminé.
+
+---
+
+*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F4.1 à F10 synchronisées avec les semaines backend)*
+
 
 

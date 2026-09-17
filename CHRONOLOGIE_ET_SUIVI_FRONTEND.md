@@ -19,7 +19,7 @@
 | **Phase F2** | **Semaine 2 :** Authentification JWT (`login`, `refresh`, `logout`, `me`), AuthGuard & CRUD Utilisateurs Desk | `[x] Validé & Terminé` |
 | **Phase F3** | **Semaine 3 :** Médiathèque & Upload de fichiers (Cloudflare R2 / Local) | `[x] Validé & Terminé` |
 | **🚀 DevOps** | Vercel (frontend) + Railway (backend + PostgreSQL) + Cloudflare R2 en production | `[x] Validé & Terminé` |
-| **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (Workflow éditorial, Preuves A/B/C, bilinguisme) | `[ ] En attente` |
+| **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (Jalon F4.0 Rubriques validé, F4.1 en cours) | `[/] En cours (F4.0 achevé)` |
 | **Phase F5** | **Semaine 5 :** API Le Fil (Dépêches 60s, Éditions hebdo, Streaming SSE en direct) | `[ ] En attente` |
 | **Phase F6** | **Semaine 6 :** API Tracker des Chantiers (6 Statuts, cartographie, PV) & Baromètre RELANCE | `[ ] En attente` |
 | **Phase F7** | **Semaine 7 :** Numéros PDF, Registre public des Corrections & Moteur de Recherche Globale | `[ ] En attente` |
@@ -81,11 +81,22 @@
 
 ---
 
-## 📅 PHASES F4 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 4 À 10)
+## 📅 PHASE F4 : Module Articles & Grandes Enquêtes d'Investigation (Semaine 4 Backend)
 
-- **Phase F4 (Semaine 4) :** Intégration Articles & Grandes Enquêtes (`/fr/[rubrique]/[slug]`, `/admin/articles`).
+> **🎯 Objectif :** Connecter la rédaction d'enquêtes, le catalogage des articles et l'architecture éditoriale aux endpoints réels de l'API Go.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F4.0** | `[x]` | Raccordement du service `categoriesApi` et de l'écran `/admin/rubriques` au CRUD Go/PostgreSQL réel. | `lib/api/categories.ts`, `app/admin/rubriques/page.tsx` | `GET /api/v1/categories`<br>`CRUD /api/v1/admin/categories` | Gestion dynamique complète des rubriques et sous-rubriques, alimentation directe pour la rédaction d'articles. |
+| **F4.1** | `[ ]` | Développer le client API `articlesApi` pour la consultation et gestion des articles d'investigation. | `lib/api/articles.ts` | `GET /api/v1/articles`<br>`CRUD /api/v1/admin/articles` | Support des filtres, pagination, formats et bilinguisme. |
+
+---
+
+## 📅 PHASES F5 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 5 À 10)
+
 - **Phase F5 (Semaine 5) :** Intégration Le Fil & Flux SSE temps réel (`/fr/fil`, `/admin/fil`).
 - **Phase F6 (Semaine 6) :** Intégration Tracker Chantiers (6 Statuts) & Baromètre RELANCE (`/fr/tracker`, `/admin/projets`).
+
 - **Phase F7 (Semaine 7) :** Intégration Numéros PDF & Registre des Corrections (`/fr/numeros`, `/admin/corrections`).
 - **Phase F8 (Semaine 8) :** Intégration Curation Une, Formulaires Signalements & Assistant Micum.
 - **Phase F9 (Semaine 9) :** Durcissement, gestion du mode hors-ligne, audit de résilience.

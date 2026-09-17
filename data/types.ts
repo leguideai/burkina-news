@@ -2,6 +2,7 @@
 export type CategoryCode = 'economie' | 'securite' | 'chantiers' | 'agriculture' | 'societe' | 'histoire' | 'idees' | (string & {})
 
 export interface SubCategory {
+  id?: string
   code: string
   nameFr: string
   nameEn: string
@@ -11,6 +12,7 @@ export interface SubCategory {
   publishedCount?: number
   isActivated?: boolean
 }
+
 
 export interface Category {
   code: CategoryCode

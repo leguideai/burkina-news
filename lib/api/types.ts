@@ -215,3 +215,79 @@ export interface MediaFileDTO {
   updated_at?: string;
 }
 
+// ─── Rubriques & Sous-rubriques (Semaine 4 / Jalon S4.0) ──────────────────
+
+export interface SubCategoryDTO {
+  id: string;
+  code: string;
+  category_code: string;
+  name_fr: string;
+  name_en: string;
+  description_fr?: string;
+  description_en?: string;
+  order_num?: number;
+  is_activated: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CategoryDTO {
+  code: string;
+  name_fr: string;
+  name_en: string;
+  description_fr?: string;
+  description_en?: string;
+  slug: string;
+  color: string;
+  icon?: string;
+  order_num: number;
+  is_active: boolean;
+  sub_categories?: SubCategoryDTO[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateCategoryInput {
+  code: string;
+  name_fr: string;
+  name_en: string;
+  description_fr?: string;
+  description_en?: string;
+  slug?: string;
+  color?: string;
+  icon?: string;
+  order_num?: number;
+  is_active?: boolean;
+}
+
+export interface UpdateCategoryInput {
+  name_fr?: string;
+  name_en?: string;
+  description_fr?: string;
+  description_en?: string;
+  slug?: string;
+  color?: string;
+  icon?: string;
+  order_num?: number;
+  is_active?: boolean;
+}
+
+export interface CreateSubCategoryInput {
+  code: string;
+  name_fr: string;
+  name_en: string;
+  description_fr?: string;
+  description_en?: string;
+  order_num?: number;
+  is_activated?: boolean;
+}
+
+export interface UpdateSubCategoryInput {
+  name_fr?: string;
+  name_en?: string;
+  description_fr?: string;
+  description_en?: string;
+  order_num?: number;
+  is_activated?: boolean;
+}
+
