@@ -77,19 +77,57 @@ function buildScreenContext({
   }
 
   // 2. Specific Screen context based on pathname
-  if (pathname === '/admin/rubriques') {
-    context += `=== DONNÉES DE L'ÉCRAN : RUBRIQUES & SECTION HISTOIRE ===\n`;
-    context += `Rubriques configurées (${categories.length}) :\n`;
-    for (const cat of categories) {
-      const count = articles.filter((a: any) => a.category === cat.id || a.category === cat.slug).length;
-      context += `- [${cat.id}] ${cat.label} (Slug: ${cat.slug}) · ${count} article(s) publié(s). Description: ${cat.description || 'N/A'}\n`;
+  if (pathname === '/admin/rubriques' || pathname.startsWith('/admin/rubriques')) {
+    context += `=== DONNÉES DE L'ÉCRAN : ARCHITECTURE DES RUBRIQUES & SOUS-RUBRIQUES (BASE POSTGRESQL) ===\n`;
+
+    // Priorité absolue aux données temps réel de la page (issues de PostgreSQL via categoriesApi)
+    const effectiveCategories = (activeEditorData?.categories && activeEditorData.categories.length > 0)
+      ? activeEditorData.categories
+      : categories;
+
+    const effectiveSubCategories = (activeEditorData?.subCategories && activeEditorData.subCategories.length > 0)
+      ? activeEditorData.subCategories
+      : (store?.subCategories || []);
+
+    context += `Total Rubriques actives en base : ${effectiveCategories.length}\n`;
+    context += `Total Sous-rubriques répertoriées : ${effectiveSubCategories.length}\n\n`;
+
+    for (const cat of effectiveCategories) {
+      const catCode = cat.code || cat.slug || cat.id || '';
+      const catName = cat.nameFr || cat.name || cat.label || cat.nameEn || catCode;
+      const catDesc = cat.descriptionFr || cat.description || cat.descriptionEn || 'Aucune description';
+      const catSlug = cat.slug || catCode;
+
+      // Filtrer les sous-rubriques rattachées à cette rubrique
+      const catSubs = effectiveSubCategories.filter((s: any) => s.categoryCode === catCode);
+      const catArticles = articles.filter((a: any) => a.category === catCode || a.category === catSlug);
+
+      context += `📁 RUBRIQUE OFFICIELLE [${catCode.toUpperCase()}] : "${catName}" (Slug: ${catSlug}) · ${catArticles.length} article(s) publié(s)\n`;
+      context += `   Description : ${catDesc}\n`;
+      context += `   Sous-rubriques rattachées (${catSubs.length}) :\n`;
+
+      if (catSubs.length > 0) {
+        for (const sub of catSubs) {
+          const subCode = sub.code || '';
+          const subName = sub.nameFr || sub.name || sub.nameEn || subCode;
+          const subDesc = sub.descriptionFr || sub.description || '';
+          const subCount = sub.articlesCount !== undefined
+            ? sub.articlesCount
+            : articles.filter((a: any) => a.subCategory === subCode).length;
+          context += `     * [${subCode}] « ${subName} » (${subCount} article(s))${subDesc ? ` - ${subDesc}` : ''}\n`;
+        }
+      } else {
+        context += `     * (Aucune sous-rubrique rattachée pour le moment)\n`;
+      }
+      context += `\n`;
     }
+
     const historyArticles = articles.filter((a: any) => a.category === 'histoire' || a.tags?.includes('Histoire'));
-    context += `\nArticles rattachés à la Section Histoire (${historyArticles.length}) :\n`;
+    context += `Articles actuellement rattachés à la Section Histoire (${historyArticles.length}) :\n`;
     for (const art of historyArticles) {
       context += `  * « ${art.title} » (${art.publishedAt?.slice(0, 10) || 'Date inconnue'}) - Sources: ${art.sourceCount || 1}\n`;
     }
-    context += `\nRÔLE ATTENDU DE MICUM : Conseiller la rédaction sur l'organisation des rubriques, la politique d'archives et de mémoire historique de Burkina News, et vérifier la bonne catégorisation des articles.\n`;
+    context += `\nRÔLE ATTENDU DE MICUM : Conseiller la rédaction sur l'organisation des rubriques et sous-rubriques, la politique de mémoire et d'archives de Burkina News, et vérifier la bonne catégorisation des articles en fonction de la charte éditoriale.\n`;
     return context;
   }
 
