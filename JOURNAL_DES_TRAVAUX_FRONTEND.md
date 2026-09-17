@@ -195,6 +195,13 @@
     - Mappeurs automatiques DTO ↔ Frontend (`mapCategoryDto`, `mapSubCategoryDto`).
     - Enregistrement des rubriques et sous-rubriques directement dans PostgreSQL avec notifications de succès explicites.
     - **Élimination intégrale des mocks (Zero Mock Purge)** : Suppression totale des imports de données mockées (`defaultCategories`, `defaultSubCategories`, `referentiel`), initialisation des états React à tableau vide `[]`, intégration de skeletons de chargement élégants pendant la requête et d'un écran d'état vide (`empty state`) avec bouton d'action si aucune donnée n'est présente. Zéro affichage de données mockées à l'écran.
+    - **Sécurisation RBAC de l'interface & Masquage conditionnel des boutons CRUD :**
+      - Intégration de `useAdminAuth()` et `normalizeRoleCode()`.
+      - Masquage strict de tous les boutons de création, modification et suppression (`+ Nouvelle Rubrique`, `+ Nouvelle Sous-rubrique`, `Modifier / Cadrer`, `Supprimer`, `+ Ajouter sous-rubrique`, boutons d'action des cartes sous-rubriques) pour les rôles non autorisés (Rédacteurs, Desk Données, Desk IA, Auditeur Déontologique).
+      - Affichage d'un badge distinctif `Mode Consultation Rédactionnelle` et verrouillage interne des fonctions handlers et modales.
+      - Préservation du lien `Rédiger` permettant aux journalistes de lancer immédiatement la rédaction d'un article rattaché à la sous-rubrique.
+  - `app/admin/page.tsx` :
+    - Adaptation du lien du dashboard selon les droits de l'utilisateur connecté (`Gérer les rubriques →` pour le Superadmin et la Direction Éditoriale, `Consulter les rubriques →` pour les autres membres du desk).
 - **Vérifications :**
   - Compilation TypeScript sans faute (`npx tsc --noEmit` = code 0).
 - **État :** Validé et terminé.

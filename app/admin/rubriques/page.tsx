@@ -29,13 +29,18 @@ import {
   Loader2
 } from 'lucide-react';
 import { Category, Article, Project, SubCategory, CategoryCode } from '@/data/types';
-import { categoriesApi, CategoryDTO, SubCategoryDTO } from '@/lib/api';
+import { categoriesApi, CategoryDTO, SubCategoryDTO, normalizeRoleCode } from '@/lib/api';
+import { useAdminAuth } from '@/components/admin/AuthGuard';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
 
 
 export default function AdminRubriquesPage() {
+  const { user: currentUser } = useAdminAuth();
+  const roleCode = normalizeRoleCode(currentUser?.role || '');
+  const canManageRubriques = roleCode === 'superadmin' || roleCode === 'editorial_director';
+
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -199,6 +204,10 @@ export default function AdminRubriquesPage() {
 
   // Open Create Category Modal
   const handleOpenCreateCategory = () => {
+    if (!canManageRubriques) {
+      warning('Accès restreint', 'Seuls le Superadmin et la Direction Éditoriale peuvent créer une rubrique.');
+      return;
+    }
     setEditingCategory(null);
     setCategoryFormData({
       code: '',
@@ -216,6 +225,10 @@ export default function AdminRubriquesPage() {
 
   // Open Edit Category Modal
   const handleOpenEditCategory = (cat: Category) => {
+    if (!canManageRubriques) {
+      warning('Accès restreint', 'Seuls le Superadmin et la Direction Éditoriale peuvent modifier une rubrique.');
+      return;
+    }
     setEditingCategory(cat);
     setCategoryFormData({ ...cat });
     setRegardFr(defaultRegards[cat.code]?.fr || cat.descriptionFr || '');
@@ -288,6 +301,10 @@ export default function AdminRubriquesPage() {
 
   // Prompt delete Category
   const handlePromptDeleteCategory = (cat: Category) => {
+    if (!canManageRubriques) {
+      warning('Accès restreint', 'Seuls le Superadmin et la Direction Éditoriale peuvent supprimer une rubrique.');
+      return;
+    }
     const subCats = subCategories.filter(sc => sc.categoryCode === cat.code);
     const subCatCodes = new Set(subCats.map(sc => sc.code));
     const catArticles = articles.filter(a => a.category === cat.code || (a.subCategory && subCatCodes.has(a.subCategory)));
@@ -300,6 +317,7 @@ export default function AdminRubriquesPage() {
 
   // Confirm delete Category
   const handleConfirmDeleteCategory = async (force = false) => {
+    if (!canManageRubriques) return;
     if (!deletingCategory) return;
     try {
       await categoriesApi.deleteCategory(deletingCategory.code);
@@ -317,6 +335,10 @@ export default function AdminRubriquesPage() {
 
   // Open Create SubCategory Modal
   const handleOpenCreateSubCategory = (defaultCatCode: CategoryCode = 'economie') => {
+    if (!canManageRubriques) {
+      warning('Accès restreint', 'Seuls le Superadmin et la Direction Éditoriale peuvent créer une sous-rubrique.');
+      return;
+    }
     setEditingSubCategory(null);
     setSubFormData({
       categoryCode: defaultCatCode,
@@ -332,6 +354,10 @@ export default function AdminRubriquesPage() {
 
   // Open Edit SubCategory Modal
   const handleOpenEditSubCategory = (sub: SubCategory) => {
+    if (!canManageRubriques) {
+      warning('Accès restreint', 'Seuls le Superadmin et la Direction Éditoriale peuvent modifier une sous-rubrique.');
+      return;
+    }
     setEditingSubCategory(sub);
     setSubFormData({ ...sub });
     setSubActiveTab('fr');
@@ -341,6 +367,10 @@ export default function AdminRubriquesPage() {
   // Submit SubCategory (Create or Update)
   const handleSubmitSubCategory = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canManageRubriques) {
+      warning('Accès restreint', 'Opération non autorisée.');
+      return;
+    }
     if (!subFormData.nameFr?.trim()) {
       warning('Champ requis', 'Le nom en français de la sous-rubrique est requis.');
       return;
@@ -388,6 +418,10 @@ export default function AdminRubriquesPage() {
 
   // Prompt delete subcategory
   const handlePromptDeleteSubCategory = (sub: SubCategory) => {
+    if (!canManageRubriques) {
+      warning('Accès restreint', 'Seuls le Superadmin et la Direction Éditoriale peuvent supprimer une sous-rubrique.');
+      return;
+    }
     const attachedCount = articles.filter(a => a.subCategory === sub.code).length;
     setDeletingSubCategory(sub);
     setDeleteAttachedCount(attachedCount);
@@ -435,25 +469,32 @@ export default function AdminRubriquesPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={handleOpenCreateCategory}
-            className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
-          >
-            <FolderPlus size={15} />
-            <span>+ Nouvelle Rubrique</span>
-          </button>
+        {canManageRubriques ? (
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleOpenCreateCategory}
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
+            >
+              <FolderPlus size={15} />
+              <span>+ Nouvelle Rubrique</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => handleOpenCreateSubCategory()}
-            className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#087443] text-[#087443] hover:bg-[#087443] hover:text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
-          >
-            <Plus size={15} />
-            <span>+ Nouvelle Sous-rubrique</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => handleOpenCreateSubCategory()}
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#087443] text-[#087443] hover:bg-[#087443] hover:text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
+            >
+              <Plus size={15} />
+              <span>+ Nouvelle Sous-rubrique</span>
+            </button>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#faf8f5] border border-[#e6dfd5] text-[#736c62] text-xs font-mono rounded">
+            <ShieldCheck size={15} className="text-[#087443]" />
+            <span>Mode Consultation Rédactionnelle</span>
+          </div>
+        )}
       </div>
 
       {/* ──────────────────────────────────────────────────────────
@@ -538,7 +579,7 @@ export default function AdminRubriquesPage() {
             Gouvernance Éditoriale & Architecture Dynamique :
           </span>
           <p className="font-serif text-xs leading-relaxed text-[#333]">
-            1. <strong>CRUD dynamique des rubriques et sous-rubriques :</strong> Vous pouvez créer, modifier et supprimer des rubriques mères et des sous-rubriques selon les besoins de la rédaction.<br />
+            1. <strong>CRUD dynamique des rubriques et sous-rubriques :</strong> {canManageRubriques ? "Vous pouvez créer, modifier et supprimer des rubriques mères et des sous-rubriques selon les besoins de la rédaction." : "La création, modification et suppression de rubriques mères et sous-rubriques est réservée au Superadmin et à la Direction Éditoriale."}<br />
             2. <strong>Règle d'activation automatique :</strong> Une sous-rubrique est <em>masquée</em> au public tant qu'elle compte moins de 2 articles publiés. Dès le 2ᵉ article, elle apparaît automatiquement en onglet et ne disparaît plus.
           </p>
         </div>
@@ -572,16 +613,20 @@ export default function AdminRubriquesPage() {
           <Layers size={40} className="mx-auto text-neutral-400 mb-3" />
           <h3 className="font-serif text-lg font-bold text-[#141414]">Aucune rubrique disponible</h3>
           <p className="font-mono text-xs text-[#736c62] mt-1 max-w-md mx-auto">
-            Aucune rubrique n&apos;est enregistrée dans PostgreSQL. Utilisez le bouton &quot;+ Nouvelle Rubrique&quot; pour en créer une.
+            {canManageRubriques 
+              ? "Aucune rubrique n'est enregistrée dans PostgreSQL. Utilisez le bouton ci-dessous pour en créer une."
+              : "Aucune rubrique n'est enregistrée dans PostgreSQL. Veuillez contacter le Superadmin ou la Direction Éditoriale."}
           </p>
-          <button
-            type="button"
-            onClick={handleOpenCreateCategory}
-            className="mt-4 inline-flex items-center gap-2 px-3.5 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors cursor-pointer"
-          >
-            <FolderPlus size={15} />
-            <span>+ Créer la première rubrique</span>
-          </button>
+          {canManageRubriques && (
+            <button
+              type="button"
+              onClick={handleOpenCreateCategory}
+              className="mt-4 inline-flex items-center gap-2 px-3.5 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors cursor-pointer"
+            >
+              <FolderPlus size={15} />
+              <span>+ Créer la première rubrique</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-8">
@@ -620,25 +665,29 @@ export default function AdminRubriquesPage() {
                       <span>Voir</span>
                     </Link>
 
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEditCategory(cat)}
-                      className="px-3 py-1.5 bg-[#087443] hover:bg-[#075f37] text-white text-xs font-mono font-bold rounded inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <Edit3 size={13} />
-                      <span>Modifier / Cadrer</span>
-                    </button>
+                    {canManageRubriques && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditCategory(cat)}
+                          className="px-3 py-1.5 bg-[#087443] hover:bg-[#075f37] text-white text-xs font-mono font-bold rounded inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Edit3 size={13} />
+                          <span>Modifier / Cadrer</span>
+                        </button>
 
-                    <Tooltip position="top" content="Supprimer la rubrique">
-                      <button
-                        type="button"
-                        onClick={() => handlePromptDeleteCategory(cat)}
-                        className="p-1.5 text-[#736c62] hover:text-red-600 hover:bg-red-50 rounded border border-[#e6dfd5] hover:border-red-200 transition-colors cursor-pointer"
-                        aria-label={`Supprimer ${cat.nameFr}`}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </Tooltip>
+                        <Tooltip position="top" content="Supprimer la rubrique">
+                          <button
+                            type="button"
+                            onClick={() => handlePromptDeleteCategory(cat)}
+                            className="p-1.5 text-[#736c62] hover:text-red-600 hover:bg-red-50 rounded border border-[#e6dfd5] hover:border-red-200 transition-colors cursor-pointer"
+                            aria-label={`Supprimer ${cat.nameFr}`}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </Tooltip>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -662,14 +711,16 @@ export default function AdminRubriquesPage() {
                       <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
                         Sous-rubriques ({subCats.length})
                       </h3>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenCreateSubCategory(cat.code as CategoryCode)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#087443]/10 hover:bg-[#087443] text-[#087443] hover:text-white rounded text-[10px] font-mono font-bold transition-colors cursor-pointer"
-                      >
-                        <Plus size={11} />
-                        <span>Ajouter</span>
-                      </button>
+                      {canManageRubriques && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenCreateSubCategory(cat.code as CategoryCode)}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#087443]/10 hover:bg-[#087443] text-[#087443] hover:text-white rounded text-[10px] font-mono font-bold transition-colors cursor-pointer"
+                        >
+                          <Plus size={11} />
+                          <span>Ajouter</span>
+                        </button>
+                      )}
                     </div>
                     <span className="text-[11px] font-mono text-[#736c62]">
                       Articles dans cette rubrique : <strong>{catArticles.length}</strong>
@@ -736,29 +787,31 @@ export default function AdminRubriquesPage() {
                               </Link>
                             </div>
 
-                            <div className="flex items-center gap-1">
-                              <Tooltip position="top" content="Modifier la sous-rubrique">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEditSubCategory(sc)}
-                                  className="p-1 text-[#555] hover:text-[#087443] hover:bg-[#faf8f5] rounded border border-[#e6dfd5] transition-colors cursor-pointer"
-                                  aria-label={`Modifier ${sc.nameFr}`}
-                                >
-                                  <Edit3 size={12} />
-                                </button>
-                              </Tooltip>
+                            {canManageRubriques && (
+                              <div className="flex items-center gap-1">
+                                <Tooltip position="top" content="Modifier la sous-rubrique">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditSubCategory(sc)}
+                                    className="p-1 text-[#555] hover:text-[#087443] hover:bg-[#faf8f5] rounded border border-[#e6dfd5] transition-colors cursor-pointer"
+                                    aria-label={`Modifier ${sc.nameFr}`}
+                                  >
+                                    <Edit3 size={12} />
+                                  </button>
+                                </Tooltip>
 
-                              <Tooltip position="top" content="Supprimer la sous-rubrique">
-                                <button
-                                  type="button"
-                                  onClick={() => handlePromptDeleteSubCategory(sc)}
-                                  className="p-1 text-[#555] hover:text-[#d32f2f] hover:bg-rose-50 rounded border border-[#e6dfd5] transition-colors cursor-pointer"
-                                  aria-label={`Supprimer ${sc.nameFr}`}
-                                >
-                                  <Trash2 size={12} />
-                                </button>
-                              </Tooltip>
-                            </div>
+                                <Tooltip position="top" content="Supprimer la sous-rubrique">
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePromptDeleteSubCategory(sc)}
+                                    className="p-1 text-[#555] hover:text-[#d32f2f] hover:bg-rose-50 rounded border border-[#e6dfd5] transition-colors cursor-pointer"
+                                    aria-label={`Supprimer ${sc.nameFr}`}
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </Tooltip>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -775,7 +828,7 @@ export default function AdminRubriquesPage() {
       {/* ──────────────────────────────────────────────────────────
           7. MODAL DYNAMIQUE : CRÉATION / ÉDITION RUBRIQUE
       ────────────────────────────────────────────────────────── */}
-      {isCategoryModalOpen && (
+      {canManageRubriques && isCategoryModalOpen && (
         <div 
           role="dialog"
           aria-modal="true"
@@ -1017,7 +1070,7 @@ export default function AdminRubriquesPage() {
       {/* ──────────────────────────────────────────────────────────
           6. MODAL DYNAMIQUE : CRÉATION / ÉDITION SOUS-RUBRIQUE
       ────────────────────────────────────────────────────────── */}
-      {isSubModalOpen && (
+      {canManageRubriques && isSubModalOpen && (
         <div 
           role="dialog"
           aria-modal="true"
@@ -1225,7 +1278,7 @@ export default function AdminRubriquesPage() {
       {/* ──────────────────────────────────────────────────────────
           7. MODAL DE CONFIRMATION DE SUPPRESSION SOUS-RUBRIQUE
       ────────────────────────────────────────────────────────── */}
-      {deletingSubCategory && (
+      {canManageRubriques && deletingSubCategory && (
         <div 
           role="dialog"
           aria-modal="true"
@@ -1285,7 +1338,7 @@ export default function AdminRubriquesPage() {
       {/* ──────────────────────────────────────────────────────────
           8. MODAL DE CONFIRMATION DE SUPPRESSION RUBRIQUE
       ────────────────────────────────────────────────────────── */}
-      {deletingCategory && (
+      {canManageRubriques && deletingCategory && (
         <div 
           role="dialog"
           aria-modal="true"
