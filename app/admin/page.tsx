@@ -20,9 +20,13 @@ import {
 import { useAdminAuth } from '@/components/admin/AuthGuard';
 import { SkeletonStat, SkeletonTable } from '@/components/admin/Skeleton';
 import { PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS } from '@/data/types';
+import { normalizeRoleCode } from '@/lib/api';
 
 export default function AdminOverviewPage() {
   const { user } = useAdminAuth();
+  const roleCode = normalizeRoleCode(user?.role || '');
+  const canManageRubriques = roleCode === 'superadmin' || roleCode === 'editorial_director';
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -247,10 +251,10 @@ export default function AdminOverviewPage() {
           <div className="bg-white border border-[#e6dfd5] p-6">
             <div className="flex justify-between items-center pb-3 mb-4 border-b border-[#141414]">
               <h3 className="font-serif font-bold text-base text-[#141414]">
-                Gestion des 6 Rubriques Thématiques
+                {canManageRubriques ? "Gestion des Rubriques Thématiques" : "Architecture des Rubriques Thématiques"}
               </h3>
               <Link href="/admin/rubriques" className="text-xs font-mono font-bold text-[#0b4627] hover:underline">
-                Gérer les rubriques →
+                {canManageRubriques ? "Gérer les rubriques →" : "Consulter les rubriques →"}
               </Link>
             </div>
 
