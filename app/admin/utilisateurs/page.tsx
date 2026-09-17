@@ -179,7 +179,10 @@ export default function AdminUsersPage() {
           password: formPassword.trim() || 'BurkinaAdmin2026!',
           status: formStatus,
         });
-        success('Compte créé avec succès', `Le compte de ${formName} est maintenant opérationnel.`);
+        success(
+          'Compte créé avec succès',
+          `Le compte de ${formName} a été créé et ses accès ont été expédiés par email.`
+        );
       }
 
       setIsModalOpen(false);
@@ -867,6 +870,15 @@ export default function AdminUsersPage() {
                 <p className="text-[10px] font-mono text-[#736c62] mt-1">
                   Le mot de passe sera haché avec Bcrypt (coût 12) avant stockage en base.
                 </p>
+
+                {!editingUser && (
+                  <div className="p-2.5 bg-[#087443]/10 border border-[#087443]/25 rounded flex items-start gap-2 text-[11px] text-[#087443] mt-2">
+                    <Mail size={15} className="shrink-0 mt-0.5 text-[#087443]" />
+                    <span>
+                      <strong>Envoi automatique des accès :</strong> Les identifiants (email et mot de passe ci-dessus) ainsi que le lien direct vers le Desk seront automatiquement envoyés par email au destinataire depuis <code>info@burkina-news.com</code> (via Resend).
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Avatar Uploader */}
