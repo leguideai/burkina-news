@@ -23,7 +23,11 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  EyeOff,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable } from '@/components/admin/Skeleton';
@@ -40,6 +44,43 @@ import {
   ApiClientError,
   PaginationMeta
 } from '@/lib/api';
+
+// Générateur cryptographique de mot de passe fort (évite les caractères ambigus)
+function generateSecurePassword(length = 14): string {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lower = 'abcdefghijkmnpqrstuvwxyz';
+  const digits = '23456789';
+  const symbols = '!@#$%^&*()_+';
+  const all = upper + lower + digits + symbols;
+
+  const pick = (charset: string) => {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      return charset[array[0] % charset.length];
+    }
+    return charset[Math.floor(Math.random() * charset.length)];
+  };
+
+  const initial = [pick(upper), pick(lower), pick(digits), pick(symbols)];
+  for (let i = 4; i < length; i++) {
+    initial.push(pick(all));
+  }
+
+  for (let i = initial.length - 1; i > 0; i--) {
+    let j: number;
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      j = array[0] % (i + 1);
+    } else {
+      j = Math.floor(Math.random() * (i + 1));
+    }
+    [initial[i], initial[j]] = [initial[j], initial[i]];
+  }
+
+  return initial.join('');
+}
 
 export default function AdminUsersPage() {
   const { user: currentUser, updateUserSession } = useAdminAuth();
@@ -70,9 +111,22 @@ export default function AdminUsersPage() {
   const [formTitle, setFormTitle] = useState('');
   const [formAvatar, setFormAvatar] = useState('');
   const [formPassword, setFormPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [copiedPassword, setCopiedPassword] = useState(false);
   const [formStatus, setFormStatus] = useState<'active' | 'suspended'>('active');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const handleCopyPassword = async () => {
+    if (!formPassword) return;
+    try {
+      await navigator.clipboard.writeText(formPassword);
+      setCopiedPassword(true);
+      setTimeout(() => setCopiedPassword(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
 
   // Load users from Go API
   const loadUsers = useCallback(async (page = currentPage) => {
@@ -109,7 +163,9 @@ export default function AdminUsersPage() {
     setFormRole('journalist');
     setFormTitle('');
     setFormAvatar('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80');
-    setFormPassword('BurkinaAdmin2026!');
+    setFormPassword(generateSecurePassword(14));
+    setShowPassword(true);
+    setCopiedPassword(false);
     setFormStatus('active');
     setFieldErrors({});
     setIsModalOpen(true);
@@ -124,6 +180,8 @@ export default function AdminUsersPage() {
     setFormTitle(user.title || '');
     setFormAvatar(user.avatar || '');
     setFormPassword(''); // Empty password = keep existing
+    setShowPassword(false);
+    setCopiedPassword(false);
     setFormStatus(user.status);
     setFieldErrors({});
     setIsModalOpen(true);
@@ -143,6 +201,7 @@ export default function AdminUsersPage() {
     try {
       if (editingUser) {
         // Mode Mise à jour
+        const hasNewPassword = Boolean(formPassword.trim());
         const updatePayload: any = {
           name: formName.trim(),
           email: formEmail.trim().toLowerCase(),
@@ -151,7 +210,7 @@ export default function AdminUsersPage() {
           avatar: formAvatar,
           status: formStatus,
         };
-        if (formPassword.trim()) {
+        if (hasNewPassword) {
           updatePayload.password = formPassword.trim();
         }
 
@@ -167,21 +226,29 @@ export default function AdminUsersPage() {
           });
         }
 
-        success('Profil mis à jour', `Le compte de ${formName} a été actualisé avec succès.`);
+        if (hasNewPassword) {
+          success(
+            'Profil & mot de passe actualisés',
+            `Le compte de ${formName} a été mis à jour et ses nouveaux accès ont été envoyés par email via Resend.`
+          );
+        } else {
+          success('Profil mis à jour', `Le compte de ${formName} a été actualisé avec succès.`);
+        }
       } else {
         // Mode Création
+        const passwordToSend = formPassword.trim() || generateSecurePassword(14);
         await usersApi.createUser({
           name: formName.trim(),
           email: formEmail.trim().toLowerCase(),
           role: formRole,
           title: formTitle.trim(),
           avatar: formAvatar,
-          password: formPassword.trim() || 'BurkinaAdmin2026!',
+          password: passwordToSend,
           status: formStatus,
         });
         success(
           'Compte créé avec succès',
-          `Le compte de ${formName} a été créé et ses accès ont été expédiés par email.`
+          `Le compte de ${formName} a été créé avec mot de passe auto-généré et ses accès ont été expédiés par email.`
         );
       }
 
@@ -847,37 +914,115 @@ export default function AdminUsersPage() {
               </div>
 
               {/* Password */}
-              <div>
-                <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                  {editingUser ? 'Nouveau mot de passe (laisser vide pour conserver)' : 'Mot de passe sécurisé *'}
-                </label>
-                <div className="relative">
-                  <Key size={14} className="absolute left-3 top-2.5 text-[#736c62]" />
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-mono uppercase font-bold text-[#141414]">
+                    {editingUser ? 'Mot de passe du compte' : 'Mot de passe sécurisé auto-généré *'}
+                  </label>
+                  {editingUser ? (
+                    formPassword ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormPassword('');
+                          setShowPassword(false);
+                        }}
+                        className="text-[11px] font-mono text-neutral-500 hover:text-neutral-700 underline cursor-pointer"
+                      >
+                        Conserver mot de passe actuel
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormPassword(generateSecurePassword(14));
+                          setShowPassword(true);
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[#087443] hover:text-[#065b34] cursor-pointer"
+                      >
+                        <Sparkles size={12} />
+                        <span>Générer un nouveau mot de passe</span>
+                      </button>
+                    )
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormPassword(generateSecurePassword(14));
+                        setShowPassword(true);
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[#087443] hover:text-[#065b34] cursor-pointer"
+                    >
+                      <RefreshCw size={11} />
+                      <span>Régénérer</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="relative flex items-center">
+                  <Key size={14} className="absolute left-3 text-[#736c62] pointer-events-none" />
                   <input
-                    type="text"
+                    type={showPassword ? 'text' : 'password'}
                     required={!editingUser}
                     value={formPassword}
                     onChange={(e) => setFormPassword(e.target.value)}
-                    placeholder={editingUser ? '•••••••• (inchangé)' : 'BurkinaAdmin2026!'}
-                    className={`w-full pl-9 pr-3 py-2 text-xs font-mono border rounded focus:outline-none ${
-                      fieldErrors.password ? 'border-rose-500 bg-rose-50' : 'border-[#e6dfd5] focus:border-[#087443]'
+                    placeholder={editingUser ? '•••••••• (laisser vide pour conserver le mot de passe actuel)' : 'Mot de passe sécurisé'}
+                    className={`w-full pl-9 pr-20 py-2 text-xs font-mono border rounded focus:outline-none transition-colors ${
+                      fieldErrors.password
+                        ? 'border-rose-500 bg-rose-50'
+                        : formPassword && editingUser
+                        ? 'border-amber-400 bg-amber-50/40 focus:border-amber-600'
+                        : 'border-[#e6dfd5] focus:border-[#087443]'
                     }`}
                   />
+                  {formPassword && (
+                    <div className="absolute right-2 flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="p-1 text-[#736c62] hover:text-[#141414] rounded hover:bg-neutral-100 transition-colors cursor-pointer"
+                        title={showPassword ? 'Masquer' : 'Afficher'}
+                      >
+                        {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCopyPassword}
+                        className="p-1 text-[#736c62] hover:text-[#087443] rounded hover:bg-neutral-100 transition-colors cursor-pointer"
+                        title={copiedPassword ? 'Copié !' : 'Copier'}
+                      >
+                        {copiedPassword ? <Check size={14} className="text-[#087443]" /> : <Copy size={14} />}
+                      </button>
+                    </div>
+                  )}
                 </div>
+
                 {fieldErrors.password && (
                   <span className="text-[10px] font-mono text-rose-600 mt-1 block">{fieldErrors.password}</span>
                 )}
-                <p className="text-[10px] font-mono text-[#736c62] mt-1">
-                  Le mot de passe sera haché avec Bcrypt (coût 12) avant stockage en base.
-                </p>
 
                 {!editingUser && (
                   <div className="p-2.5 bg-[#087443]/10 border border-[#087443]/25 rounded flex items-start gap-2 text-[11px] text-[#087443] mt-2">
                     <Mail size={15} className="shrink-0 mt-0.5 text-[#087443]" />
                     <span>
-                      <strong>Envoi automatique des accès :</strong> Les identifiants (email et mot de passe ci-dessus) ainsi que le lien direct vers le Desk seront automatiquement envoyés par email au destinataire depuis <code>info@burkina-news.com</code> (via Resend).
+                      <strong>Envoi automatique des accès :</strong> Les identifiants (email et mot de passe auto-généré ci-dessus) ainsi que le lien direct vers le Desk seront automatiquement envoyés par email au destinataire depuis <code>info@burkina-news.com</code> (via Resend).
                     </span>
                   </div>
+                )}
+
+                {editingUser && formPassword && (
+                  <div className="p-2.5 bg-amber-50 border border-amber-300 rounded flex items-start gap-2 text-[11px] text-amber-900 mt-2">
+                    <Mail size={15} className="shrink-0 mt-0.5 text-amber-700" />
+                    <span>
+                      <strong>⚡ Nouveau mot de passe défini :</strong> Lors de l'enregistrement, un email contenant ces nouveaux identifiants sera immédiatement expédié à <strong>{formEmail || "l'utilisateur"}</strong> depuis <code>info@burkina-news.com</code> (via Resend). Toutes ses sessions actives actuelles seront automatiquement révoquées.
+                    </span>
+                  </div>
+                )}
+
+                {editingUser && !formPassword && (
+                  <p className="text-[10px] font-mono text-[#736c62]">
+                    Le mot de passe actuel de l'utilisateur sera conservé inchangé si ce champ reste vide.
+                  </p>
                 )}
               </div>
 
