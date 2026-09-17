@@ -29,17 +29,17 @@ import {
   Loader2
 } from 'lucide-react';
 import { Category, Article, Project, SubCategory, CategoryCode } from '@/data/types';
-import { SUB_CATEGORIES as defaultSubCategories, isSubCategoryActive } from '@/data/mock/referentiel';
-import { categories as defaultCategories } from '@/data/mock/categories';
+import { categoriesApi, CategoryDTO, SubCategoryDTO } from '@/lib/api';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
 
+
 export default function AdminRubriquesPage() {
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<Category[]>(defaultCategories);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>(defaultSubCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedView, setSelectedView] = useState<string>('all');
 
@@ -110,25 +110,71 @@ export default function AdminRubriquesPage() {
     }
   };
 
+  const mapSubCategoryDto = (dto: SubCategoryDTO): SubCategory => ({
+    id: dto.id,
+    code: dto.code,
+    nameFr: dto.name_fr,
+    nameEn: dto.name_en,
+    categoryCode: dto.category_code as CategoryCode,
+    descriptionFr: dto.description_fr || '',
+    descriptionEn: dto.description_en || '',
+    isActivated: dto.is_activated,
+  });
+
+  const mapCategoryDto = (dto: CategoryDTO): Category => ({
+    code: dto.code as CategoryCode,
+    nameFr: dto.name_fr,
+    nameEn: dto.name_en,
+    descriptionFr: dto.description_fr || '',
+    descriptionEn: dto.description_en || '',
+    slug: dto.slug,
+    color: dto.color,
+    icon: dto.icon,
+    order: dto.order_num,
+    subCategories: (dto.sub_categories || []).map(mapSubCategoryDto),
+  });
+
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger les rubriques.');
-      const data = await res.json();
-      if (data.categories && data.categories.length > 0) {
-        setCategories(data.categories);
+      // 1. Chargement direct depuis PostgreSQL via l'API Go
+      const apiCategories = await categoriesApi.listCategories(true);
+      if (apiCategories && apiCategories.length > 0) {
+        const mappedCats = apiCategories.map(mapCategoryDto);
+        setCategories(mappedCats);
+
+        const allSubs: SubCategory[] = [];
+        apiCategories.forEach(cat => {
+          if (cat.sub_categories && cat.sub_categories.length > 0) {
+            allSubs.push(...cat.sub_categories.map(mapSubCategoryDto));
+          }
+        });
+        setSubCategories(allSubs);
+      } else {
+        setCategories([]);
+        setSubCategories([]);
       }
-      if (data.subCategories && data.subCategories.length > 0) {
-        setSubCategories(data.subCategories);
+
+      // 2. Chargement des articles pour les métriques de publication
+      try {
+        const resArticles = await fetch('/api/admin/data');
+        if (resArticles.ok) {
+          const data = await resArticles.json();
+          setArticles(data.articles || []);
+        }
+      } catch {
+        // Silencieux
       }
-      setArticles(data.articles || []);
     } catch (err: any) {
-      error('Erreur', err.message);
+      console.error('Erreur lors du chargement des rubriques depuis PostgreSQL :', err);
+      setCategories([]);
+      setSubCategories([]);
+      error('Erreur de chargement', 'Impossible de récupérer les rubriques depuis PostgreSQL. Vérifiez que le backend est actif.');
     } finally {
-      setTimeout(() => setLoading(false), 300);
+      setTimeout(() => setLoading(false), 200);
     }
   };
+
 
   useEffect(() => {
     loadData();
@@ -189,27 +235,34 @@ export default function AdminRubriquesPage() {
     try {
       setIsSubmittingCategory(true);
       const isEdit = Boolean(editingCategory);
-      const action = isEdit ? 'update_category' : 'create_category';
 
-      const payload = {
-        ...categoryFormData,
-        code: isEdit ? editingCategory!.code : (categoryFormData.code?.trim() || undefined),
-      };
-
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action,
-          payload
-        })
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || "Erreur lors de l'enregistrement.");
+      if (isEdit) {
+        await categoriesApi.updateCategory(editingCategory!.code, {
+          name_fr: categoryFormData.nameFr.trim(),
+          name_en: categoryFormData.nameEn?.trim() || categoryFormData.nameFr.trim(),
+          description_fr: categoryFormData.descriptionFr?.trim(),
+          description_en: categoryFormData.descriptionEn?.trim(),
+          color: categoryFormData.color || '#087443',
+          slug: categoryFormData.slug,
+          icon: categoryFormData.icon,
+        });
+      } else {
+        const rawCode = categoryFormData.code?.trim() || categoryFormData.nameFr.trim();
+        const code = rawCode.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        await categoriesApi.createCategory({
+          code,
+          name_fr: categoryFormData.nameFr.trim(),
+          name_en: categoryFormData.nameEn?.trim() || categoryFormData.nameFr.trim(),
+          description_fr: categoryFormData.descriptionFr?.trim(),
+          description_en: categoryFormData.descriptionEn?.trim(),
+          color: categoryFormData.color || '#087443',
+          slug: categoryFormData.slug || code,
+          icon: categoryFormData.icon,
+        });
+      }
 
       if (regardFr || regardEn) {
-        const codeKey = result.item?.code || payload.code;
+        const codeKey = editingCategory ? editingCategory.code : (categoryFormData.code || '');
         if (codeKey) {
           defaultRegards[codeKey] = {
             fr: regardFr || categoryFormData.descriptionFr || '',
@@ -220,14 +273,14 @@ export default function AdminRubriquesPage() {
 
       success(
         isEdit ? 'Rubrique actualisée' : 'Rubrique créée',
-        result.message || `La rubrique "${categoryFormData.nameFr}" a été enregistrée avec succès.`
+        `La rubrique "${categoryFormData.nameFr}" a été enregistrée avec succès dans PostgreSQL.`
       );
 
       setIsCategoryModalOpen(false);
       setEditingCategory(null);
-      loadData();
+      await loadData();
     } catch (err: any) {
-      error('Erreur', err.message);
+      error('Erreur', err.message || "Erreur lors de l'enregistrement de la rubrique.");
     } finally {
       setIsSubmittingCategory(false);
     }
@@ -249,30 +302,18 @@ export default function AdminRubriquesPage() {
   const handleConfirmDeleteCategory = async (force = false) => {
     if (!deletingCategory) return;
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'delete_category',
-          payload: { code: deletingCategory.code, force }
-        })
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) {
-        throw new Error(result.error || 'Erreur lors de la suppression.');
-      }
-
+      await categoriesApi.deleteCategory(deletingCategory.code);
       success('Rubrique supprimée', `La rubrique "${deletingCategory.nameFr}" a été supprimée.`);
       setDeletingCategory(null);
       if (selectedView === deletingCategory.code) {
         setSelectedView('all');
       }
-      loadData();
+      await loadData();
     } catch (err: any) {
-      error('Suppression impossible', err.message);
+      error('Suppression impossible', err.message || 'Erreur lors de la suppression.');
     }
   };
+
 
   // Open Create SubCategory Modal
   const handleOpenCreateSubCategory = (defaultCatCode: CategoryCode = 'economie') => {
@@ -308,32 +349,38 @@ export default function AdminRubriquesPage() {
     try {
       setIsSubmittingSub(true);
       const isEdit = Boolean(editingSubCategory);
-      const action = isEdit ? 'update_subcategory' : 'create_subcategory';
 
-      const payload = {
-        ...subFormData,
-        code: editingSubCategory ? editingSubCategory.code : subFormData.code,
-      };
-
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, payload }),
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de l\'enregistrement.');
+      if (isEdit) {
+        const subId = editingSubCategory!.id || editingSubCategory!.code;
+        await categoriesApi.updateSubCategory(subId, {
+          name_fr: subFormData.nameFr.trim(),
+          name_en: subFormData.nameEn?.trim() || subFormData.nameFr.trim(),
+          description_fr: subFormData.descriptionFr?.trim(),
+          description_en: subFormData.descriptionEn?.trim(),
+        });
+      } else {
+        const rawCode = subFormData.code?.trim() || subFormData.nameFr.trim();
+        const code = rawCode.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const parentCategory = subFormData.categoryCode || 'economie';
+        await categoriesApi.createSubCategory(parentCategory, {
+          code,
+          name_fr: subFormData.nameFr.trim(),
+          name_en: subFormData.nameEn?.trim() || subFormData.nameFr.trim(),
+          description_fr: subFormData.descriptionFr?.trim(),
+          description_en: subFormData.descriptionEn?.trim(),
+        });
+      }
 
       success(
         isEdit ? 'Sous-rubrique actualisée' : 'Sous-rubrique créée',
-        result.message || `La sous-rubrique "${subFormData.nameFr}" a été enregistrée avec succès.`
+        `La sous-rubrique "${subFormData.nameFr}" a été enregistrée avec succès dans PostgreSQL.`
       );
 
       setIsSubModalOpen(false);
       setEditingSubCategory(null);
-      loadData();
+      await loadData();
     } catch (err: any) {
-      error('Erreur', err.message);
+      error('Erreur', err.message || "Erreur lors de l'enregistrement de la sous-rubrique.");
     } finally {
       setIsSubmittingSub(false);
     }
@@ -350,25 +397,16 @@ export default function AdminRubriquesPage() {
   const handleConfirmDeleteSubCategory = async (force = false) => {
     if (!deletingSubCategory) return;
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'delete_subcategory',
-          payload: { code: deletingSubCategory.code, force }
-        }),
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de la suppression.');
-
+      const subId = deletingSubCategory.id || deletingSubCategory.code;
+      await categoriesApi.deleteSubCategory(subId);
       success('Sous-rubrique supprimée', `La sous-rubrique "${deletingSubCategory.nameFr}" a été retirée.`);
       setDeletingSubCategory(null);
-      loadData();
+      await loadData();
     } catch (err: any) {
-      error('Suppression impossible', err.message);
+      error('Suppression impossible', err.message || 'Erreur lors de la suppression.');
     }
   };
+
 
   const displayedCategories = useMemo(() => {
     if (selectedView === 'all') {
@@ -509,7 +547,44 @@ export default function AdminRubriquesPage() {
       {/* ──────────────────────────────────────────────────────────
           5. RUBRIQUES LISTING & SUB-RUBRICS TABLES
       ────────────────────────────────────────────────────────── */}
-      <div className="space-y-8">
+      {loading ? (
+        <div className="space-y-6">
+          {[1, 2, 3].map(idx => (
+            <div key={idx} className="bg-white border border-[#e6dfd5] rounded p-6 animate-pulse space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="space-y-2">
+                  <div className="h-3 w-28 bg-neutral-200 rounded" />
+                  <div className="h-6 w-48 bg-neutral-200 rounded" />
+                  <div className="h-3 w-80 bg-neutral-100 rounded" />
+                </div>
+                <div className="h-8 w-24 bg-neutral-200 rounded" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4 border-t border-[#f0ebe3]">
+                {[1, 2, 3].map(sIdx => (
+                  <div key={sIdx} className="h-20 bg-neutral-100 rounded border border-neutral-200/60" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : displayedCategories.length === 0 ? (
+        <div className="bg-white border border-[#e6dfd5] rounded p-12 text-center">
+          <Layers size={40} className="mx-auto text-neutral-400 mb-3" />
+          <h3 className="font-serif text-lg font-bold text-[#141414]">Aucune rubrique disponible</h3>
+          <p className="font-mono text-xs text-[#736c62] mt-1 max-w-md mx-auto">
+            Aucune rubrique n&apos;est enregistrée dans PostgreSQL. Utilisez le bouton &quot;+ Nouvelle Rubrique&quot; pour en créer une.
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenCreateCategory}
+            className="mt-4 inline-flex items-center gap-2 px-3.5 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors cursor-pointer"
+          >
+            <FolderPlus size={15} />
+            <span>+ Créer la première rubrique</span>
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-8">
           {displayedCategories.map(cat => {
             const catArticles = articles.filter(a => a.category === cat.code || (cat.code === 'histoire' && a.category === 'idees'));
             const subCats = subCategories.filter(sc => sc.categoryCode === cat.code);
@@ -695,6 +770,7 @@ export default function AdminRubriquesPage() {
             );
           })}
         </div>
+      )}
 
       {/* ──────────────────────────────────────────────────────────
           7. MODAL DYNAMIQUE : CRÉATION / ÉDITION RUBRIQUE

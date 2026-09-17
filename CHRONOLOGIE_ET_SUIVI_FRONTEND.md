@@ -19,7 +19,7 @@
 | **Phase F2** | **Semaine 2 :** Authentification JWT (`login`, `refresh`, `logout`, `me`), AuthGuard & CRUD Utilisateurs Desk | `[x] Validé & Terminé` |
 | **Phase F3** | **Semaine 3 :** Médiathèque & Upload de fichiers (Cloudflare R2 / Local) | `[x] Validé & Terminé` |
 | **🚀 DevOps** | Vercel (frontend) + Railway (backend + PostgreSQL) + Cloudflare R2 en production | `[x] Validé & Terminé` |
-| **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (Workflow éditorial, Preuves A/B/C, bilinguisme) | `[ ] En attente` |
+| **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (Jalon F4.0 Rubriques validé, F4.1 en cours) | `[/] En cours (F4.0 achevé)` |
 | **Phase F5** | **Semaine 5 :** API Le Fil (Dépêches 60s, Éditions hebdo, Streaming SSE en direct) | `[ ] En attente` |
 | **Phase F6** | **Semaine 6 :** API Tracker des Chantiers (6 Statuts, cartographie, PV) & Baromètre RELANCE | `[ ] En attente` |
 | **Phase F7** | **Semaine 7 :** Numéros PDF, Registre public des Corrections & Moteur de Recherche Globale | `[ ] En attente` |
@@ -54,7 +54,18 @@
 | **F2.4** | `[x]` | Développer le service de gestion des utilisateurs du Desk (`usersApi`). | `lib/api/users.ts` | `CRUD /api/v1/admin/users` | Méthodes `listUsers`, `getUser`, `createUser`, `updateUser`, `updateStatus`, `deleteUser`. |
 | **F2.5** | `[x]` | Connecter l'écran `/admin/utilisateurs` à l'API réelle avec `SkeletonTable` au chargement. | `app/admin/utilisateurs/page.tsx` | `GET /api/v1/admin/users` | Fin du recours à `app/api/admin/data`, affichage des membres réels en base de données. |
 | **F2.6** | `[x]` | Intégrer les opérations de création, modification, suspension et suppression avec gestion d'erreurs déontologiques. | `app/admin/utilisateurs/page.tsx` | `POST/PUT/PATCH/DELETE /admin/users` | Affichage du blocage explicite lors d'une tentative sur le dernier Superadmin. |
+| **F2.7** | `[x]` | Auto-génération de mots de passe mémorables (8 car.) et expédition automatique des accès par email Resend. | `app/admin/utilisateurs/page.tsx` | `POST/PUT /admin/users` | Mention explicite Resend, générateur phonétique prononçable, toggle visuel et bouton copier. |
+| **F2.8** | `[x]` | Auto-assignation déontologique du titre rédactionnel selon le rôle choisi avec surcharge manuelle possible. | `app/admin/utilisateurs/page.tsx`, `lib/api/types.ts` | Formulaire utilisateur | Correspondance stricte aux 6 rôles de la Charte déontologique. |
+| **F2.9** | `[x]` | CRUD complet et dynamique des Rubriques & Sous-rubriques avec valorisation de la Section Histoire. | `app/admin/rubriques/page.tsx`, `components/admin/AdminSidebar.tsx` | `/admin/rubriques` | Création/édition bilingue FR/EN, suppression avec contrôle des dépendances, sauvegarde dynamique. |
 
+---
+
+## 📅 PHASE F2.10 / F8.1 : Assistant IA Micum & Connexion Réelle Google Gemini 3.5 Flash
+> **🎯 Objectif :** Éradiquer tous les mocks et simulations de réponses dans l'ensemble du back-office, et brancher toutes les actions en direct sur l'API Google Gemini 3.5 Flash.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F8.1** | `[x]` | Éradication des données mockées de l'IA Micum & Raccordement 100% réel à Gemini 3.5 Flash. | `app/api/admin/ai/route.ts`, `lib/ai/providers.ts`, `components/admin/Micum*`, `app/admin/une/page.tsx` | `POST /api/admin/ai` | 8 actions connectées en direct (traduction, dépêches, briefing, newsletter, citations, etc.), spinner `Loader2` et skeleton. |
 
 ---
 
@@ -70,11 +81,22 @@
 
 ---
 
-## 📅 PHASES F4 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 4 À 10)
+## 📅 PHASE F4 : Module Articles & Grandes Enquêtes d'Investigation (Semaine 4 Backend)
 
-- **Phase F4 (Semaine 4) :** Intégration Articles & Grandes Enquêtes (`/fr/[rubrique]/[slug]`, `/admin/articles`).
+> **🎯 Objectif :** Connecter la rédaction d'enquêtes, le catalogage des articles et l'architecture éditoriale aux endpoints réels de l'API Go.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F4.0** | `[x]` | Raccordement du service `categoriesApi` et de l'écran `/admin/rubriques` au CRUD Go/PostgreSQL réel. | `lib/api/categories.ts`, `app/admin/rubriques/page.tsx` | `GET /api/v1/categories`<br>`CRUD /api/v1/admin/categories` | Gestion dynamique complète des rubriques et sous-rubriques, alimentation directe pour la rédaction d'articles. |
+| **F4.1** | `[ ]` | Développer le client API `articlesApi` pour la consultation et gestion des articles d'investigation. | `lib/api/articles.ts` | `GET /api/v1/articles`<br>`CRUD /api/v1/admin/articles` | Support des filtres, pagination, formats et bilinguisme. |
+
+---
+
+## 📅 PHASES F5 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 5 À 10)
+
 - **Phase F5 (Semaine 5) :** Intégration Le Fil & Flux SSE temps réel (`/fr/fil`, `/admin/fil`).
 - **Phase F6 (Semaine 6) :** Intégration Tracker Chantiers (6 Statuts) & Baromètre RELANCE (`/fr/tracker`, `/admin/projets`).
+
 - **Phase F7 (Semaine 7) :** Intégration Numéros PDF & Registre des Corrections (`/fr/numeros`, `/admin/corrections`).
 - **Phase F8 (Semaine 8) :** Intégration Curation Une, Formulaires Signalements & Assistant Micum.
 - **Phase F9 (Semaine 9) :** Durcissement, gestion du mode hors-ligne, audit de résilience.
