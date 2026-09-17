@@ -41,45 +41,53 @@ import {
   OFFICIAL_ROLES, 
   normalizeRoleCode, 
   getRoleLabel,
+  DEFAULT_ROLE_TITLES,
+  getDefaultTitleForRole,
   ApiClientError,
   PaginationMeta
 } from '@/lib/api';
 
-// Générateur cryptographique de mot de passe fort (évite les caractères ambigus)
-function generateSecurePassword(length = 14): string {
-  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const lower = 'abcdefghijkmnpqrstuvwxyz';
-  const digits = '23456789';
-  const symbols = '!@#$%^&*()_+';
-  const all = upper + lower + digits + symbols;
+// Mots courts (4 à 6 lettres), familiers et sans accents (ASCII pur), faciles à mémoriser pour un humain.
+const SHORT_MEMORABLE_WORDS = [
+  // 5 lettres -> + 2 chiffres + 1 symbole = 8 caractères (ex: Sahel48!, Volta62#)
+  "Sahel", "Volta", "Oasis", "Aigle", "Zebre", "Rubis", "Cacao", "Coton",
+  "Pacte", "Union", "Plume", "Noble", "Vigie", "Silex", "Eclat", "Forge",
+  // 4 lettres -> + 3 chiffres + 1 symbole = 8 caractères (ex: Faso724!, Lion482#)
+  "Faso", "Lion", "Dune", "Oryx", "Echo",
+  // 6 lettres -> + 2 chiffres + 1 symbole = 9 caractères (ex: Baobab39!, Soleil75!)
+  "Baobab", "Savane", "Aurore", "Etoile", "Soleil", "Zenith", "Karite",
+  "Faucon", "Mangue", "Saphir", "Source", "Racine", "Rameau", "Mirage",
+  "Desert", "Cactus", "Argile", "Espoir", "Fierte", "Verite", "Audace",
+  "Clarte", "Devoir", "Regard", "Vision", "Impact", "Presse", "Avenir",
+  "Relais", "Repere", "Signal", "Viaduc", "Reseau",
+];
 
-  const pick = (charset: string) => {
+const MEMORABLE_SYMBOLS = ["!", "#", "@", "$", "*"];
+
+// Générateur de mot de passe mémorisable court (8 à 9 caractères) : 1 mot familier + chiffres + 1 symbole
+// Exemples : Sahel48!, Faso724!, Baobab39!, Volta62#
+function generateSecurePassword(): string {
+  const n = SHORT_MEMORABLE_WORDS.length;
+  const randInt = (max: number): number => {
     if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
       const array = new Uint32Array(1);
       window.crypto.getRandomValues(array);
-      return charset[array[0] % charset.length];
+      return array[0] % max;
     }
-    return charset[Math.floor(Math.random() * charset.length)];
+    return Math.floor(Math.random() * max);
   };
 
-  const initial = [pick(upper), pick(lower), pick(digits), pick(symbols)];
-  for (let i = 4; i < length; i++) {
-    initial.push(pick(all));
+  const word = SHORT_MEMORABLE_WORDS[randInt(n)];
+  const sym = MEMORABLE_SYMBOLS[randInt(MEMORABLE_SYMBOLS.length)];
+
+  let numStr = '';
+  if (word.length <= 4) {
+    numStr = String(100 + randInt(900)); // 3 chiffres pour atteindre 8 caractères
+  } else {
+    numStr = String(12 + randInt(87));  // 2 chiffres (8 caractères pour 5 lettres, 9 pour 6 lettres)
   }
 
-  for (let i = initial.length - 1; i > 0; i--) {
-    let j: number;
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
-      const array = new Uint32Array(1);
-      window.crypto.getRandomValues(array);
-      j = array[0] % (i + 1);
-    } else {
-      j = Math.floor(Math.random() * (i + 1));
-    }
-    [initial[i], initial[j]] = [initial[j], initial[i]];
-  }
-
-  return initial.join('');
+  return `${word}${numStr}${sym}`;
 }
 
 export default function AdminUsersPage() {
@@ -155,15 +163,21 @@ export default function AdminUsersPage() {
     loadUsers();
   }, [loadUsers]);
 
+  // Gestion du changement de rôle avec auto-remplissage de la fonction / titre rédactionnel
+  const handleRoleChange = (newRole: BackendAdminRole) => {
+    setFormRole(newRole);
+    setFormTitle(DEFAULT_ROLE_TITLES[newRole] || '');
+  };
+
   // Open Create Modal
   const handleOpenCreate = () => {
     setEditingUser(null);
     setFormName('');
     setFormEmail('');
     setFormRole('journalist');
-    setFormTitle('');
+    setFormTitle(DEFAULT_ROLE_TITLES['journalist']); // Auto-renseigné par défaut mais modifiable
     setFormAvatar('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80');
-    setFormPassword(generateSecurePassword(14));
+    setFormPassword(generateSecurePassword());
     setShowPassword(true);
     setCopiedPassword(false);
     setFormStatus('active');
@@ -173,11 +187,13 @@ export default function AdminUsersPage() {
 
   // Open Edit Modal
   const handleOpenEdit = (user: AdminUserDTO) => {
+    const userRole = normalizeRoleCode(user.role);
     setEditingUser(user);
     setFormName(user.name);
     setFormEmail(user.email);
-    setFormRole(normalizeRoleCode(user.role));
-    setFormTitle(user.title || '');
+    setFormRole(userRole);
+    // Conserve le titre personnalisé existant ou propose le titre par défaut du rôle s'il était vide
+    setFormTitle(user.title?.trim() || DEFAULT_ROLE_TITLES[userRole] || '');
     setFormAvatar(user.avatar || '');
     setFormPassword(''); // Empty password = keep existing
     setShowPassword(false);
@@ -236,7 +252,7 @@ export default function AdminUsersPage() {
         }
       } else {
         // Mode Création
-        const passwordToSend = formPassword.trim() || generateSecurePassword(14);
+        const passwordToSend = formPassword.trim() || generateSecurePassword();
         await usersApi.createUser({
           name: formName.trim(),
           email: formEmail.trim().toLowerCase(),
@@ -875,20 +891,6 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
-              {/* Title / Function */}
-              <div>
-                <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
-                  Fonction / Titre rédactionnel
-                </label>
-                <input
-                  type="text"
-                  value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="ex: Reporter Énergie & Chantiers Nationaux"
-                  className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
-                />
-              </div>
-
               {/* Role Selection */}
               <div>
                 <label className="block text-xs font-mono uppercase font-bold text-[#141414] mb-1">
@@ -896,7 +898,7 @@ export default function AdminUsersPage() {
                 </label>
                 <select
                   value={formRole}
-                  onChange={(e) => setFormRole(e.target.value as BackendAdminRole)}
+                  onChange={(e) => handleRoleChange(e.target.value as BackendAdminRole)}
                   className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded bg-[#faf8f5] focus:outline-none focus:border-[#087443] font-bold cursor-pointer"
                 >
                   {isCurrentUserSuperadmin && (
@@ -913,11 +915,38 @@ export default function AdminUsersPage() {
                 </p>
               </div>
 
+              {/* Title / Function (Auto-renseigné selon le rôle, mais entièrement modifiable) */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-mono uppercase font-bold text-[#141414]">
+                    Fonction / Titre rédactionnel
+                  </label>
+                  {formTitle !== DEFAULT_ROLE_TITLES[formRole] && (
+                    <button
+                      type="button"
+                      onClick={() => setFormTitle(DEFAULT_ROLE_TITLES[formRole])}
+                      className="text-[10px] font-mono text-[#087443] hover:underline cursor-pointer flex items-center gap-1"
+                      title="Rétablir l'intitulé par défaut du rôle"
+                    >
+                      <RefreshCw size={10} />
+                      <span>Rétablir titre standard</span>
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder={DEFAULT_ROLE_TITLES[formRole]}
+                  className="w-full px-3 py-2 text-xs font-mono border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
+                />
+              </div>
+
               {/* Password */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="block text-xs font-mono uppercase font-bold text-[#141414]">
-                    {editingUser ? 'Mot de passe du compte' : 'Mot de passe sécurisé auto-généré *'}
+                    {editingUser ? 'Mot de passe du compte' : 'Mot de passe mémorisable auto-généré *'}
                   </label>
                   {editingUser ? (
                     formPassword ? (
@@ -935,20 +964,20 @@ export default function AdminUsersPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          setFormPassword(generateSecurePassword(14));
+                          setFormPassword(generateSecurePassword());
                           setShowPassword(true);
                         }}
                         className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[#087443] hover:text-[#065b34] cursor-pointer"
                       >
                         <Sparkles size={12} />
-                        <span>Générer un nouveau mot de passe</span>
+                        <span>Générer un mot de passe mémorisable</span>
                       </button>
                     )
                   ) : (
                     <button
                       type="button"
                       onClick={() => {
-                        setFormPassword(generateSecurePassword(14));
+                        setFormPassword(generateSecurePassword());
                         setShowPassword(true);
                       }}
                       className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[#087443] hover:text-[#065b34] cursor-pointer"
@@ -1001,20 +1030,11 @@ export default function AdminUsersPage() {
                   <span className="text-[10px] font-mono text-rose-600 mt-1 block">{fieldErrors.password}</span>
                 )}
 
-                {!editingUser && (
-                  <div className="p-2.5 bg-[#087443]/10 border border-[#087443]/25 rounded flex items-start gap-2 text-[11px] text-[#087443] mt-2">
-                    <Mail size={15} className="shrink-0 mt-0.5 text-[#087443]" />
-                    <span>
-                      <strong>Envoi automatique des accès :</strong> Les identifiants (email et mot de passe auto-généré ci-dessus) ainsi que le lien direct vers le Desk seront automatiquement envoyés par email au destinataire depuis <code>info@burkina-news.com</code> (via Resend).
-                    </span>
-                  </div>
-                )}
-
                 {editingUser && formPassword && (
                   <div className="p-2.5 bg-amber-50 border border-amber-300 rounded flex items-start gap-2 text-[11px] text-amber-900 mt-2">
                     <Mail size={15} className="shrink-0 mt-0.5 text-amber-700" />
                     <span>
-                      <strong>⚡ Nouveau mot de passe défini :</strong> Lors de l'enregistrement, un email contenant ces nouveaux identifiants sera immédiatement expédié à <strong>{formEmail || "l'utilisateur"}</strong> depuis <code>info@burkina-news.com</code> (via Resend). Toutes ses sessions actives actuelles seront automatiquement révoquées.
+                      <strong>⚡ Nouveau mot de passe mémorisable défini :</strong> Lors de l'enregistrement, un email contenant ces nouveaux identifiants sera immédiatement expédié à <strong>{formEmail || "l'utilisateur"}</strong> depuis <code>info@burkina-news.com</code> (via Resend). Toutes ses sessions actives actuelles seront automatiquement révoquées.
                     </span>
                   </div>
                 )}

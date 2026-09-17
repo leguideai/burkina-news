@@ -175,6 +175,26 @@ export function getRoleLabel(role: string, lang: 'fr' | 'en' = 'fr'): string {
   return lang === 'en' ? info.labelEn : info.labelFr;
 }
 
+/**
+ * Titres et fonctions rédactionnelles par défaut associées à chaque rôle déontologique
+ */
+export const DEFAULT_ROLE_TITLES: Record<BackendAdminRole, string> = {
+  superadmin: 'Superadministrateur Système & Gouvernance',
+  editorial_director: 'Directeur de la Rédaction & des Publications',
+  journalist: 'Grand Reporter & Journaliste d’Investigation',
+  tracker_data: 'Analyste Données & Chef de Projet Tracker PND',
+  desk_ai: 'Responsable Desk IA & Veille Documentaire',
+  auditor: 'Auditeur Déontologique & Contrôle Qualité Factuelle',
+};
+
+/**
+ * Récupère la fonction / titre rédactionnel par défaut correspondant à un rôle
+ */
+export function getDefaultTitleForRole(role: string): string {
+  const code = normalizeRoleCode(role);
+  return DEFAULT_ROLE_TITLES[code] || 'Membre de la Rédaction';
+}
+
 // ─── Médias & Stockage Cloudflare R2 / Local (Semaine 3) ─────────────────
 
 export type MediaFolder = 'avatars' | 'content' | 'sources' | 'projects' | 'issues';
