@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 export interface ActiveEditorConfig {
-  sectionId: 'article' | 'project' | 'indicator' | 'fil' | 'issue' | 'none';
+  sectionId: 'article' | 'project' | 'indicator' | 'fil' | 'issue' | 'rubriques' | 'none';
   sectionTitle: string;
   canInsert: boolean;
   currentData?: Record<string, any>;

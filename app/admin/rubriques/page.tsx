@@ -32,6 +32,7 @@ import { Category, Article, Project, SubCategory, CategoryCode } from '@/data/ty
 import { categoriesApi, CategoryDTO, SubCategoryDTO, normalizeRoleCode } from '@/lib/api';
 import { useAdminAuth } from '@/components/admin/AuthGuard';
 import { useToast } from '@/components/admin/Toast';
+import { useMicum } from '@/components/admin/MicumContext';
 import { SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
 
@@ -184,6 +185,35 @@ export default function AdminRubriquesPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Register rubriques page data with MICUM AI assistant context
+  const { registerEditor, updateEditorData } = useMicum();
+
+  useEffect(() => {
+    const unregister = registerEditor({
+      sectionId: 'rubriques',
+      sectionTitle: 'Rubriques & Sous-rubriques',
+      canInsert: false,
+      currentData: {
+        categories: categories.map(c => ({ code: c.code, nameFr: c.nameFr, nameEn: c.nameEn })),
+        subCategories: subCategories.map(s => ({ code: s.code, nameFr: s.nameFr, nameEn: s.nameEn, categoryCode: s.categoryCode })),
+        totalCategories: categories.length,
+        totalSubCategories: subCategories.length,
+      },
+    });
+    return unregister;
+  }, [registerEditor, categories.length, subCategories.length]);
+
+  useEffect(() => {
+    if (categories.length > 0 || subCategories.length > 0) {
+      updateEditorData({
+        categories: categories.map(c => ({ code: c.code, nameFr: c.nameFr, nameEn: c.nameEn })),
+        subCategories: subCategories.map(s => ({ code: s.code, nameFr: s.nameFr, nameEn: s.nameEn, categoryCode: s.categoryCode })),
+        totalCategories: categories.length,
+        totalSubCategories: subCategories.length,
+      });
+    }
+  }, [categories, subCategories, updateEditorData]);
 
   // Compute stats per subcategory dynamically
   const subCategoryStats = useMemo(() => {

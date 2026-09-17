@@ -26,6 +26,7 @@
   - **Phase F3 :** Médiathèque & Téléversement Cloudflare R2 / Local, Upload d'avatars.
   - **🚀 DevOps :** Déploiement Vercel (Frontend) synchronisé avec Railway (Backend Go + PostgreSQL) et Cloudflare R2 (Stockage CDN).
   - **Jalon F4.0 :** Raccordement réel de la gestion des Rubriques & Sous-rubriques (`/admin/rubriques`) à l'API Go (`categoriesApi`) avec persistance PostgreSQL et création dynamique pour alimenter la rédaction d'articles.
+  - **Jalon F4.0.1 :** Enrichissement contextuel de MICUM pour la page Rubriques (`registerEditor` + `updateEditorData`) et ajout de la capacité d'annulation (abort) des requêtes IA en cours sur tout le back-office.
 - **Phase prête à être traitée :** **Phase F4.1 — Raccordement du Module Articles & Grandes Enquêtes d'Investigation** à l'API Go réelle (synchronisée avec la Semaine 4 du Backend).
 
 ---
@@ -202,6 +203,31 @@
       - Préservation du lien `Rédiger` permettant aux journalistes de lancer immédiatement la rédaction d'un article rattaché à la sous-rubrique.
   - `app/admin/page.tsx` :
     - Adaptation du lien du dashboard selon les droits de l'utilisateur connecté (`Gérer les rubriques →` pour le Superadmin et la Direction Éditoriale, `Consulter les rubriques →` pour les autres membres du desk).
+- **Vérifications :**
+  - Compilation TypeScript sans faute (`npx tsc --noEmit` = code 0).
+- **État :** Validé et terminé.
+
+---
+
+### 🤖 Jalon F4.0.1 : Enrichissement Contextuel MICUM & Capacité d'Annulation des Requêtes IA
+- **Date :** 17 Septembre 2026
+- **Objectif :** Doter MICUM (copilote IA du back-office) d'une conscience contextuelle des données réelles de la page Rubriques et permettre à tout utilisateur d'annuler une requête IA en cours sur n'importe quelle page.
+- **Fichiers modifiés :**
+  - `components/admin/MicumContext.tsx` :
+    - Extension du type union `sectionId` dans `ActiveEditorConfig` avec l'ajout de `'rubriques'`.
+  - `app/admin/rubriques/page.tsx` :
+    - Import de `useMicum` depuis `MicumContext`.
+    - Appel de `registerEditor()` via `useEffect` pour pousser les données live (catégories, sous-catégories, compteurs) vers MICUM au chargement.
+    - Appel de `updateEditorData()` à chaque changement des catégories/sous-catégories pour maintenir la synchronisation temps réel.
+  - `components/admin/MicumSidePanel.tsx` :
+    - Import de l'icône `Square` (lucide-react) pour le bouton d'arrêt.
+    - Ajout d'un `AbortController` ref (`abortControllerRef`) pour piloter l'annulation des requêtes `fetch`.
+    - Intégration du `signal` du contrôleur dans le `fetch()` de `handleSend`.
+    - Nouvelle fonction `handleAbort()` pour annuler la requête en cours et nettoyer le contrôleur.
+    - Gestion propre de l'`AbortError` dans le `catch` : message dédié `⏹ Requête annulée par l'utilisateur` au lieu d'un message d'erreur.
+    - **UI — Bouton Stop double :**
+      - Dans la barre de progression (loading indicator) : bouton rouge « Arrêter » avec icône `Square`.
+      - Le bouton d'envoi (coin droit du textarea) se transforme en bouton stop rouge pendant le chargement, remplaçant la flèche par un carré plein.
 - **Vérifications :**
   - Compilation TypeScript sans faute (`npx tsc --noEmit` = code 0).
 - **État :** Validé et terminé.

@@ -14,7 +14,8 @@ import {
   Paperclip,
   Sparkles,
   FileCheck,
-  AlertCircle
+  AlertCircle,
+  Square
 } from 'lucide-react';
 import { useToast } from '@/components/admin/Toast';
 import MicumIcon from '@/components/admin/MicumIcon';
@@ -52,6 +53,7 @@ export default function MicumSidePanel() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const { success, error, warning, info } = useToast();
 
   // Fetch AI provider info
@@ -297,6 +299,14 @@ export default function MicumSidePanel() {
     const text = overrideText || inputText.trim();
     if (!text && attachedFiles.length === 0) return;
 
+    // Cancel any previous in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       role: 'user',
@@ -311,6 +321,7 @@ export default function MicumSidePanel() {
       const res = await fetch('/api/admin/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           action: 'chat',
           payload: {
@@ -362,15 +373,34 @@ export default function MicumSidePanel() {
       setMessages(prev => [...prev, assistantMsg]);
       setAttachedFiles([]);
     } catch (err: any) {
-      const errMsg: ChatMessage = {
-        id: `msg-${Date.now()}-e`,
-        role: 'assistant',
-        content: `❌ ${err.message || 'Impossible de contacter Micum.'}`,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errMsg]);
+      // Don't show error for user-initiated aborts
+      if (err.name === 'AbortError') {
+        const abortMsg: ChatMessage = {
+          id: `msg-${Date.now()}-abort`,
+          role: 'assistant',
+          content: '⏹ Requête annulée par l\'utilisateur.',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, abortMsg]);
+      } else {
+        const errMsg: ChatMessage = {
+          id: `msg-${Date.now()}-e`,
+          role: 'assistant',
+          content: `❌ ${err.message || 'Impossible de contacter Micum.'}`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errMsg]);
+      }
     } finally {
+      abortControllerRef.current = null;
       setIsLoading(false);
+    }
+  };
+
+  const handleAbort = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
   };
 
@@ -621,9 +651,19 @@ export default function MicumSidePanel() {
           ))}
 
           {isLoading && (
-            <div className="flex items-center gap-2 text-xs font-mono text-[#087443] bg-emerald-50 p-3 rounded-lg border border-emerald-200 animate-pulse">
-              <Loader2 size={14} className="animate-spin" />
-              <span>Micum analyse la demande pour la section {resolvedSection.sectionTitle}...</span>
+            <div className="flex items-center justify-between text-xs font-mono text-[#087443] bg-emerald-50 p-3 rounded-lg border border-emerald-200 animate-pulse">
+              <div className="flex items-center gap-2">
+                <Loader2 size={14} className="animate-spin" />
+                <span>Micum analyse la demande pour la section {resolvedSection.sectionTitle}...</span>
+              </div>
+              <button
+                onClick={handleAbort}
+                className="flex items-center gap-1 text-[11px] font-mono text-red-600 hover:text-red-800 hover:bg-red-50 border border-red-300 px-2 py-0.5 rounded cursor-pointer transition-colors shrink-0 ml-2"
+                title="Arrêter la requête en cours"
+              >
+                <Square size={10} className="fill-current" />
+                <span>Arrêter</span>
+              </button>
             </div>
           )}
 
@@ -681,15 +721,26 @@ export default function MicumSidePanel() {
               className="flex-1 max-h-28 py-1.5 px-2 text-xs font-mono resize-none focus:outline-none placeholder:text-[#a8a29e]"
             />
 
-            <button
-              type="button"
-              onClick={() => handleSend()}
-              disabled={isLoading || (!inputText.trim() && attachedFiles.length === 0)}
-              className="p-2 bg-[#087443] text-white hover:bg-[#065b35] disabled:opacity-40 disabled:hover:bg-[#087443] rounded-lg transition-colors cursor-pointer shrink-0 disabled:cursor-not-allowed"
-              title="Envoyer à Micum"
-            >
-              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <ArrowUp size={16} />}
-            </button>
+            {isLoading ? (
+              <button
+                type="button"
+                onClick={handleAbort}
+                className="p-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors cursor-pointer shrink-0"
+                title="Arrêter la requête"
+              >
+                <Square size={16} className="fill-current" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSend()}
+                disabled={!inputText.trim() && attachedFiles.length === 0}
+                className="p-2 bg-[#087443] text-white hover:bg-[#065b35] disabled:opacity-40 disabled:hover:bg-[#087443] rounded-lg transition-colors cursor-pointer shrink-0 disabled:cursor-not-allowed"
+                title="Envoyer à Micum"
+              >
+                <ArrowUp size={16} />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center justify-between text-[10px] font-mono text-[#8a8174] px-1 pt-1.5">
