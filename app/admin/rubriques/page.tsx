@@ -19,7 +19,6 @@ import {
   Eye,
   EyeOff,
   Layers,
-  Compass,
   TrendingUp,
   BookMarked,
   Newspaper,
@@ -30,7 +29,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Category, Article, Project, SubCategory, CategoryCode } from '@/data/types';
-import { SUB_CATEGORIES as defaultSubCategories, JOURNAL_PRODUCTS, isSubCategoryActive } from '@/data/mock/referentiel';
+import { SUB_CATEGORIES as defaultSubCategories, isSubCategoryActive } from '@/data/mock/referentiel';
 import { categories as defaultCategories } from '@/data/mock/categories';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonStat } from '@/components/admin/Skeleton';
@@ -44,10 +43,24 @@ export default function AdminRubriquesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedView, setSelectedView] = useState<string>('all');
 
-  // Category Modal State
+  // Category Modal State (CRUD Dynamique Rubriques)
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
-  const [formData, setFormData] = useState<Partial<Category>>({});
+  const [categoryFormData, setCategoryFormData] = useState<Partial<Category>>({
+    code: '',
+    nameFr: '',
+    nameEn: '',
+    descriptionFr: '',
+    descriptionEn: '',
+    color: '#087443',
+  });
+  const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+  const [deletingCategoryStats, setDeletingCategoryStats] = useState<{ subCatsCount: number; articlesCount: number }>({
+    subCatsCount: 0,
+    articlesCount: 0,
+  });
 
   // SubCategory Modal State (CRUD Dynamique)
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
@@ -138,47 +151,126 @@ export default function AdminRubriquesPage() {
     return subCategories.length - activeSubCatsCount;
   }, [subCategories.length, activeSubCatsCount]);
 
-  // Open Edit Category Modal
-  const handleOpenEdit = (cat: Category) => {
-    setEditingCategory(cat);
-    setFormData({ ...cat });
-    setRegardFr(defaultRegards[cat.code]?.fr || cat.descriptionFr);
-    setRegardEn(defaultRegards[cat.code]?.en || cat.descriptionEn);
+  // Open Create Category Modal
+  const handleOpenCreateCategory = () => {
+    setEditingCategory(null);
+    setCategoryFormData({
+      code: '',
+      nameFr: '',
+      nameEn: '',
+      descriptionFr: '',
+      descriptionEn: '',
+      color: '#087443',
+    });
+    setRegardFr('');
+    setRegardEn('');
     setActiveTab('fr');
+    setIsCategoryModalOpen(true);
   };
 
-  // Submit Category Update
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Open Edit Category Modal
+  const handleOpenEditCategory = (cat: Category) => {
+    setEditingCategory(cat);
+    setCategoryFormData({ ...cat });
+    setRegardFr(defaultRegards[cat.code]?.fr || cat.descriptionFr || '');
+    setRegardEn(defaultRegards[cat.code]?.en || cat.descriptionEn || '');
+    setActiveTab('fr');
+    setIsCategoryModalOpen(true);
+  };
+
+  // Submit Category Create or Update
+  const handleSubmitCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingCategory) return;
+    if (!categoryFormData.nameFr?.trim()) {
+      warning('Champ requis', 'Le nom en français de la rubrique est requis.');
+      return;
+    }
 
     try {
+      setIsSubmittingCategory(true);
+      const isEdit = Boolean(editingCategory);
+      const action = isEdit ? 'update_category' : 'create_category';
+
       const payload = {
-        ...formData,
-        code: editingCategory.code,
+        ...categoryFormData,
+        code: isEdit ? editingCategory!.code : (categoryFormData.code?.trim() || undefined),
       };
 
       const res = await fetch('/api/admin/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'update_category',
+          action,
           payload
         })
       });
 
       const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de la mise à jour.');
+      if (!res.ok || result.error) throw new Error(result.error || "Erreur lors de l'enregistrement.");
+
+      if (regardFr || regardEn) {
+        const codeKey = result.item?.code || payload.code;
+        if (codeKey) {
+          defaultRegards[codeKey] = {
+            fr: regardFr || categoryFormData.descriptionFr || '',
+            en: regardEn || categoryFormData.descriptionEn || ''
+          };
+        }
+      }
 
       success(
-        'Cadrage éditorial actualisé',
-        `La rubrique "${formData.nameFr}" a été mise à jour avec succès.`
+        isEdit ? 'Rubrique actualisée' : 'Rubrique créée',
+        result.message || `La rubrique "${categoryFormData.nameFr}" a été enregistrée avec succès.`
       );
 
+      setIsCategoryModalOpen(false);
       setEditingCategory(null);
       loadData();
     } catch (err: any) {
       error('Erreur', err.message);
+    } finally {
+      setIsSubmittingCategory(false);
+    }
+  };
+
+  // Prompt delete Category
+  const handlePromptDeleteCategory = (cat: Category) => {
+    const subCats = subCategories.filter(sc => sc.categoryCode === cat.code);
+    const subCatCodes = new Set(subCats.map(sc => sc.code));
+    const catArticles = articles.filter(a => a.category === cat.code || (a.subCategory && subCatCodes.has(a.subCategory)));
+    setDeletingCategory(cat);
+    setDeletingCategoryStats({
+      subCatsCount: subCats.length,
+      articlesCount: catArticles.length,
+    });
+  };
+
+  // Confirm delete Category
+  const handleConfirmDeleteCategory = async (force = false) => {
+    if (!deletingCategory) return;
+    try {
+      const res = await fetch('/api/admin/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete_category',
+          payload: { code: deletingCategory.code, force }
+        })
+      });
+
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        throw new Error(result.error || 'Erreur lors de la suppression.');
+      }
+
+      success('Rubrique supprimée', `La rubrique "${deletingCategory.nameFr}" a été supprimée.`);
+      setDeletingCategory(null);
+      if (selectedView === deletingCategory.code) {
+        setSelectedView('all');
+      }
+      loadData();
+    } catch (err: any) {
+      error('Suppression impossible', err.message);
     }
   };
 
@@ -279,7 +371,7 @@ export default function AdminRubriquesPage() {
   };
 
   const displayedCategories = useMemo(() => {
-    if (selectedView === 'all' || selectedView === 'produits') {
+    if (selectedView === 'all') {
       return categories;
     }
     return categories.filter(c => c.code === selectedView);
@@ -298,30 +390,31 @@ export default function AdminRubriquesPage() {
             <span>Architecture Éditoriale & Référentiel Dynamique</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
-            Gouvernance des 6 Rubriques & {subCategories.length} Sous-rubriques
+            Gestion des Rubriques & Sous-rubriques
           </h1>
           <p className="text-xs font-mono text-[#5a554e] mt-0.5">
-            Gestion dynamique et CRUD des sous-rubriques (conforme au brief éditorial et à la charte documentaire).
+            Gestion dynamique et CRUD complet des rubriques mères et sous-rubriques.
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
+            onClick={handleOpenCreateCategory}
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
+          >
+            <FolderPlus size={15} />
+            <span>+ Nouvelle Rubrique</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => handleOpenCreateSubCategory()}
             className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#087443] text-[#087443] hover:bg-[#087443] hover:text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
           >
-            <FolderPlus size={15} />
+            <Plus size={15} />
             <span>+ Nouvelle Sous-rubrique</span>
           </button>
-
-          <Link
-            href="/admin/articles/nouveau"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
-          >
-            <Plus size={15} />
-            <span>Nouvel Article</span>
-          </Link>
         </div>
       </div>
 
@@ -333,11 +426,11 @@ export default function AdminRubriquesPage() {
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white border border-[#e6dfd5] p-4">
-            <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Rubriques Piliers</div>
+            <div className="text-[11px] font-mono uppercase text-[#736c62] font-semibold">Rubriques Actives</div>
             <div className="text-2xl font-mono font-bold text-[#087443] mt-1">
-              {categories.length} / 6
+              {categories.length}
             </div>
-            <div className="text-[10px] font-mono text-[#736c62] mt-0.5">Ensemble éditorial clos</div>
+            <div className="text-[10px] font-mono text-[#736c62] mt-0.5">Gérées dynamiquement</div>
           </div>
 
           <div className="bg-white border border-[#e6dfd5] p-4">
@@ -361,7 +454,7 @@ export default function AdminRubriquesPage() {
             <div className="text-2xl font-mono font-bold text-[#c2410c] mt-1">
               {pendingSubCatsCount}
             </div>
-            <div className="text-[10px] font-mono text-[#c2410c] mt-0.5">Masquage automatique Alfred (&lt; 2 articles)</div>
+            <div className="text-[10px] font-mono text-[#c2410c] mt-0.5">Masquage automatique (&lt; 2 articles)</div>
           </div>
         </div>
       )}
@@ -378,7 +471,7 @@ export default function AdminRubriquesPage() {
               : 'bg-white border border-[#e6dfd5] text-[#141414] hover:border-[#087443]'
           }`}
         >
-          Toutes les Rubriques (6)
+          Toutes les Rubriques ({categories.length})
         </button>
 
         {categories.map(cat => (
@@ -395,32 +488,20 @@ export default function AdminRubriquesPage() {
           </button>
         ))}
 
-        <button
-          onClick={() => setSelectedView('produits')}
-          className={`px-3 py-1.5 rounded font-bold transition-colors cursor-pointer ml-auto whitespace-nowrap ${
-            selectedView === 'produits' 
-              ? 'bg-[#1e3a5f] text-white' 
-              : 'bg-[#faf8f5] border border-[#1e3a5f] text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white'
-          }`}
-        >
-          <Compass size={12} className="inline mr-1" />
-          Les 4 Produits d'Information
-        </button>
       </div>
 
       {/* ──────────────────────────────────────────────────────────
-          4. ARCHITECTURE RULE CALLOUT (Alfred & Samba Brief)
+          4. ARCHITECTURE RULE CALLOUT
       ────────────────────────────────────────────────────────── */}
       <div className="bg-[#f4eee3] border border-[#e6dfd5] p-4 rounded text-xs font-mono text-[#5a554e] flex items-start gap-3">
         <Info size={18} className="text-[#087443] shrink-0 mt-0.5" />
         <div className="space-y-1">
           <span className="font-bold text-[#087443] uppercase tracking-wider block">
-            Règle de Gouvernance Éditoriale (Brief Alfred v5 & Note Samba) :
+            Gouvernance Éditoriale & Architecture Dynamique :
           </span>
           <p className="font-serif text-xs leading-relaxed text-[#333]">
-            1. <strong>Sous-rubriques fermées :</strong> Aucune nouvelle sous-rubrique ne peut être créée en dehors des 24 définies dans le référentiel officiel.<br />
-            2. <strong>Règle d'activation automatique :</strong> Une sous-rubrique est <em>masquée</em> au public tant qu'elle compte moins de 2 articles publiés. Dès le 2ᵉ article, elle apparaît automatiquement en onglet et ne disparaît plus.<br />
-            3. <strong>Séparation stricte :</strong> <em>Le Tracker</em>, <em>RELANCE</em>, <em>Les Numéros</em> et <em>Le Fil</em> sont des <strong>Produits</strong> documentaires avec leurs propres sous-menus, et non des sous-rubriques.
+            1. <strong>CRUD dynamique des rubriques et sous-rubriques :</strong> Vous pouvez créer, modifier et supprimer des rubriques mères et des sous-rubriques selon les besoins de la rédaction.<br />
+            2. <strong>Règle d'activation automatique :</strong> Une sous-rubrique est <em>masquée</em> au public tant qu'elle compte moins de 2 articles publiés. Dès le 2ᵉ article, elle apparaît automatiquement en onglet et ne disparaît plus.
           </p>
         </div>
       </div>
@@ -428,8 +509,7 @@ export default function AdminRubriquesPage() {
       {/* ──────────────────────────────────────────────────────────
           5. RUBRIQUES LISTING & SUB-RUBRICS TABLES
       ────────────────────────────────────────────────────────── */}
-      {selectedView !== 'produits' && (
-        <div className="space-y-8">
+      <div className="space-y-8">
           {displayedCategories.map(cat => {
             const catArticles = articles.filter(a => a.category === cat.code || (cat.code === 'histoire' && a.category === 'idees'));
             const subCats = subCategories.filter(sc => sc.categoryCode === cat.code);
@@ -457,21 +537,33 @@ export default function AdminRubriquesPage() {
 
                   <div className="flex items-center gap-2 shrink-0">
                     <Link
-                      href={`/fr/${cat.slug}`}
+                      href={`/fr/${cat.slug || cat.code}`}
                       target="_blank"
                       className="px-3 py-1.5 bg-white border border-[#e6dfd5] hover:border-[#087443] hover:text-[#087443] text-xs font-mono font-bold rounded inline-flex items-center gap-1.5 transition-colors"
                     >
                       <ExternalLink size={13} />
-                      <span>Voir en ligne</span>
+                      <span>Voir</span>
                     </Link>
 
                     <button
-                      onClick={() => handleOpenEdit(cat)}
+                      type="button"
+                      onClick={() => handleOpenEditCategory(cat)}
                       className="px-3 py-1.5 bg-[#087443] hover:bg-[#075f37] text-white text-xs font-mono font-bold rounded inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Edit3 size={13} />
-                      <span>Cadrer la rubrique</span>
+                      <span>Modifier / Cadrer</span>
                     </button>
+
+                    <Tooltip position="top" content="Supprimer la rubrique">
+                      <button
+                        type="button"
+                        onClick={() => handlePromptDeleteCategory(cat)}
+                        className="p-1.5 text-[#736c62] hover:text-red-600 hover:bg-red-50 rounded border border-[#e6dfd5] hover:border-red-200 transition-colors cursor-pointer"
+                        aria-label={`Supprimer ${cat.nameFr}`}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -603,96 +695,26 @@ export default function AdminRubriquesPage() {
             );
           })}
         </div>
-      )}
 
       {/* ──────────────────────────────────────────────────────────
-          6. THE 4 INDEPENDENT PRODUCTS SECTION
+          7. MODAL DYNAMIQUE : CRÉATION / ÉDITION RUBRIQUE
       ────────────────────────────────────────────────────────── */}
-      {(selectedView === 'all' || selectedView === 'produits') && (
-        <div className="space-y-4 pt-4 border-t-2 border-[#141414]">
-          <div className="flex items-center gap-2">
-            <Compass size={18} className="text-[#1e3a5f]" />
-            <h2 className="text-xl font-serif font-bold text-[#141414]">
-              Les 4 Produits d'Information & Leurs Sous-menus Officiels
-            </h2>
-          </div>
-          <p className="text-xs font-mono text-[#5a554e] max-w-3xl">
-            Conformément à la note de synthèse de Samba, ces 4 contenants éditoriaux ne sont pas des rubriques et ne partagent pas le référentiel des 24 sous-rubriques. Chacun possède son propre modèle documentaire et ses filtres dédiés.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            {JOURNAL_PRODUCTS.map(prod => (
-              <div key={prod.code} className="bg-white border-2 border-[#141414] p-5 rounded space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-[#1e3a5f] text-white px-2 py-0.5 rounded">
-                      {prod.badge}
-                    </span>
-                    <h3 className="text-lg font-serif font-bold text-[#141414] mt-2">
-                      {prod.nameFr} <span className="text-xs font-mono text-[#736c62]">({prod.nameEn})</span>
-                    </h3>
-                  </div>
-
-                  <Link
-                    href={prod.hrefFr}
-                    target="_blank"
-                    className="p-1.5 border border-[#e6dfd5] text-[#141414] hover:border-[#1e3a5f] hover:text-[#1e3a5f] rounded"
-                    title={`Voir ${prod.nameFr} en direct`}
-                  >
-                    <ExternalLink size={14} />
-                  </Link>
-                </div>
-
-                <div>
-                  <h4 className="text-[10px] font-mono uppercase font-bold text-[#736c62] mb-1.5">
-                    {prod.hasSubMenus ? `Sous-menus officiels (${prod.subMenus.length}) :` : 'Navigation produit :'}
-                  </h4>
-
-                  {prod.hasSubMenus ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {prod.subMenus.map(sm => (
-                        <span 
-                          key={sm.code} 
-                          className="px-2 py-1 bg-[#faf8f5] border border-[#e6dfd5] text-xs font-mono font-bold text-[#141414] rounded"
-                        >
-                          {sm.labelFr}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs font-serif text-[#736c62] italic">
-                      Flux chronologique unifié sans sous-menu de niveau 2.
-                    </p>
-                  )}
-                </div>
-
-                <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-mono">
-                  <span className="text-[10px] text-[#736c62]">Route publique : {prod.hrefFr}</span>
-                  <Link href={prod.hrefFr} className="text-[#087443] font-bold hover:underline inline-flex items-center gap-1">
-                    Accéder au produit <ChevronRight size={12} />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ──────────────────────────────────────────────────────────
-          7. EDIT CATEGORY FRAMING MODAL
-      ────────────────────────────────────────────────────────── */}
-      {editingCategory && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-white border-t sm:border border-[#141414] rounded-t-xl sm:rounded-none max-w-2xl w-full shadow-2xl overflow-hidden my-0 sm:my-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+      {isCategoryModalOpen && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto"
+        >
+          <div className="bg-white border-t sm:border border-[#141414] rounded-t-xl sm:rounded-none max-w-2xl w-full shadow-2xl overflow-hidden my-0 sm:my-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
             
             {/* Header */}
             <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#087443]">
-                  Cadrage Théorique & Ligne Éditoriale
+                  {editingCategory ? 'Cadrage Théorique & Ligne Éditoriale' : 'Création de Rubrique Pilière'}
                 </span>
                 <h3 className="font-serif font-bold text-lg text-[#141414]">
-                  Rubrique {formData.nameFr}
+                  {editingCategory ? `Rubrique : ${categoryFormData.nameFr || editingCategory.nameFr}` : 'Nouvelle Rubrique'}
                 </h3>
               </div>
 
@@ -720,8 +742,11 @@ export default function AdminRubriquesPage() {
                 </div>
                 <Tooltip position="left" content="Fermer la boîte de dialogue">
                   <button
-                    onClick={() => setEditingCategory(null)}
-                    className="p-1 text-[#736c62] hover:text-[#141414]"
+                    onClick={() => {
+                      setIsCategoryModalOpen(false);
+                      setEditingCategory(null);
+                    }}
+                    className="p-1 text-[#736c62] hover:text-[#141414] cursor-pointer"
                     aria-label="Fermer"
                   >
                     <X size={18} />
@@ -731,31 +756,52 @@ export default function AdminRubriquesPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
+            <form onSubmit={handleSubmitCategory} className="p-4 sm:p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
               {activeTab === 'fr' ? (
                 <div className="space-y-3">
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
-                      Nom de la Rubrique (Français) *
+                      Nom de la Rubrique (Français) <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
-                      value={formData.nameFr || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, nameFr: e.target.value }))}
+                      value={categoryFormData.nameFr || ''}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, nameFr: e.target.value }))}
+                      placeholder="Ex: Économie, Souveraineté, Culture..."
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443] font-serif text-sm font-bold"
                     />
                   </div>
 
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
-                      Descriptif court sous le titre (Français) *
+                      Code Identifiant (Slug) {editingCategory && '(fixe)'}
+                    </label>
+                    <input
+                      type="text"
+                      disabled={Boolean(editingCategory)}
+                      value={editingCategory ? editingCategory.code : (categoryFormData.code || '')}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, code: e.target.value }))}
+                      placeholder={editingCategory ? editingCategory.code : "auto (généré si vide, ex: culture)"}
+                      className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded font-mono text-xs focus:outline-none focus:border-[#087443] disabled:bg-[#f5f5f5] disabled:text-[#736c62]"
+                    />
+                    {!editingCategory && (
+                      <span className="text-[10px] text-[#736c62] block mt-0.5">
+                        Identifiant unique sans accents ni espaces (ex: economie, securite). Laisser vide pour auto-générer.
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
+                      Descriptif court sous le titre (Français) <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       rows={2}
                       required
-                      value={formData.descriptionFr || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, descriptionFr: e.target.value }))}
+                      value={categoryFormData.descriptionFr || ''}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, descriptionFr: e.target.value }))}
+                      placeholder="Brève synthèse affichée en en-tête de la page publique..."
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded focus:outline-none focus:border-[#087443]"
                     />
                   </div>
@@ -786,8 +832,9 @@ export default function AdminRubriquesPage() {
                     </label>
                     <input
                       type="text"
-                      value={formData.nameEn || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, nameEn: e.target.value }))}
+                      value={categoryFormData.nameEn || ''}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, nameEn: e.target.value }))}
+                      placeholder="Ex: Economy, Security, Culture..."
                       className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded focus:outline-none focus:border-[#1e3a5f] bg-white font-serif text-sm font-bold"
                     />
                   </div>
@@ -798,8 +845,9 @@ export default function AdminRubriquesPage() {
                     </label>
                     <textarea
                       rows={2}
-                      value={formData.descriptionEn || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, descriptionEn: e.target.value }))}
+                      value={categoryFormData.descriptionEn || ''}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, descriptionEn: e.target.value }))}
+                      placeholder="Short rubric summary in English..."
                       className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded focus:outline-none focus:border-[#1e3a5f] bg-white"
                     />
                   </div>
@@ -812,6 +860,7 @@ export default function AdminRubriquesPage() {
                       rows={4}
                       value={regardEn}
                       onChange={(e) => setRegardEn(e.target.value)}
+                      placeholder="English translation of the editorial perspective..."
                       className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded bg-white font-serif text-xs"
                     />
                   </div>
@@ -827,14 +876,14 @@ export default function AdminRubriquesPage() {
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
-                      value={formData.color || '#087443'}
-                      onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                      value={categoryFormData.color || '#087443'}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, color: e.target.value }))}
                       className="h-8 w-12 border border-[#e6dfd5] rounded cursor-pointer"
                     />
                     <input
                       type="text"
-                      value={formData.color || '#087443'}
-                      onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                      value={categoryFormData.color || '#087443'}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, color: e.target.value }))}
                       className="flex-1 px-2 py-1.5 border border-[#e6dfd5] rounded font-mono text-xs uppercase"
                     />
                   </div>
@@ -842,13 +891,13 @@ export default function AdminRubriquesPage() {
 
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
-                    Slug de la Route
+                    Route Publique Associée
                   </label>
                   <input
                     type="text"
                     disabled
-                    value={`/fr/${editingCategory.slug}`}
-                    className="w-full px-2 py-1.5 border border-[#e6dfd5] rounded bg-[#f5f5f5] text-[#736c62]"
+                    value={editingCategory ? `/fr/${editingCategory.slug || editingCategory.code}` : `/fr/${categoryFormData.code || '...'}`}
+                    className="w-full px-2 py-1.5 border border-[#e6dfd5] rounded bg-[#f5f5f5] text-[#736c62] font-mono text-xs"
                   />
                 </div>
               </div>
@@ -857,17 +906,31 @@ export default function AdminRubriquesPage() {
               <div className="pt-3 border-t border-[#e6dfd5] flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setEditingCategory(null)}
-                  className="w-full sm:w-auto px-4 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] rounded cursor-pointer text-center"
+                  onClick={() => {
+                    setIsCategoryModalOpen(false);
+                    setEditingCategory(null);
+                  }}
+                  disabled={isSubmittingCategory}
+                  className="w-full sm:w-auto px-4 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] rounded cursor-pointer text-center disabled:opacity-50"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] cursor-pointer text-center"
+                  disabled={isSubmittingCategory}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] cursor-pointer text-center disabled:opacity-50 transition-colors"
                 >
-                  <Check size={14} />
-                  Enregistrer les modifications
+                  {isSubmittingCategory ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} />
+                      {editingCategory ? 'Enregistrer les modifications' : 'Créer la rubrique'}
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -1046,7 +1109,7 @@ export default function AdminRubriquesPage() {
               <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg flex items-start gap-2.5 text-[11px] text-[#736c62]">
                 <Info size={16} className="text-[#1e3a5f] shrink-0 mt-0.5" />
                 <p>
-                  <strong>Règle d'activation automatique (Brief Samba v5) :</strong> Une sous-rubrique devient active et visible sur le site public dès qu'elle compte au minimum <strong>2 articles publiés</strong>.
+                  <strong>Règle d'activation automatique :</strong> Une sous-rubrique devient active et visible sur le site public dès qu'elle compte au minimum <strong>2 articles publiés</strong>.
                 </p>
               </div>
 
@@ -1137,6 +1200,67 @@ export default function AdminRubriquesPage() {
                 className="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded hover:bg-red-700 cursor-pointer transition-colors"
               >
                 {deleteAttachedCount > 0 ? 'Forcer la suppression' : 'Confirmer la suppression'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ──────────────────────────────────────────────────────────
+          8. MODAL DE CONFIRMATION DE SUPPRESSION RUBRIQUE
+      ────────────────────────────────────────────────────────── */}
+      {deletingCategory && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
+        >
+          <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-2xl max-w-md w-full overflow-hidden p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-red-100 text-red-600 rounded-full shrink-0">
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 className="font-serif font-bold text-base text-[#141414]">
+                  Supprimer la rubrique ?
+                </h3>
+                <p className="text-xs text-[#736c62]">
+                  Action sur <strong>{deletingCategory.nameFr}</strong> (code: <code>{deletingCategory.code}</code>)
+                </p>
+              </div>
+            </div>
+
+            {(deletingCategoryStats.subCatsCount > 0 || deletingCategoryStats.articlesCount > 0) ? (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <AlertTriangle size={15} className="text-amber-700 shrink-0" />
+                  <span>Éléments rattachés détectés</span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  Cette rubrique contient <strong>{deletingCategoryStats.subCatsCount} sous-rubrique(s)</strong> et <strong>{deletingCategoryStats.articlesCount} article(s)</strong>.
+                  La suppression forcée retirera définitivement cette rubrique ainsi que l'ensemble de ses sous-rubriques rattachées.
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-[#4b5563]">
+                Cette rubrique ne contient aucune sous-rubrique ni aucun article rattaché. Vous pouvez la supprimer en toute sécurité.
+              </p>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e6dfd5]">
+              <button
+                type="button"
+                onClick={() => setDeletingCategory(null)}
+                className="px-3.5 py-1.5 border border-[#cbd5e1] text-xs font-bold rounded hover:bg-[#faf8f5] cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={() => handleConfirmDeleteCategory(deletingCategoryStats.subCatsCount > 0 || deletingCategoryStats.articlesCount > 0)}
+                className="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded hover:bg-red-700 cursor-pointer transition-colors"
+              >
+                {(deletingCategoryStats.subCatsCount > 0 || deletingCategoryStats.articlesCount > 0) ? 'Forcer la suppression' : 'Confirmer la suppression'}
               </button>
             </div>
           </div>

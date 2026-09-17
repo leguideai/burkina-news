@@ -19,7 +19,8 @@ import {
   X,
   ExternalLink,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  FolderTree
 } from 'lucide-react';
 import Tooltip from '@/components/ui/Tooltip';
 import MicumIcon from '@/components/admin/MicumIcon';
@@ -50,7 +51,7 @@ export default function AdminSidebar({
     { label: "Vue d'ensemble", href: "/admin", icon: LayoutDashboard },
     { label: "Pilotage de la Une", href: "/admin/une", icon: Sparkles, badge: "Vitrine" },
     { label: "Articles & Enquêtes", href: "/admin/articles", icon: FileText },
-    { label: "Section Histoire", href: "/admin/rubriques", icon: Landmark, badge: "Mémoire" },
+    { label: "Rubriques & Sous-rubriques", href: "/admin/rubriques", icon: FolderTree, badge: "Structure" },
     { label: "Tracker des Chantiers", href: "/admin/projets", icon: Construction },
     { label: "Baromètre RELANCE", href: "/admin/indicateurs", icon: TrendingUp },
     { label: "Le Fil Hebdo", href: "/admin/fil", icon: Zap },

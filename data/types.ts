@@ -1,5 +1,5 @@
-// ─── Catégories (les 6 rubriques de la Charte V3) ─────────────────────────
-export type CategoryCode = 'economie' | 'securite' | 'chantiers' | 'agriculture' | 'societe' | 'histoire' | 'idees'
+// ─── Catégories (Rubriques de l'architecture éditoriale) ───────────────────
+export type CategoryCode = 'economie' | 'securite' | 'chantiers' | 'agriculture' | 'societe' | 'histoire' | 'idees' | (string & {})
 
 export interface SubCategory {
   code: string
@@ -20,6 +20,8 @@ export interface Category {
   descriptionEn: string
   slug: string
   color: string
+  icon?: string
+  order?: number
   subCategories?: SubCategory[]
 }
 
