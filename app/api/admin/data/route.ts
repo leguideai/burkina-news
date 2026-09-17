@@ -14,7 +14,7 @@ import {
   saveCategories,
   saveSubCategories
 } from '@/data/admin-store';
-import { Article, Project, ProjectStatus, Indicator, Brief, Issue, Correction, SubCategory } from '@/data/types';
+import { Article, Project, ProjectStatus, Indicator, Brief, Issue, Correction, SubCategory, Category } from '@/data/types';
 
 export async function GET(request: Request) {
   const store = getAdminStore();
@@ -227,15 +227,124 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, message: 'Correction supprimée du registre.' });
       }
 
-      // ── RUBRIQUES / CATEGORIES ────────────────────────────
+      // ── RUBRIQUES / CATEGORIES (CRUD COMPLET) ────────────
+      case 'create_category': {
+        const nameFr = (payload.nameFr || '').trim();
+        if (!nameFr) {
+          return NextResponse.json({ error: 'Le nom en français de la rubrique est requis.' }, { status: 400 });
+        }
+
+        const rawCode = (payload.code || nameFr)
+          .toLowerCase()
+          .trim()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+
+        if (!rawCode) {
+          return NextResponse.json({ error: 'Le code technique ou slug de la rubrique est invalide.' }, { status: 400 });
+        }
+
+        if (store.categories.some(c => c.code === rawCode || c.slug === rawCode)) {
+          return NextResponse.json({ error: `Une rubrique avec le code ou slug "${rawCode}" existe déjà.` }, { status: 400 });
+        }
+
+        const newCategory: Category = {
+          code: rawCode,
+          nameFr,
+          nameEn: (payload.nameEn || nameFr).trim(),
+          descriptionFr: (payload.descriptionFr || '').trim(),
+          descriptionEn: (payload.descriptionEn || '').trim(),
+          slug: rawCode,
+          color: payload.color || '#087443',
+          icon: payload.icon || 'Folder',
+          order: typeof payload.order === 'number' ? payload.order : store.categories.length + 1,
+          subCategories: [],
+        };
+
+        store.categories.push(newCategory);
+        saveCategories(store.categories);
+
+        return NextResponse.json({
+          success: true,
+          message: `Rubrique "${newCategory.nameFr}" créée avec succès.`,
+          item: newCategory,
+          categories: store.categories,
+        });
+      }
+
       case 'update_category': {
         const index = store.categories.findIndex(c => c.code === payload.code);
         if (index === -1) {
           return NextResponse.json({ error: 'Rubrique introuvable.' }, { status: 404 });
         }
-        store.categories[index] = { ...store.categories[index], ...payload };
+
+        const prevCategory = store.categories[index];
+        const updatedCategory: Category = {
+          ...prevCategory,
+          nameFr: payload.nameFr !== undefined ? payload.nameFr.trim() : prevCategory.nameFr,
+          nameEn: payload.nameEn !== undefined ? payload.nameEn.trim() : prevCategory.nameEn,
+          descriptionFr: payload.descriptionFr !== undefined ? payload.descriptionFr.trim() : prevCategory.descriptionFr,
+          descriptionEn: payload.descriptionEn !== undefined ? payload.descriptionEn.trim() : prevCategory.descriptionEn,
+          color: payload.color || prevCategory.color,
+          icon: payload.icon || prevCategory.icon,
+          order: typeof payload.order === 'number' ? payload.order : prevCategory.order,
+          slug: payload.slug ? payload.slug.trim() : prevCategory.slug,
+          subCategories: prevCategory.subCategories || [],
+        };
+
+        store.categories[index] = updatedCategory;
         saveCategories(store.categories);
-        return NextResponse.json({ success: true, message: 'Cadrage de la rubrique mis à jour.', item: store.categories[index] });
+
+        return NextResponse.json({
+          success: true,
+          message: `Rubrique "${updatedCategory.nameFr}" mise à jour avec succès.`,
+          item: updatedCategory,
+          categories: store.categories,
+        });
+      }
+
+      case 'delete_category': {
+        const { code, force } = payload;
+        const index = store.categories.findIndex(c => c.code === code);
+        if (index === -1) {
+          return NextResponse.json({ error: 'Rubrique introuvable.' }, { status: 404 });
+        }
+
+        // Vérifier si des articles ou sous-rubriques sont rattachés
+        const attachedSubCats = store.subCategories.filter(sc => sc.categoryCode === code);
+        const subCatCodes = new Set(attachedSubCats.map(sc => sc.code));
+        const attachedArticles = store.articles.filter(
+          a => a.category === code || (a.subCategory && subCatCodes.has(a.subCategory))
+        );
+
+        if ((attachedArticles.length > 0 || attachedSubCats.length > 0) && !force) {
+          return NextResponse.json({
+            error: `Impossible de supprimer : cette rubrique contient ${attachedSubCats.length} sous-rubrique(s) et ${attachedArticles.length} article(s).`,
+            articlesCount: attachedArticles.length,
+            subCategoriesCount: attachedSubCats.length,
+          }, { status: 409 });
+        }
+
+        const removedName = store.categories[index].nameFr;
+
+        // Supprimer la rubrique
+        store.categories = store.categories.filter(c => c.code !== code);
+        saveCategories(store.categories);
+
+        // Si force: supprimer également les sous-rubriques associées
+        if (attachedSubCats.length > 0) {
+          store.subCategories = store.subCategories.filter(sc => sc.categoryCode !== code);
+          saveSubCategories(store.subCategories);
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: `Rubrique "${removedName}" supprimée avec succès.`,
+          categories: store.categories,
+          subCategories: store.subCategories,
+        });
       }
 
       // ── SOUS-RUBRIQUES (SUB-CATEGORIES) CRUD DYNAMIQUE ─────

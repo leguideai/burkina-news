@@ -150,7 +150,7 @@ export default function MicumSidePanel() {
       return { sectionId: 'users', sectionTitle: "Équipe & Accès", canInsert: false };
     }
     if (pathname.startsWith('/admin/rubriques')) {
-      return { sectionId: 'rubriques', sectionTitle: "Rubriques & Histoire", canInsert: false };
+      return { sectionId: 'rubriques', sectionTitle: "Rubriques & Sous-rubriques", canInsert: false };
     }
 
     return { sectionId: 'general', sectionTitle: "Desk Rédaction", canInsert: false };
