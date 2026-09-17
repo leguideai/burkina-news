@@ -16,17 +16,8 @@ import {
 import Tooltip from '@/components/ui/Tooltip';
 
 export default function MicumBriefing() {
-  const [loading, setLoading] = useState(false);
-  const [briefing, setBriefing] = useState<any>({
-    greeting: 'Bonjour Samba. Voici le tour d’horizon de la rédaction ce matin :',
-    highlights: [
-      '2 signalements lecteurs vérifiés en attente de validation déontologique dans le registre.',
-      'Chantier du rail Ouaga-Kaya : la date d’étape prévisionnelle nécessite une mise à jour suite au dernier décret.',
-      'Le bulletin trimestriel de l’INSD est disponible : 3 indicateurs clés peuvent être actualisés en 1 clic.'
-    ],
-    recommendation: 'Recommandation éditoriale : Le dossier sur l’usine de transformation de mangues de Bobo-Dioulasso est complet à 95% et prêt pour mise en avant en Grand Décryptage.',
-    timestamp: '08:00'
-  });
+  const [loading, setLoading] = useState(true);
+  const [briefing, setBriefing] = useState<any>(null);
 
   const loadBriefing = async () => {
     try {
@@ -41,11 +32,15 @@ export default function MicumBriefing() {
         if (json.data) setBriefing(json.data);
       }
     } catch (e) {
-      // Keep initial fallback state
+      console.error('Erreur chargement Morning Briefing:', e);
     } finally {
-      setTimeout(() => setLoading(false), 300);
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadBriefing();
+  }, []);
 
   return (
     <div className="bg-gradient-to-br from-[#123827] via-[#0A482A] to-[var(--ink)] text-white rounded-2xl p-5 md:p-6 shadow-xl border border-emerald-600/30 relative overflow-hidden mb-8">
@@ -70,7 +65,9 @@ export default function MicumBriefing() {
             </div>
             <p className="text-xs text-emerald-200/80 flex items-center gap-1.5 mt-0.5">
               <Clock className="w-3.5 h-3.5" />
-              Scan des données & urgences de la rédaction · Actualisé à {briefing.timestamp}
+              {briefing?.timestamp 
+                ? `Scan des données & urgences de la rédaction · Actualisé à ${briefing.timestamp}`
+                : 'Analyse en temps réel de la rédaction en cours par Gemini...'}
             </p>
           </div>
         </div>
@@ -89,42 +86,57 @@ export default function MicumBriefing() {
       </div>
 
       {/* Greeting & Highlights */}
-      <div className="relative z-10 space-y-3">
-        <p className="text-xs md:text-sm font-medium text-emerald-100/90">
-          {briefing.greeting}
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {briefing.highlights.map((item: string, idx: number) => (
-            <div 
-              key={idx}
-              className="bg-white/5 hover:bg-white/10 transition-colors p-3 rounded-xl border border-white/10 text-xs text-white/90 leading-relaxed flex items-start gap-2.5"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 mt-1.5" />
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Recommendation box */}
-        {briefing.recommendation && (
-          <div className="p-3 bg-emerald-500/15 border border-emerald-400/25 rounded-xl flex flex-wrap items-center justify-between gap-3 mt-2">
-            <div className="flex items-center gap-2 text-xs text-emerald-100">
-              <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
-              <span>{briefing.recommendation}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/admin/une"
-                className="inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-amber-200 transition-colors"
-              >
-                <span>Piloter la Une</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+      {loading && !briefing ? (
+        <div className="relative z-10 space-y-3 animate-pulse">
+          <div className="h-4 bg-white/15 rounded w-2/3" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+            <div className="h-20 bg-white/10 rounded-xl border border-white/10" />
+            <div className="h-20 bg-white/10 rounded-xl border border-white/10" />
+            <div className="h-20 bg-white/10 rounded-xl border border-white/10" />
           </div>
-        )}
-      </div>
+        </div>
+      ) : briefing ? (
+        <div className="relative z-10 space-y-3">
+          <p className="text-xs md:text-sm font-medium text-emerald-100/90">
+            {briefing.greeting}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {briefing.highlights?.map((item: string, idx: number) => (
+              <div 
+                key={idx}
+                className="bg-white/5 hover:bg-white/10 transition-colors p-3 rounded-xl border border-white/10 text-xs text-white/90 leading-relaxed flex items-start gap-2.5"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 mt-1.5" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Recommendation box */}
+          {briefing.recommendation && (
+            <div className="p-3 bg-emerald-500/15 border border-emerald-400/25 rounded-xl flex flex-wrap items-center justify-between gap-3 mt-2">
+              <div className="flex items-center gap-2 text-xs text-emerald-100">
+                <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
+                <span>{briefing.recommendation}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/admin/une"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-amber-200 transition-colors"
+                >
+                  <span>Piloter la Une</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="relative z-10 py-2 text-xs text-emerald-200">
+          Cliquez sur « Actualiser » pour générer le briefing de la rédaction avec Micum.
+        </div>
+      )}
 
       {/* Quick Action Shortcuts */}
       <div className="pt-4 mt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs relative z-10">

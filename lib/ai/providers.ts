@@ -27,7 +27,7 @@ export function getActiveProviderInfo(): ProviderInfo {
 
   // 1. Explicit override if requested
   if (forceProvider === 'gemini' && geminiKey) {
-    return { provider: 'gemini', apiKey: geminiKey, modelName: 'Gemini 3.6 Flash', isLive: true };
+    return { provider: 'gemini', apiKey: geminiKey, modelName: 'Gemini 3.5 Flash', isLive: true };
   }
   if ((forceProvider === 'claude' || forceProvider === 'anthropic') && anthropicKey) {
     return { provider: 'claude', apiKey: anthropicKey, modelName: 'Claude 3.5 Sonnet', isLive: true };
@@ -38,7 +38,7 @@ export function getActiveProviderInfo(): ProviderInfo {
 
   // 2. Automatic detection by availability (Priority: Gemini -> Claude -> OpenAI)
   if (geminiKey) {
-    return { provider: 'gemini', apiKey: geminiKey, modelName: 'Gemini 3.6 Flash', isLive: true };
+    return { provider: 'gemini', apiKey: geminiKey, modelName: 'Gemini 3.5 Flash', isLive: true };
   }
   if (anthropicKey) {
     return { provider: 'claude', apiKey: anthropicKey, modelName: 'Claude 3.5 Sonnet', isLive: true };
@@ -61,7 +61,14 @@ async function callGeminiChat(
   messages: ChatTurn[],
   temperature = 0.3
 ): Promise<{ text: string; model: string }> {
-  const models = ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-flash-latest'];
+  const models = [
+    'gemini-3.5-flash',
+    'gemini-3.1-flash-lite',
+    'gemini-flash-lite-latest',
+    'gemini-3.6-flash',
+    'gemini-3.8-flash',
+    'gemini-flash-latest'
+  ];
   
   // Format contents for Gemini: strictly alternating user/model
   const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
