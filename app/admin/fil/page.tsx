@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   Zap, 
@@ -17,16 +17,28 @@ import {
   Link2, 
   ShieldCheck, 
   Eye,
-  Camera
+  Camera,
+  Radio,
+  Wifi,
+  WifiOff,
+  RefreshCw
 } from 'lucide-react';
-import { Brief, BriefFact, CategoryCode } from '@/data/types';
+import { BriefDTO, BriefFactDTO, CategoryDTO } from '@/lib/api/types';
+import { filApi } from '@/lib/api/fil';
+import { categoriesApi } from '@/lib/api/categories';
+import { useFilStream } from '@/hooks/useFilStream';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import ImageUploader from '@/components/admin/ImageUploader';
 import Tooltip from '@/components/ui/Tooltip';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 
-const CATEGORIES: { code: CategoryCode; label: string }[] = [
+interface CategoryOption {
+  code: string;
+  label: string;
+}
+
+const DEFAULT_CATEGORIES: CategoryOption[] = [
   { code: 'economie', label: 'Économie' },
   { code: 'securite', label: 'Sécurité' },
   { code: 'chantiers', label: 'Chantiers' },
@@ -38,34 +50,36 @@ const CATEGORIES: { code: CategoryCode; label: string }[] = [
 export default function AdminFilPage() {
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
-  const [briefs, setBriefs] = useState<Brief[]>([]);
+  const [briefs, setBriefs] = useState<BriefDTO[]>([]);
   const [selectedBriefSlug, setSelectedBriefSlug] = useState<string>('');
+  const [currentBrief, setCurrentBrief] = useState<BriefDTO | null>(null);
+  const [categories, setCategories] = useState<CategoryOption[]>(DEFAULT_CATEGORIES);
 
   // Fact Edit Modal
   const [isFactModalOpen, setIsFactModalOpen] = useState(false);
-  const [editingFactIndex, setEditingFactIndex] = useState<number | null>(null);
+  const [editingFactId, setEditingFactId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
 
-  // Fact Form
-  const initialFactState: Partial<BriefFact> = {
+  // Fact Form State
+  const initialFactState = {
     time: '10:00',
-    text: '',
+    textFr: '',
     textEn: '',
     source: 'AIB / SIG',
     sourceUrl: 'https://www.sig.bf',
-    category: 'economie',
-    whyWatch: '',
+    categoryCode: 'economie',
+    whyWatchFr: '',
     whyWatchEn: '',
     image: '',
   };
 
-  const [factFormData, setFactFormData] = useState<Partial<BriefFact>>(initialFactState);
+  const [factFormData, setFactFormData] = useState(initialFactState);
 
   // Brief (Edition) Modal & Deletion State
   const [isBriefModalOpen, setIsBriefModalOpen] = useState(false);
   const [isEditingBrief, setIsEditingBrief] = useState(false);
   const [briefActiveTab, setBriefActiveTab] = useState<'fr' | 'en'>('fr');
-  const [briefFormData, setBriefFormData] = useState<Partial<Brief>>({
+  const [briefFormData, setBriefFormData] = useState({
     title: '',
     titleEn: '',
     slug: '',
@@ -76,51 +90,144 @@ export default function AdminFilPage() {
     image: '',
   });
 
-  const [isDeletingBriefSlug, setIsDeletingBriefSlug] = useState<string | null>(null);
-  const [isDeletingFactIndex, setIsDeletingFactIndex] = useState<number | null>(null);
+  const [deletingBrief, setDeletingBrief] = useState<BriefDTO | null>(null);
+  const [deletingFact, setDeletingFact] = useState<BriefFactDTO | null>(null);
 
-  // Fetch Briefs
-  const loadData = async (preferredSlug?: string) => {
+  // Charger les catégories dynamiques depuis l'API Go
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const cats = await categoriesApi.listCategories();
+        if (cats && cats.length > 0) {
+          setCategories(cats.map(c => ({ code: c.code, label: c.name_fr })));
+        }
+      } catch {
+        // Garder les catégories par défaut en cas d'indisponibilité temporaire
+      }
+    }
+    loadCategories();
+  }, []);
+
+  // Charger les éditions de briefs
+  const loadBriefs = useCallback(async (preferredSlug?: string) => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger Le Fil.');
-      const data = await res.json();
-      const loadedBriefs: Brief[] = data.briefs || [];
+      const res = await filApi.adminListBriefs({ limit: 50 });
+      const loadedBriefs = res.briefs || [];
       setBriefs(loadedBriefs);
 
       if (loadedBriefs.length > 0) {
-        if (preferredSlug && loadedBriefs.some(b => b.slug === preferredSlug)) {
-          setSelectedBriefSlug(preferredSlug);
-        } else if (!selectedBriefSlug) {
-          setSelectedBriefSlug(loadedBriefs[0].slug);
-        }
+        const targetSlug = preferredSlug && loadedBriefs.some(b => b.slug === preferredSlug)
+          ? preferredSlug
+          : selectedBriefSlug && loadedBriefs.some(b => b.slug === selectedBriefSlug)
+          ? selectedBriefSlug
+          : loadedBriefs[0].slug;
+
+        setSelectedBriefSlug(targetSlug);
+        // Charger les détails de l'édition sélectionnée (avec les faits préchargés)
+        const detailedBrief = await filApi.getBriefBySlug(targetSlug);
+        setCurrentBrief(detailedBrief);
+      } else {
+        setCurrentBrief(null);
       }
     } catch (err: any) {
-      error('Erreur', err.message);
+      error('Erreur', err.message || 'Impossible de charger Le Fil.');
     } finally {
-      setTimeout(() => setLoading(false), 300);
+      setLoading(false);
+    }
+  }, [selectedBriefSlug, error]);
+
+  // Synchronisation lors du changement de sélection de brief
+  const handleSelectBrief = async (slug: string) => {
+    setSelectedBriefSlug(slug);
+    try {
+      setLoading(true);
+      const detailed = await filApi.getBriefBySlug(slug);
+      setCurrentBrief(detailed);
+    } catch (err: any) {
+      error('Erreur', err.message || "Impossible de charger l'édition sélectionnée.");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadBriefs();
   }, []);
 
-  const currentBrief = briefs.find(b => b.slug === selectedBriefSlug) || briefs[0];
+  // Connexion au flux SSE temps réel pour écoute des nouvelles dépêches
+  const { isConnected, lastEvent } = useFilStream({
+    onNewFact: (newFact) => {
+      if (currentBrief && newFact.brief_id === currentBrief.id) {
+        setCurrentBrief(prev => {
+          if (!prev) return null;
+          const exists = prev.facts?.some(f => f.id === newFact.id);
+          if (exists) return prev;
+          return {
+            ...prev,
+            facts: [...(prev.facts || []), newFact],
+          };
+        });
+      }
+    },
+    onUpdateFact: (updatedFact) => {
+      if (currentBrief && updatedFact.brief_id === currentBrief.id) {
+        setCurrentBrief(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            facts: (prev.facts || []).map(f => f.id === updatedFact.id ? updatedFact : f),
+          };
+        });
+      }
+    },
+    onDeleteFact: ({ id }) => {
+      if (currentBrief) {
+        setCurrentBrief(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            facts: (prev.facts || []).filter(f => f.id !== id),
+          };
+        });
+      }
+    },
+    onNewBrief: () => {
+      loadBriefs();
+    },
+    onUpdateBrief: (updatedBrief) => {
+      setBriefs(prev => prev.map(b => b.id === updatedBrief.id ? updatedBrief : b));
+      if (currentBrief?.id === updatedBrief.id) {
+        setCurrentBrief(prev => prev ? { ...prev, ...updatedBrief } : null);
+      }
+    },
+    onDeleteBrief: () => {
+      loadBriefs();
+    },
+  });
 
   // Open Add Fact
   const handleOpenAddFact = () => {
     setFactFormData(initialFactState);
-    setEditingFactIndex(null);
+    setEditingFactId(null);
     setActiveTab('fr');
     setIsFactModalOpen(true);
   };
 
   // Open Edit Fact
-  const handleOpenEditFact = (fact: BriefFact, index: number) => {
-    setFactFormData({ ...fact });
-    setEditingFactIndex(index);
+  const handleOpenEditFact = (fact: BriefFactDTO) => {
+    setFactFormData({
+      time: fact.time || '10:00',
+      textFr: fact.text_fr || '',
+      textEn: fact.text_en || '',
+      source: fact.source || '',
+      sourceUrl: fact.source_url || '',
+      categoryCode: fact.category_code || 'economie',
+      whyWatchFr: fact.why_watch_fr || '',
+      whyWatchEn: fact.why_watch_en || '',
+      image: fact.image || '',
+    });
+    setEditingFactId(fact.id);
     setActiveTab('fr');
     setIsFactModalOpen(true);
   };
@@ -128,72 +235,60 @@ export default function AdminFilPage() {
   // Submit Fact
   const handleSubmitFact = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!factFormData.text || !factFormData.source) {
-      warning('Champs obligatoires', 'Veuillez saisir le texte du fait et sa source.');
+    if (!factFormData.textFr.trim() || !factFormData.source.trim()) {
+      warning('Champs obligatoires', 'Veuillez saisir le texte français du fait et sa source officielle.');
       return;
     }
 
     if (!currentBrief) return;
 
     try {
-      const isEdit = editingFactIndex !== null;
-      const action = isEdit ? 'update_brief_fact' : 'add_brief_fact';
-      const payload = isEdit 
-        ? { briefSlug: currentBrief.slug, factIndex: editingFactIndex, fact: factFormData }
-        : { briefSlug: currentBrief.slug, fact: factFormData };
+      if (editingFactId) {
+        await filApi.adminUpdateFact(editingFactId, {
+          brief_id: currentBrief.id,
+          time: factFormData.time,
+          text_fr: factFormData.textFr,
+          text_en: factFormData.textEn,
+          source: factFormData.source,
+          source_url: factFormData.sourceUrl,
+          category_code: factFormData.categoryCode,
+          why_watch_fr: factFormData.whyWatchFr,
+          why_watch_en: factFormData.whyWatchEn,
+          image: factFormData.image,
+        });
 
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, payload })
-      });
+        success(
+          'Dépêche mise à jour',
+          `Le fait de ${factFormData.time} a été mis à jour et synchronisé en direct via SSE.`
+        );
+      } else {
+        await filApi.adminCreateFact({
+          brief_id: currentBrief.id,
+          time: factFormData.time,
+          date: currentBrief.date,
+          text_fr: factFormData.textFr,
+          text_en: factFormData.textEn,
+          source: factFormData.source,
+          source_url: factFormData.sourceUrl,
+          category_code: factFormData.categoryCode,
+          why_watch_fr: factFormData.whyWatchFr,
+          why_watch_en: factFormData.whyWatchEn,
+          image: factFormData.image,
+          order_num: (currentBrief.facts?.length || 0) + 1,
+        });
 
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur d\'enregistrement.');
-
-      success(
-        isEdit ? 'Fait mis à jour' : 'Nouveau fait inscrit',
-        `Le fait de ${factFormData.time} a été enregistré dans l'édition ${currentBrief.title}.`
-      );
+        success(
+          'Dépêche certifiée 60s publiée',
+          `Le fait de ${factFormData.time} a été publié et diffusé instantanément sur le flux public.`
+        );
+      }
 
       setIsFactModalOpen(false);
-      loadData(currentBrief.slug);
+      // Recharger l'édition courante
+      const refreshed = await filApi.getBriefBySlug(currentBrief.slug);
+      setCurrentBrief(refreshed);
     } catch (err: any) {
-      error('Erreur', err.message);
-    }
-  };
-
-  // Micum AI Handlers for Le Fil
-  const handleMicumApplyFil = async (data: any) => {
-    if (!currentBrief || !data.facts || !Array.isArray(data.facts)) return;
-    try {
-      const updatedBrief: Brief = {
-        ...currentBrief,
-        facts: data.facts.map((f: any, i: number) => ({
-          id: `fact-${Date.now()}-${i}`,
-          time: f.time || '10:00',
-          text: f.text || '',
-          textEn: f.textEn || '',
-          source: f.source || 'SIG / AIB',
-          sourceUrl: f.sourceUrl || 'https://www.sig.bf',
-          category: f.category || 'economie',
-          whyWatch: f.whyWatch || '',
-          whyWatchEn: f.whyWatchEn || '',
-          image: f.image || ''
-        }))
-      };
-
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_brief', payload: updatedBrief })
-      });
-
-      if (!res.ok) throw new Error('Erreur d\'enregistrement des 10 faits.');
-      success('10 Faits Compilés par Micum', `L'édition ${currentBrief.title} a été mise à jour avec les 10 faits vérifiés.`);
-      loadData(currentBrief.slug);
-    } catch (err: any) {
-      error('Erreur', err.message);
+      error('Erreur', err.message || "Erreur lors de l'enregistrement de la dépêche.");
     }
   };
 
@@ -207,13 +302,14 @@ export default function AdminFilPage() {
 
   // Brief Edition Handlers
   const handleOpenCreateBrief = () => {
-    const maxWeek = briefs.reduce((max, b) => Math.max(max, b.weekNumber || 0), 0);
+    const maxWeek = briefs.reduce((max, b) => Math.max(max, b.week_number || 0), 0);
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = maxWeek > 0 ? maxWeek + 1 : 1;
+    const currentYear = new Date().getFullYear();
     setBriefFormData({
       title: `Semaine ${nextWeek} — Veille Nationale`,
       titleEn: `Week ${nextWeek} — National Brief`,
-      slug: `semaine-${nextWeek}-${new Date().getFullYear()}`,
+      slug: `${currentYear}-semaine-${nextWeek < 10 ? '0' + nextWeek : nextWeek}`,
       date: today,
       weekNumber: nextWeek,
       summary: '',
@@ -228,14 +324,13 @@ export default function AdminFilPage() {
   const handleOpenEditBrief = () => {
     if (!currentBrief) return;
     setBriefFormData({
-      id: currentBrief.id,
       title: currentBrief.title,
-      titleEn: currentBrief.titleEn || '',
+      titleEn: currentBrief.title_en || '',
       slug: currentBrief.slug,
       date: currentBrief.date,
-      weekNumber: currentBrief.weekNumber,
+      weekNumber: currentBrief.week_number,
       summary: currentBrief.summary || '',
-      summaryEn: currentBrief.summaryEn || '',
+      summaryEn: currentBrief.summary_en || '',
       image: currentBrief.image || '',
     });
     setIsEditingBrief(true);
@@ -246,76 +341,78 @@ export default function AdminFilPage() {
   const handleSubmitBrief = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!briefFormData.title?.trim() || !briefFormData.slug?.trim()) {
-      warning('Champs requis', 'Veuillez renseigner le titre et le slug de l\'édition.');
+      warning('Champs requis', "Veuillez renseigner le titre et l'identifiant slug de l'édition.");
       return;
     }
 
     try {
-      const action = isEditingBrief ? 'update_brief' : 'create_brief';
-      const payload = isEditingBrief
-        ? { ...briefFormData, slug: currentBrief?.slug }
-        : { ...briefFormData, facts: [] };
+      const year = new Date(briefFormData.date).getFullYear() || new Date().getFullYear();
+      if (isEditingBrief && currentBrief) {
+        await filApi.adminUpdateBrief(currentBrief.id, {
+          title: briefFormData.title,
+          title_en: briefFormData.titleEn,
+          date: briefFormData.date,
+          week_number: briefFormData.weekNumber,
+          year: year,
+          summary: briefFormData.summary,
+          summary_en: briefFormData.summaryEn,
+          image: briefFormData.image,
+          is_published: true,
+        });
 
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, payload })
-      });
+        success(
+          'Édition mise à jour',
+          `L'édition "${briefFormData.title}" a été modifiée avec succès.`
+        );
+      } else {
+        await filApi.adminCreateBrief({
+          title: briefFormData.title,
+          title_en: briefFormData.titleEn,
+          slug: briefFormData.slug,
+          date: briefFormData.date,
+          week_number: briefFormData.weekNumber,
+          year: year,
+          summary: briefFormData.summary,
+          summary_en: briefFormData.summaryEn,
+          image: briefFormData.image,
+          is_published: true,
+        });
 
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de l\'enregistrement de l\'édition.');
-
-      success(
-        isEditingBrief ? 'Édition mise à jour' : 'Nouvelle édition créée',
-        `L'édition "${briefFormData.title}" est enregistrée avec succès.`
-      );
+        success(
+          'Nouvelle édition créée',
+          `L'édition "${briefFormData.title}" est maintenant disponible.`
+        );
+      }
 
       setIsBriefModalOpen(false);
-      const targetSlug = briefFormData.slug || currentBrief?.slug;
-      await loadData(targetSlug);
+      await loadBriefs(briefFormData.slug || currentBrief?.slug);
     } catch (err: any) {
-      error('Erreur', err.message);
+      error('Erreur', err.message || "Erreur lors de l'enregistrement de l'édition.");
     }
   };
 
-  const handleDeleteBrief = async (slug: string) => {
+  const handleDeleteBrief = async (brief: BriefDTO) => {
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete_brief', payload: { slug } })
-      });
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur de suppression.');
-
-      success('Édition supprimée', 'L\'édition du Fil a été supprimée avec succès.');
-      setIsDeletingBriefSlug(null);
+      await filApi.adminDeleteBrief(brief.id);
+      success('Édition supprimée', "L'édition du Fil et ses dépêches ont été retirées.");
+      setDeletingBrief(null);
       setSelectedBriefSlug('');
-      await loadData();
+      await loadBriefs();
     } catch (err: any) {
-      error('Erreur', err.message);
+      error('Erreur', err.message || "Erreur lors de la suppression de l'édition.");
     }
   };
 
-  const handleDeleteFact = async (factIndex: number) => {
+  const handleDeleteFact = async (fact: BriefFactDTO) => {
     if (!currentBrief) return;
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'delete_brief_fact',
-          payload: { briefSlug: currentBrief.slug, factIndex }
-        })
-      });
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur de suppression.');
-
-      success('Fait supprimé', 'Le fait a été retiré de cette édition.');
-      setIsDeletingFactIndex(null);
-      await loadData(currentBrief.slug);
+      await filApi.adminDeleteFact(fact.id);
+      success('Dépêche supprimée', 'Le fait certifié a été retiré avec succès.');
+      setDeletingFact(null);
+      const refreshed = await filApi.getBriefBySlug(currentBrief.slug);
+      setCurrentBrief(refreshed);
     } catch (err: any) {
-      error('Erreur', err.message);
+      error('Erreur', err.message || 'Erreur lors de la suppression du fait.');
     }
   };
 
@@ -334,17 +431,36 @@ export default function AdminFilPage() {
         <div>
           <div className="flex items-center gap-2 font-mono text-xs text-[#d97706] font-bold uppercase tracking-wider">
             <Zap size={15} />
-            <span>Veille Hebdomadaire (10 Faits Sourcés)</span>
+            <span>Veille Hebdomadaire & Dépêches 60s</span>
+            <span className="text-[#736c62]">•</span>
+            {isConnected ? (
+              <span className="inline-flex items-center gap-1.5 text-[#087443] font-mono text-[10px] bg-[#087443]/10 px-2 py-0.5 rounded-full">
+                <Wifi size={11} className="animate-pulse" />
+                <span>Flux SSE Direct Connecté</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-[#736c62] font-mono text-[10px] bg-neutral-200/60 px-2 py-0.5 rounded-full">
+                <WifiOff size={11} />
+                <span>Flux SSE En veille</span>
+              </span>
+            )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#141414] mt-1">
-            Le Fil Hebdomadaire
+            Le Fil — Desk Rédactionnel
           </h1>
           <p className="text-xs font-mono text-[#5a554e] mt-0.5">
-            Chaque dimanche, 10 faits rigoureusement sourcés. Pas d'opinion, uniquement les faits vérifiés.
+            10 faits sourcés chaque semaine et dépêches vérifiées en direct. Raccordé à l'API Go et streaming SSE.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          <button
+            onClick={() => loadBriefs()}
+            className="p-2 bg-white border border-[#e6dfd5] text-[#5a554e] hover:text-[#141414] rounded transition-colors cursor-pointer"
+            title="Rafraîchir les données"
+          >
+            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          </button>
           <button
             onClick={handleOpenCreateBrief}
             className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#087443] text-[#087443] hover:bg-[#087443] hover:text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-xs cursor-pointer"
@@ -360,14 +476,14 @@ export default function AdminFilPage() {
                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#e6dfd5] hover:border-[#141414] font-mono text-xs font-bold rounded shadow-xs transition-colors"
               >
                 <ExternalLink size={14} />
-                Voir l'édition publique
+                Voir en direct
               </Link>
               <button
                 onClick={handleOpenAddFact}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm cursor-pointer"
               >
                 <Plus size={16} />
-                Ajouter un Fait
+                Ajouter une Dépêche
               </button>
             </>
           )}
@@ -376,20 +492,20 @@ export default function AdminFilPage() {
 
       {/* Week Selector Bar */}
       {briefs.length > 0 && (
-        <div className="bg-white border border-[#e6dfd5] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white border border-[#e6dfd5] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex flex-wrap items-center gap-2">
             <Calendar size={16} className="text-[#087443]" />
             <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#141414]">
-              Édition du Fil :
+              Édition sélectionnée :
             </span>
             <select
               value={selectedBriefSlug}
-              onChange={(e) => setSelectedBriefSlug(e.target.value)}
+              onChange={(e) => handleSelectBrief(e.target.value)}
               className="text-xs font-mono font-bold border border-[#e6dfd5] px-3 py-1.5 rounded bg-[#faf8f5] focus:outline-none focus:border-[#087443]"
             >
               {briefs.map((b) => (
                 <option key={b.slug} value={b.slug}>
-                  {b.title} ({b.date})
+                  {b.title} ({b.date}) — Semaine {b.week_number}
                 </option>
               ))}
             </select>
@@ -409,7 +525,7 @@ export default function AdminFilPage() {
                 <Tooltip position="top" content="Supprimer cette édition du Fil">
                   <button
                     type="button"
-                    onClick={() => setIsDeletingBriefSlug(currentBrief.slug)}
+                    onClick={() => setDeletingBrief(currentBrief)}
                     className="p-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#dc2626] hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] rounded transition-colors cursor-pointer"
                     aria-label="Supprimer l'édition"
                   >
@@ -422,9 +538,11 @@ export default function AdminFilPage() {
 
           {currentBrief && (
             <div className="flex items-center gap-3 text-xs font-mono text-[#736c62]">
-              <span>Semaine {currentBrief.weekNumber}</span>
+              <span>Semaine {currentBrief.week_number} ({currentBrief.year})</span>
               <span>•</span>
-              <span className="font-bold text-[#087443]">{currentBrief.facts?.length || 0} / 10 faits enregistrés</span>
+              <span className="font-bold text-[#087443]">
+                {currentBrief.facts?.length || 0} / 10 faits enregistrés
+              </span>
             </div>
           )}
         </div>
@@ -432,13 +550,13 @@ export default function AdminFilPage() {
 
       {/* Facts Timeline & Table */}
       {loading ? (
-        <SkeletonTable rows={10} columns={5} />
+        <SkeletonTable rows={8} columns={4} />
       ) : !currentBrief ? (
         <div className="bg-white border border-[#e6dfd5] p-12 text-center space-y-4">
           <AlertCircle size={40} className="mx-auto text-[#736c62]" />
           <div className="text-lg font-serif font-bold text-[#141414]">Aucune édition de Fil Hebdomadaire</div>
           <p className="text-xs font-mono text-[#736c62] max-w-md mx-auto">
-            Commencez par créer votre première édition hebdomadaire pour compiler les 10 faits marquants de la semaine.
+            Commencez par créer votre première édition hebdomadaire pour compiler les 10 faits vérifiés ou publier des dépêches instantanées 60 secondes.
           </p>
           <button
             onClick={handleOpenCreateBrief}
@@ -450,8 +568,6 @@ export default function AdminFilPage() {
         </div>
       ) : (
         <div className="space-y-4">
-
-
           <div className="bg-white border border-[#e6dfd5] overflow-hidden shadow-sm">
             <div className="p-4 bg-[#faf8f5] border-b border-[#e6dfd5] flex items-center justify-between">
               <div>
@@ -465,95 +581,109 @@ export default function AdminFilPage() {
                 )}
               </div>
               <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#087443] text-white font-bold rounded">
-                Édition Active
+                Édition Active ({currentBrief.slug})
               </span>
             </div>
 
-            <div className="divide-y divide-[#e6dfd5]">
-              {currentBrief.facts.map((fact, idx) => {
-                return (
-                  <div key={idx} className="p-4 hover:bg-[#faf8f5]/60 transition-colors flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    {/* Left: Time & Fact */}
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="shrink-0 text-center">
-                        <span className="px-2 py-1 bg-[#141414] text-[#ffd8a8] font-mono text-xs font-bold rounded block">
-                          {fact.time}
-                        </span>
-                        <span className="text-[9px] font-mono text-[#736c62] mt-0.5 block">
-                          #{idx + 1}
-                        </span>
-                      </div>
+            {(!currentBrief.facts || currentBrief.facts.length === 0) ? (
+              <div className="p-10 text-center space-y-3">
+                <Clock size={32} className="mx-auto text-[#736c62]" />
+                <p className="font-serif text-sm text-[#141414]">Aucune dépêche enregistrée dans cette édition.</p>
+                <button
+                  onClick={handleOpenAddFact}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#087443] text-white font-mono text-xs font-bold rounded hover:bg-[#075f37] cursor-pointer"
+                >
+                  <Plus size={14} />
+                  Ajouter le premier fait
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-[#e6dfd5]">
+                {currentBrief.facts.map((fact, idx) => {
+                  return (
+                    <div key={fact.id || idx} className="p-4 hover:bg-[#faf8f5]/60 transition-colors flex flex-col md:flex-row md:items-start justify-between gap-4">
+                      {/* Left: Time & Fact */}
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="shrink-0 text-center">
+                          <span className="px-2 py-1 bg-[#141414] text-[#ffd8a8] font-mono text-xs font-bold rounded block">
+                            {fact.time}
+                          </span>
+                          <span className="text-[9px] font-mono text-[#736c62] mt-0.5 block">
+                            #{idx + 1}
+                          </span>
+                        </div>
 
-                      <div className="space-y-1.5 flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {fact.category && (
-                            <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 bg-[#e6dfd5] text-[#141414] rounded">
-                              {fact.category}
-                            </span>
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {fact.category_code && (
+                              <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 bg-[#e6dfd5] text-[#141414] rounded">
+                                {categories.find(c => c.code === fact.category_code)?.label || fact.category_code}
+                              </span>
+                            )}
+                            <Tooltip position="top" content="Consulter la source officielle">
+                              <a 
+                                href={fact.source_url || '#'} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] font-mono text-[#087443] hover:underline"
+                                aria-label="Source officielle"
+                              >
+                                <Link2 size={11} />
+                                Source : {fact.source}
+                              </a>
+                            </Tooltip>
+                          </div>
+
+                          {/* FR Text */}
+                          <div className="font-serif text-sm text-[#141414] leading-relaxed">
+                            {fact.text_fr}
+                          </div>
+
+                          {/* EN Text */}
+                          {fact.text_en && (
+                            <div className="text-xs font-serif text-[#5a554e] italic bg-[#f8fafc] p-2 rounded border border-[#e2e8f0]">
+                              <span className="font-mono text-[9px] font-bold uppercase text-[#1e3a5f] mr-1.5 not-italic">EN :</span>
+                              {fact.text_en}
+                            </div>
                           )}
-                          <Tooltip position="top" content="Consulter la source officielle">
-                            <a 
-                              href={fact.sourceUrl || '#'} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[11px] font-mono text-[#087443] hover:underline"
-                              aria-label="Source officielle"
-                            >
-                              <Link2 size={11} />
-                              Source : {fact.source}
-                            </a>
-                          </Tooltip>
+
+                          {/* Why Watch Note */}
+                          {fact.why_watch_fr && (
+                            <div className="text-[11px] font-mono text-[#c2410c] bg-orange-50/70 px-2.5 py-1 rounded border border-orange-200/60 inline-block">
+                              <b>Pourquoi surveiller :</b> {fact.why_watch_fr}
+                            </div>
+                          )}
                         </div>
+                      </div>
 
-                        {/* FR Text */}
-                        <div className="font-serif text-sm text-[#141414] leading-relaxed">
-                          {fact.text}
-                        </div>
-
-                        {/* EN Text */}
-                        {fact.textEn && (
-                          <div className="text-xs font-serif text-[#5a554e] italic bg-[#f8fafc] p-2 rounded border border-[#e2e8f0]">
-                            <span className="font-mono text-[9px] font-bold uppercase text-[#1e3a5f] mr-1.5 not-italic">EN :</span>
-                            {fact.textEn}
-                          </div>
-                        )}
-
-                        {/* Why Watch Note */}
-                        {fact.whyWatch && (
-                          <div className="text-[11px] font-mono text-[#c2410c] bg-orange-50/70 px-2.5 py-1 rounded border border-orange-200/60 inline-block">
-                            <b>Pourquoi surveiller :</b> {fact.whyWatch}
-                          </div>
-                        )}
+                      {/* Right: Actions */}
+                      <div className="flex items-center gap-1.5 self-end md:self-start shrink-0">
+                        <Tooltip position="top" content="Modifier les informations de ce fait">
+                          <button
+                            onClick={() => handleOpenEditFact(fact)}
+                            className="px-2.5 py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs font-mono font-bold hover:bg-[#087443] hover:text-white hover:border-[#087443] rounded transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                            aria-label="Modifier le fait"
+                          >
+                            <Edit3 size={13} />
+                            Modifier
+                          </button>
+                        </Tooltip>
+                        <Tooltip position="top" content="Supprimer cette dépêche de l'édition">
+                          <button
+                            type="button"
+                            onClick={() => setDeletingFact(fact)}
+                            className="p-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#dc2626] hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] rounded transition-colors cursor-pointer"
+                            aria-label="Supprimer ce fait"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </Tooltip>
                       </div>
                     </div>
-
-                    {/* Right: Actions */}
-                    <div className="flex items-center gap-1.5 self-end md:self-start shrink-0">
-                      <Tooltip position="top" content="Modifier les informations de ce fait">
-                        <button
-                          onClick={() => handleOpenEditFact(fact, idx)}
-                          className="px-2.5 py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs font-mono font-bold hover:bg-[#087443] hover:text-white hover:border-[#087443] rounded transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                          aria-label="Modifier le fait"
-                        >
-                          <Edit3 size={13} />
-                          Modifier
-                        </button>
-                      </Tooltip>
-                      <Tooltip position="top" content="Supprimer ce fait de l'édition">
-                        <button
-                          type="button"
-                          onClick={() => setIsDeletingFactIndex(idx)}
-                          className="p-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#dc2626] hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] rounded transition-colors cursor-pointer"
-                          aria-label="Supprimer ce fait"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </Tooltip>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -566,7 +696,7 @@ export default function AdminFilPage() {
             <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#d97706]">
-                  {editingFactIndex !== null ? `Modifier le fait #${editingFactIndex + 1}` : 'Nouveau Fait Vérifié'}
+                  {editingFactId ? 'Modifier la dépêche certifiée' : 'Nouvelle Dépêche 60s'}
                 </span>
                 <h3 className="font-serif font-bold text-lg text-[#141414]">
                   {currentBrief?.title}
@@ -617,23 +747,23 @@ export default function AdminFilPage() {
                   <input
                     type="text"
                     required
-                    value={factFormData.time || '10:00'}
+                    value={factFormData.time}
                     onChange={(e) => setFactFormData(prev => ({ ...prev, time: e.target.value }))}
-                    placeholder="ex: 08:30"
+                    placeholder="ex: 10:00"
                     className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded font-bold"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
-                    Rubrique
+                    Rubrique rattachée *
                   </label>
                   <select
-                    value={factFormData.category || 'economie'}
-                    onChange={(e) => setFactFormData(prev => ({ ...prev, category: e.target.value as CategoryCode }))}
+                    value={factFormData.categoryCode}
+                    onChange={(e) => setFactFormData(prev => ({ ...prev, categoryCode: e.target.value }))}
                     className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded"
                   >
-                    {CATEGORIES.map(c => (
+                    {categories.map(c => (
                       <option key={c.code} value={c.code}>{c.label}</option>
                     ))}
                   </select>
@@ -641,14 +771,14 @@ export default function AdminFilPage() {
 
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
-                    Nom de la Source *
+                    Source officielle certifiée *
                   </label>
                   <input
                     type="text"
                     required
-                    value={factFormData.source || ''}
+                    value={factFormData.source}
                     onChange={(e) => setFactFormData(prev => ({ ...prev, source: e.target.value }))}
-                    placeholder="ex: Conseil des ministres, AIB..."
+                    placeholder="ex: Conseil des ministres, AIB, SIG..."
                     className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded"
                   />
                 </div>
@@ -660,7 +790,7 @@ export default function AdminFilPage() {
                 </label>
                 <input
                   type="text"
-                  value={factFormData.sourceUrl || ''}
+                  value={factFormData.sourceUrl}
                   onChange={(e) => setFactFormData(prev => ({ ...prev, sourceUrl: e.target.value }))}
                   placeholder="https://..."
                   className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded"
@@ -677,8 +807,8 @@ export default function AdminFilPage() {
                     <textarea
                       rows={3}
                       required
-                      value={factFormData.text || ''}
-                      onChange={(e) => setFactFormData(prev => ({ ...prev, text: e.target.value }))}
+                      value={factFormData.textFr}
+                      onChange={(e) => setFactFormData(prev => ({ ...prev, textFr: e.target.value }))}
                       placeholder="Les faits bruts, précis, vérifiés..."
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded font-serif text-sm"
                     />
@@ -690,8 +820,8 @@ export default function AdminFilPage() {
                     </label>
                     <textarea
                       rows={2}
-                      value={factFormData.whyWatch || ''}
-                      onChange={(e) => setFactFormData(prev => ({ ...prev, whyWatch: e.target.value }))}
+                      value={factFormData.whyWatchFr}
+                      onChange={(e) => setFactFormData(prev => ({ ...prev, whyWatchFr: e.target.value }))}
                       placeholder="Ce que ce fait annonce ou implique à moyen terme..."
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded"
                     />
@@ -706,8 +836,8 @@ export default function AdminFilPage() {
                     </div>
                     <MicumTranslateButton
                       fieldsToTranslate={{
-                        text: factFormData.text || '',
-                        whyWatch: factFormData.whyWatch || ''
+                        text: factFormData.textFr,
+                        whyWatch: factFormData.whyWatchFr
                       }}
                       onTranslated={handleMicumTranslateFact}
                       label="Traduire avec Micum"
@@ -720,7 +850,7 @@ export default function AdminFilPage() {
                     </label>
                     <textarea
                       rows={3}
-                      value={factFormData.textEn || ''}
+                      value={factFormData.textEn}
                       onChange={(e) => setFactFormData(prev => ({ ...prev, textEn: e.target.value }))}
                       placeholder="Direct English translation of the fact..."
                       className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded bg-white font-serif text-sm"
@@ -733,7 +863,7 @@ export default function AdminFilPage() {
                     </label>
                     <textarea
                       rows={2}
-                      value={factFormData.whyWatchEn || ''}
+                      value={factFormData.whyWatchEn}
                       onChange={(e) => setFactFormData(prev => ({ ...prev, whyWatchEn: e.target.value }))}
                       placeholder="Why this matters in the upcoming weeks..."
                       className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded bg-white"
@@ -746,7 +876,7 @@ export default function AdminFilPage() {
               <div>
                 <ImageUploader
                   label="Preuve visuelle / Photo documentée (Optionnelle)"
-                  value={factFormData.image || ''}
+                  value={factFormData.image}
                   onChange={(url) => setFactFormData(prev => ({ ...prev, image: url }))}
                   helperText="Téléversez une photo de preuve depuis votre ordinateur (PNG, JPG, WebP) ou renseignez un lien web."
                 />
@@ -757,22 +887,23 @@ export default function AdminFilPage() {
                 <button
                   type="button"
                   onClick={() => setIsFactModalOpen(false)}
-                  className="px-3 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] w-full sm:w-auto text-center"
+                  className="px-3 py-2 border border-[#e6dfd5] text-xs font-bold hover:bg-[#faf8f5] w-full sm:w-auto text-center cursor-pointer"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center cursor-pointer shadow-sm"
                 >
                   <Check size={14} />
-                  {editingFactIndex !== null ? 'Sauvegarder le fait' : 'Ajouter le fait'}
+                  {editingFactId ? 'Sauvegarder les modifications' : 'Diffuser en direct (SSE)'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
       {/* Edition (Brief) Create / Edit Modal */}
       {isBriefModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
@@ -781,10 +912,10 @@ export default function AdminFilPage() {
             <div className="p-4 sm:p-5 border-b border-[#e6dfd5] bg-[#faf8f5] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#d97706]">
-                  {isEditingBrief ? 'Configuration de l\'édition' : 'Nouvelle Édition Hebdomadaire'}
+                  {isEditingBrief ? "Configuration de l'édition" : 'Nouvelle Édition Hebdomadaire'}
                 </span>
                 <h3 className="font-serif font-bold text-lg text-[#141414]">
-                  {isEditingBrief ? (briefFormData.title || 'Modifier l\'édition') : 'Créer une édition du Fil'}
+                  {isEditingBrief ? (briefFormData.title || "Modifier l'édition") : 'Créer une édition du Fil'}
                 </h3>
               </div>
 
@@ -847,7 +978,7 @@ export default function AdminFilPage() {
                   <input
                     type="date"
                     required
-                    value={briefFormData.date || ''}
+                    value={briefFormData.date}
                     onChange={(e) => setBriefFormData(prev => ({ ...prev, date: e.target.value }))}
                     className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded bg-white"
                   />
@@ -859,10 +990,10 @@ export default function AdminFilPage() {
                   <input
                     type="text"
                     required
-                    value={briefFormData.slug || ''}
+                    value={briefFormData.slug}
                     disabled={isEditingBrief}
                     onChange={(e) => setBriefFormData(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') }))}
-                    placeholder="semaine-11-2026"
+                    placeholder="2026-semaine-11"
                     className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
@@ -876,8 +1007,8 @@ export default function AdminFilPage() {
                     </span>
                     <MicumTranslateButton
                       fieldsToTranslate={{
-                        title: briefFormData.title || '',
-                        summary: briefFormData.summary || '',
+                        title: briefFormData.title,
+                        summary: briefFormData.summary,
                       }}
                       targetLang="en"
                       onTranslated={handleMicumTranslateBrief}
@@ -892,7 +1023,7 @@ export default function AdminFilPage() {
                     <input
                       type="text"
                       required
-                      value={briefFormData.title || ''}
+                      value={briefFormData.title}
                       onChange={(e) => {
                         const val = e.target.value;
                         setBriefFormData(prev => ({
@@ -910,11 +1041,11 @@ export default function AdminFilPage() {
 
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-[#141414] mb-1">
-                      Résumé éditorial / Accroche de la semaine (Optionnel)
+                      Résumé éditorial / Synthèse de la semaine (Optionnel)
                     </label>
                     <textarea
                       rows={3}
-                      value={briefFormData.summary || ''}
+                      value={briefFormData.summary}
                       onChange={(e) => setBriefFormData(prev => ({ ...prev, summary: e.target.value }))}
                       placeholder="Une synthèse des tendances majeures de la semaine au Burkina Faso..."
                       className="w-full px-2.5 py-1.5 border border-[#e6dfd5] rounded bg-white font-serif text-sm"
@@ -936,7 +1067,7 @@ export default function AdminFilPage() {
                     </label>
                     <input
                       type="text"
-                      value={briefFormData.titleEn || ''}
+                      value={briefFormData.titleEn}
                       onChange={(e) => setBriefFormData(prev => ({ ...prev, titleEn: e.target.value }))}
                       placeholder="Ex: Week 11 — National Brief and Key Facts"
                       className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded bg-white font-serif text-sm font-bold"
@@ -949,7 +1080,7 @@ export default function AdminFilPage() {
                     </label>
                     <textarea
                       rows={3}
-                      value={briefFormData.summaryEn || ''}
+                      value={briefFormData.summaryEn}
                       onChange={(e) => setBriefFormData(prev => ({ ...prev, summaryEn: e.target.value }))}
                       placeholder="A briefing of major national developments in Burkina Faso..."
                       className="w-full px-2.5 py-1.5 border border-[#cbd5e1] rounded bg-white font-serif text-sm"
@@ -962,7 +1093,7 @@ export default function AdminFilPage() {
               <div className="pt-2 border-t border-[#e6dfd5]">
                 <ImageUploader
                   label="Image de couverture de l'édition (Optionnelle)"
-                  value={briefFormData.image || ''}
+                  value={briefFormData.image}
                   onChange={(url) => setBriefFormData(prev => ({ ...prev, image: url }))}
                   helperText="Photo d'illustration principale pour cette édition du Fil (format paysage recommandé)."
                 />
@@ -982,7 +1113,7 @@ export default function AdminFilPage() {
                   className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#087443] text-white font-bold uppercase rounded hover:bg-[#075f37] w-full sm:w-auto text-center cursor-pointer"
                 >
                   <Check size={14} />
-                  {isEditingBrief ? 'Mettre à jour l\'édition' : 'Créer l\'édition'}
+                  {isEditingBrief ? "Mettre à jour l'édition" : "Créer l'édition"}
                 </button>
               </div>
             </form>
@@ -991,7 +1122,7 @@ export default function AdminFilPage() {
       )}
 
       {/* Delete Edition Confirmation Modal */}
-      {isDeletingBriefSlug && (
+      {deletingBrief && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white border border-[#141414] max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center gap-3 text-[#dc2626]">
@@ -1001,19 +1132,19 @@ export default function AdminFilPage() {
               </h3>
             </div>
             <p className="text-xs font-mono text-[#5a554e] leading-relaxed">
-              Êtes-vous sûr de vouloir supprimer l'édition <b>"{briefs.find(b => b.slug === isDeletingBriefSlug)?.title}"</b> ? Tous les faits associés à cette semaine seront également supprimés. Cette action est irréversible.
+              Êtes-vous sûr de vouloir supprimer l'édition <b>"{deletingBrief.title}"</b> ? Tous les faits associés à cette semaine seront également supprimés. Cette action est irréversible.
             </p>
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e6dfd5]">
               <button
                 type="button"
-                onClick={() => setIsDeletingBriefSlug(null)}
+                onClick={() => setDeletingBrief(null)}
                 className="px-3 py-2 border border-[#e6dfd5] text-xs font-mono font-bold hover:bg-[#faf8f5] cursor-pointer"
               >
                 Annuler
               </button>
               <button
                 type="button"
-                onClick={() => handleDeleteBrief(isDeletingBriefSlug)}
+                onClick={() => handleDeleteBrief(deletingBrief)}
                 className="px-4 py-2 bg-[#dc2626] text-white text-xs font-mono font-bold uppercase rounded hover:bg-[#b91c1c] transition-colors cursor-pointer"
               >
                 Supprimer définitivement
@@ -1024,32 +1155,32 @@ export default function AdminFilPage() {
       )}
 
       {/* Delete Fact Confirmation Modal */}
-      {isDeletingFactIndex !== null && currentBrief && (
+      {deletingFact && currentBrief && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white border border-[#141414] max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center gap-3 text-[#dc2626]">
               <AlertCircle size={24} />
               <h3 className="font-serif font-bold text-lg text-[#141414]">
-                Retirer ce fait ?
+                Retirer cette dépêche ?
               </h3>
             </div>
             <p className="text-xs font-mono text-[#5a554e] leading-relaxed">
-              Êtes-vous sûr de vouloir retirer le fait <b>#{isDeletingFactIndex + 1} ({currentBrief.facts[isDeletingFactIndex]?.time})</b> de l'édition "{currentBrief.title}" ?
+              Êtes-vous sûr de vouloir retirer la dépêche de <b>{deletingFact.time}</b> de l'édition "{currentBrief.title}" ?
             </p>
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e6dfd5]">
               <button
                 type="button"
-                onClick={() => setIsDeletingFactIndex(null)}
+                onClick={() => setDeletingFact(null)}
                 className="px-3 py-2 border border-[#e6dfd5] text-xs font-mono font-bold hover:bg-[#faf8f5] cursor-pointer"
               >
                 Annuler
               </button>
               <button
                 type="button"
-                onClick={() => handleDeleteFact(isDeletingFactIndex)}
+                onClick={() => handleDeleteFact(deletingFact)}
                 className="px-4 py-2 bg-[#dc2626] text-white text-xs font-mono font-bold uppercase rounded hover:bg-[#b91c1c] transition-colors cursor-pointer"
               >
-                Retirer le fait
+                Retirer la dépêche
               </button>
             </div>
           </div>

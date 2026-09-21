@@ -1,19 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { articles, getArticleBySlug, getArticles } from '@/data/mock/articles';
-import { categories, getCategoryByCode } from '@/data/mock/categories';
-import { getSubCategoryByCode } from '@/data/mock/referentiel';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import ArticleBodyRenderer from '@/components/editorial/ArticleBodyRenderer';
 import { ArrowLeft, Clock, ShieldCheck, FileText, Share2, Printer, ChevronRight, Bookmark } from 'lucide-react';
+import { articlesApi } from '@/lib/api/articles';
+import { categoriesApi } from '@/lib/api/categories';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
 
-export function generateStaticParams() {
-  return articles.map((article) => ({
-    category: article.category,
-    slug: article.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export default async function ArticleDetailPageEn({ 
   params 
@@ -21,18 +17,64 @@ export default async function ArticleDetailPageEn({
   params: Promise<{ category: string; slug: string }> 
 }) {
   const { category: categoryCode, slug } = await params;
-  const article = getArticleBySlug(slug, 'en');
-  const category = getCategoryByCode(categoryCode as any);
-  const subCategory = article?.subCategory ? getSubCategoryByCode(article.subCategory) : undefined;
+  let article: Article | null = null;
+  let relatedArticles: Article[] = [];
+  let categoryNameEn = categoryCode;
+  let subCategoryNameEn = '';
+
+  // 1. Fetch live article by slug from PostgreSQL
+  try {
+    const apiArticle = await articlesApi.getArticle(slug);
+    if (apiArticle && apiArticle.id) {
+      article = mapArticleDTOToArticle(apiArticle);
+      // Ensure English title/excerpt/body take precedence
+      if (apiArticle.title_en) article.title = apiArticle.title_en;
+      if (apiArticle.excerpt_en) article.excerpt = apiArticle.excerpt_en;
+      if (apiArticle.body_en) article.body = apiArticle.body_en;
+    }
+  } catch {
+    // API error / Not found
+  }
 
   if (!article) {
     notFound();
   }
 
+  // 2. Fetch category & subcategory dynamically from PostgreSQL
+  try {
+    const catDto = await categoriesApi.getCategory(categoryCode);
+    if (catDto) {
+      categoryNameEn = catDto.name_en || catDto.name_fr || categoryCode;
+      if (article.subCategory && catDto.sub_categories) {
+        const sub = catDto.sub_categories.find(s => s.code === article?.subCategory);
+        if (sub) {
+          subCategoryNameEn = sub.name_en || sub.name_fr;
+        }
+      }
+    }
+  } catch {
+    categoryNameEn = categoryCode;
+  }
+
+  // 3. Fetch related articles from PostgreSQL
+  try {
+    const relRes = await articlesApi.listArticles({ category: article.category, limit: 10 });
+    if (relRes.articles) {
+      relatedArticles = relRes.articles
+        .filter(a => a.slug !== article?.slug && a.id !== article?.id)
+        .slice(0, 2)
+        .map(dto => {
+          const mapped = mapArticleDTOToArticle(dto);
+          if (dto.title_en) mapped.title = dto.title_en;
+          if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+          return mapped;
+        });
+    }
+  } catch {
+    relatedArticles = [];
+  }
+
   const relatedProjects = getProjectsByCategory(article.category, 'en').slice(0, 2);
-  const relatedArticles = getArticles('en')
-    .filter(a => a.category === article.category && a.id !== article.id)
-    .slice(0, 2);
 
   const date = new Date(article.publishedAt);
   const formattedDate = date.toLocaleDateString('en-US', {
@@ -40,8 +82,6 @@ export default async function ArticleDetailPageEn({
     day: 'numeric',
     year: 'numeric'
   });
-
-  const categoryName = category?.nameEn || article.category;
 
   return (
     <article className="min-h-screen bg-[#faf8f5] pb-24">
@@ -55,13 +95,13 @@ export default async function ArticleDetailPageEn({
             <Link href="/en" className="hover:text-[#0b4627]">Home</Link>
             <span>/</span>
             <Link href={`/en/${article.category}`} className="hover:text-[#0b4627]">
-              {categoryName}
+              {categoryNameEn}
             </Link>
-            {subCategory && (
+            {subCategoryNameEn && (
               <>
                 <span>/</span>
-                <Link href={`/en/${article.category}?sub=${subCategory.code}`} className="text-[#0b4627] font-semibold hover:underline">
-                  {subCategory.nameEn}
+                <Link href={`/en/${article.category}?sub=${article.subCategory}`} className="text-[#0b4627] font-semibold hover:underline">
+                  {subCategoryNameEn}
                 </Link>
               </>
             )}
@@ -75,14 +115,14 @@ export default async function ArticleDetailPageEn({
               href={`/en/${article.category}`}
               className="bg-[#0b4627] text-white px-2.5 py-0.5 font-bold hover:bg-[#072e1a] transition-colors"
             >
-              {categoryName}
+              {categoryNameEn}
             </Link>
-            {subCategory && (
+            {subCategoryNameEn && (
               <Link 
-                href={`/en/${article.category}?sub=${subCategory.code}`}
+                href={`/en/${article.category}?sub=${article.subCategory}`}
                 className="bg-[#f4eee3] text-[#0b4627] border border-[#0b4627]/30 px-2 py-0.5 font-bold hover:bg-[#0b4627] hover:text-white transition-colors"
               >
-                {subCategory.nameEn}
+                {subCategoryNameEn}
               </Link>
             )}
             <span className="text-[#737373]">·</span>
@@ -107,16 +147,16 @@ export default async function ArticleDetailPageEn({
           {/* Bylines & Verification Meta */}
           <div className="pt-4 border-t border-[#141414] flex flex-wrap justify-between items-center gap-4 text-xs font-serif">
             <div className="flex items-center gap-3">
-              <span className="font-bold text-[#141414]">By The Newsroom</span>
+              <span className="font-bold text-[#141414]">{article.author || 'The Editorial Desk'}</span>
               <span className="text-[#737373]">·</span>
               <span className="text-[#555555]">{formattedDate}</span>
               <span className="text-[#737373]">·</span>
-              <span className="text-[#555555]">Bobo-Dioulasso & Ouagadougou</span>
+              <span className="text-[#555555]">Bobo-Dioulasso</span>
             </div>
 
             <div className="flex items-center gap-2 font-mono text-[11px] text-[#0b4627] font-semibold">
               <ShieldCheck size={14} />
-              <span>{article.sourceCount} verified primary sources</span>
+              <span>{article.sourceCount} primary sources verified</span>
             </div>
           </div>
 
@@ -136,18 +176,19 @@ export default async function ArticleDetailPageEn({
                 <img 
                   src={article.image || '/images/lead.jpeg'} 
                   alt={article.title}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="p-3 bg-[#faf8f5] border-t border-[#e6dfd5] text-[11px] font-serif text-[#737373] flex justify-between">
-                <span>Documentary photo evidence</span>
-                <span>Source: Burkina News Archives</span>
+                <span>Documentary Photography</span>
+                <span>Source: Burkina News Editorial Archives</span>
               </div>
             </div>
 
             {/* Article Body Content */}
             <div className="bg-white border border-[#e6dfd5] p-5 sm:p-10">
-              <ArticleBodyRenderer content={article.bodyEn || article.body} lang="en" />
+              <ArticleBodyRenderer content={article.body} lang="en" />
 
               {/* Red Team & Methodology Stamp */}
               <div className="mt-10 pt-6 border-t-2 border-[#141414] bg-[#faf8f5] p-5 text-xs font-serif">
@@ -156,7 +197,7 @@ export default async function ArticleDetailPageEn({
                   <span>Investigation Closure Protocol</span>
                 </div>
                 <p className="text-[#555555] leading-relaxed">
-                  This investigation was subjected to an adversarial audit (Red Team Test) and cross-verified against statutory public institutional filings.
+                  This investigation was subjected to an adversarial audit (Red Team Test) and cross-verified against official public records and regulatory filings.
                 </p>
               </div>
             </div>
@@ -165,7 +206,7 @@ export default async function ArticleDetailPageEn({
             {article.tags && article.tags.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 pt-2">
                 <span className="font-mono text-[10px] uppercase text-[#737373]">Keywords:</span>
-                {article.tags.map(tag => (
+                {article.tags.map((tag: string) => (
                   <span key={tag} className="px-2.5 py-1 bg-white border border-[#e6dfd5] text-[11px] font-mono text-[#141414]">
                     #{tag}
                   </span>
@@ -181,20 +222,20 @@ export default async function ArticleDetailPageEn({
             {/* Dossier Meta Box */}
             <div className="bg-white border border-[#141414] p-5">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#141414]">
-                Traceability Card
+                Traceability Sheet
               </h3>
               
               <dl className="divide-y divide-[#e6dfd5] text-xs font-mono">
                 <div className="py-2 flex justify-between">
-                  <span className="text-[#737373]">Section:</span>
-                  <span className="font-bold text-[#141414]">{categoryName}</span>
+                  <span className="text-[#737373]">Category:</span>
+                  <span className="font-bold text-[#141414]">{categoryNameEn}</span>
                 </div>
                 <div className="py-2 flex justify-between">
-                  <span className="text-[#737373]">Confidence Level:</span>
-                  <span className="font-bold text-[#0b4627]">High certainty</span>
+                  <span className="text-[#737373]">Evidence Level:</span>
+                  <span className="font-bold text-[#0b4627]">High Certainty</span>
                 </div>
                 <div className="py-2 flex justify-between">
-                  <span className="text-[#737373]">Referenced Sources:</span>
+                  <span className="text-[#737373]">Sources Cited:</span>
                   <span className="font-bold text-[#141414]">{article.sourceCount} documents</span>
                 </div>
                 <div className="py-2 flex justify-between">
@@ -222,7 +263,7 @@ export default async function ArticleDetailPageEn({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-1">
-                          <StatusBadge status={p.currentStatus} size="sm" lang="en" />
+                          <StatusBadge status={p.currentStatus} size="sm" />
                           <span className="text-[10px] font-mono text-[#737373]">{p.region}</span>
                         </div>
                         <h4 className="font-serif font-bold text-xs text-[#141414] leading-snug line-clamp-1">
@@ -237,11 +278,11 @@ export default async function ArticleDetailPageEn({
               </div>
             )}
 
-            {/* Related Investigations */}
+            {/* Related Investigations (Pure PostgreSQL) */}
             {relatedArticles.length > 0 && (
               <div className="bg-white border border-[#e6dfd5] p-5">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#141414]">
-                  More in this Section
+                  Related Investigations
                 </h3>
                 <div className="space-y-3">
                   {relatedArticles.map(art => (
@@ -250,6 +291,7 @@ export default async function ArticleDetailPageEn({
                         <img 
                           src={art.image || '/images/lead.jpeg'} 
                           alt={art.title}
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -272,7 +314,7 @@ export default async function ArticleDetailPageEn({
               href={`/en/${article.category}`}
               className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
             >
-              ← Back to {categoryName}
+              ← Back to {categoryNameEn}
             </Link>
 
           </aside>

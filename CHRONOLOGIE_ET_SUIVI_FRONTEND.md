@@ -88,15 +88,35 @@
 | ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
 | :---: | :---: | :--- | :--- | :--- | :--- |
 | **F4.0** | `[x]` | Raccordement du service `categoriesApi` et de l'écran `/admin/rubriques` au CRUD Go/PostgreSQL réel. | `lib/api/categories.ts`, `app/admin/rubriques/page.tsx` | `GET /api/v1/categories`<br>`CRUD /api/v1/admin/categories` | Gestion dynamique complète des rubriques et sous-rubriques, alimentation directe pour la rédaction d'articles. |
-| **F4.1** | `[ ]` | Développer le client API `articlesApi` pour la consultation et gestion des articles d'investigation. | `lib/api/articles.ts` | `GET /api/v1/articles`<br>`CRUD /api/v1/admin/articles` | Support des filtres, pagination, formats et bilinguisme. |
+| **F4.1** | `[x]` | Développer le client API `articlesApi` pour la consultation et gestion des articles d'investigation. | `lib/api/articles.ts`, `lib/api/types.ts` | `GET /api/v1/articles`<br>`CRUD /api/v1/admin/articles` | Support complet des filtres, pagination, 7 formats, bilinguisme FR/EN et sources déontologiques. |
+| **F4.2** | `[x]` | Raccorder l'écran catalogue `/admin/articles` au backend Go réel (`articlesApi.adminListArticles` & suppression RBAC). | `app/admin/articles/page.tsx` | `GET /api/v1/admin/articles`<br>`DELETE /api/v1/admin/articles/:id` | Remplacement de `/api/admin/data`, Skeletons de chargement, KPIs dynamiques, filtres réactifs et suppression sécurisée. |
+| **F4.3** | `[x]` | Raccorder la rédaction `/admin/articles/nouveau` et l'édition `/admin/articles/[id]` à l'API Go (`ArticleEditorForm`). | `components/admin/ArticleEditorForm.tsx`, `app/admin/articles/nouveau/page.tsx`, `app/admin/articles/[id]/page.tsx` | `POST /api/v1/admin/articles`<br>`GET /api/v1/admin/articles/:id`<br>`PUT /api/v1/admin/articles/:id` | Éradication du mock `referentiel`, alimentation dynamique des rubriques/sous-rubriques, upload R2, bilinguisme et synchronisation Micum. |
+| **F4.4** | `[x]` | Raccorder le Dashboard d'accueil `/admin` et le calcul des métriques de `/admin/rubriques` aux endpoints réels (`articlesApi`, `categoriesApi`, `filApi`). | `app/admin/page.tsx`, `app/admin/rubriques/page.tsx` | `GET /api/v1/admin/articles`<br>`GET /api/v1/categories`<br>`GET /api/v1/fil` | Éradication des données mockées dans le back-office, compteurs dynamiques des 48 articles réels, statistiques réelles des 24 sous-rubriques et derniers articles en direct. |
+| **F4.5** | `[x]` | Pagination du catalogue d'articles (`/admin/articles`), affichage des images respectives, sous-rubriques et dissociation des KPIs globaux. | `app/admin/articles/page.tsx`, `lib/api/articles.ts`, `lib/api/types.ts` | `GET /api/v1/admin/articles` | Fin de l'affichage d'un seul bloc de 48 articles : pagination dynamique (10/15/20/50 lignes), boutons précédent/suivant, affichage des photos réelles, badge sous-rubrique et filtre sous-rubrique contextuel. |
+| **F4.6** | `[x]` | Raccordement complet de l'espace visiteur (FR & EN) aux articles et rubriques dynamiques de PostgreSQL. | `lib/api/mappers.ts`, `components/CategoryLayout.tsx`, `app/fr/page.tsx`, `app/en/page.tsx`, `components/editorial/ArticleCard.tsx`, `components/layout/Header.tsx` | `GET /api/v1/articles`<br>`GET /api/v1/categories` | Éradication des mocks dans l'espace public : pages de rubriques (`/fr/[category]`, `/en/[category]`), page d'accueil (Une, décryptages, enquêtes), méga-menu Header et sous-rubriques dynamiques avec fallback résilient. |
+| **F4.7** | `[x]` | Éradication totale et définitive des imports mocks d'articles et raccordement 100% PostgreSQL des pages de lecture d'article, de recherche, de numéros et du Tracker (FR & EN). | `app/fr/[category]/[slug]/page.tsx`, `app/en/[category]/[slug]/page.tsx`, `app/fr/recherche/page.tsx`, `app/en/recherche/page.tsx`, `components/CategoryLayout.tsx`, `app/fr/page.tsx`, `app/en/page.tsx`, `app/fr/numeros/[slug]/page.tsx`, `app/en/numeros/[slug]/page.tsx`, `app/fr/tracker/projets/[slug]/page.tsx`, `app/en/tracker/projets/[slug]/page.tsx` | `GET /api/v1/articles`<br>`GET /api/v1/categories` | 0 import mock d'articles dans l'intégralité du projet frontend. Rendu 100% dynamique sur PostgreSQL Railway, Skeletons de chargement, articles connexes réels, recherche instantanée et bilinguisme parfait. |
 
 ---
 
-## 📅 PHASES F5 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 5 À 10)
+---
 
-- **Phase F5 (Semaine 5) :** Intégration Le Fil & Flux SSE temps réel (`/fr/fil`, `/admin/fil`).
+## 📅 PHASE F5 : Module Le Fil (Dépêches 60s, Éditions Hebdo & Streaming SSE) (Semaine 5 Backend)
+
+> **🎯 Objectif :** Connecter la consultation publique du Fil, la diffusion instantanée 60s par Server-Sent Events (SSE) et le desk rédactionnel aux endpoints réels de l'API Go.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F5.0** | `[x]` | Définition des DTOs et contrats d'interfaces du Fil & Dépêches 60s. | `lib/api/types.ts` | Types DTOs Go | `BriefDTO`, `BriefFactDTO`, `CreateBriefInput`, `UpdateBriefInput`, `CreateFactInput`, `UpdateFactInput`, `BriefFilterParams`, `FactFilterParams`. |
+| **F5.1** | `[x]` | Développement du service client `filApi` et export centralisé. | `lib/api/fil.ts`, `lib/api/index.ts` | `GET /api/v1/fil`<br>`GET /api/v1/fil/editions`<br>`GET /api/v1/fil/editions/:slug`<br>`CRUD /api/v1/admin/fil/editions`<br>`CRUD /api/v1/admin/fil/facts` | Client HTTP complet avec paramètres de recherche, filtres temporels et génération d'URL absolue de flux SSE. |
+| **F5.2** | `[x]` | Hook React `useFilStream` pour la synchronisation en direct par Server-Sent Events (SSE). | `hooks/useFilStream.ts` | `GET /api/v1/fil/stream` | Gestion EventSource native, reconnexion automatique exponentielle, heartbeat 30s et écouteurs typés (`new_fact`, `update_fact`, `delete_fact`, `new_brief`). |
+| **F5.3** | `[x]` | Raccordement du desk rédactionnel `/admin/fil` aux endpoints Go réels. | `app/admin/fil/page.tsx` | `CRUD /api/v1/admin/fil/editions`<br>`CRUD /api/v1/admin/fil/facts`<br>`GET /api/v1/categories` | Éradication totale de `/api/admin/data`, sélecteur d'éditions dynamique, badge d'état SSE direct, modales d'ajout/édition bilingues FR/EN avec traduction Micum. |
+| **F5.4** | `[x]` | Raccordement des pages publiques et composant de streaming live. | `components/fil/FilLiveStream.tsx`, `app/fr/fil/page.tsx`, `app/en/fil/page.tsx`, `app/fr/fil/[slug]/page.tsx`, `app/en/fil/[slug]/page.tsx` | `GET /api/v1/fil/editions`<br>`GET /api/v1/fil/editions/:slug`<br>`GET /api/v1/fil/stream` | Affichage des dépêches en direct (Direct 60s), archives chronologiques hebdomadaires, détails complets avec preuves documentaires et permaliens. |
+
+---
+
+## 📅 PHASES F6 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 6 À 10)
+
 - **Phase F6 (Semaine 6) :** Intégration Tracker Chantiers (6 Statuts) & Baromètre RELANCE (`/fr/tracker`, `/admin/projets`).
-
 - **Phase F7 (Semaine 7) :** Intégration Numéros PDF & Registre des Corrections (`/fr/numeros`, `/admin/corrections`).
 - **Phase F8 (Semaine 8) :** Intégration Curation Une, Formulaires Signalements & Assistant Micum.
 - **Phase F9 (Semaine 9) :** Durcissement, gestion du mode hors-ligne, audit de résilience.

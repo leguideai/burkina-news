@@ -20,7 +20,7 @@ import {
 import { useAdminAuth } from '@/components/admin/AuthGuard';
 import { SkeletonStat, SkeletonTable } from '@/components/admin/Skeleton';
 import { PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS } from '@/data/types';
-import { normalizeRoleCode } from '@/lib/api';
+import { normalizeRoleCode, articlesApi, categoriesApi, filApi } from '@/lib/api';
 
 export default function AdminOverviewPage() {
   const { user } = useAdminAuth();
@@ -33,11 +33,38 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/admin/data');
-        if (res.ok) {
-          const json = await res.json();
-          setData(json);
-        }
+        // Chargement parallèle des services réels Go
+        const [articlesRes, categoriesRes, briefsRes] = await Promise.allSettled([
+          articlesApi.adminListArticles({ limit: 1000 }),
+          categoriesApi.listCategories(),
+          filApi.adminListBriefs({ limit: 50 }),
+        ]);
+
+        const realArticles = articlesRes.status === 'fulfilled' ? (articlesRes.value.articles || []) : [];
+        const realCategories = categoriesRes.status === 'fulfilled' ? categoriesRes.value : [];
+        const realBriefs = briefsRes.status === 'fulfilled' ? (briefsRes.value.briefs || []) : [];
+
+        // Récupération des données secondaires en attente des phases F6 & F7
+        let fallbackJson: any = {};
+        try {
+          const res = await fetch('/api/admin/data');
+          if (res.ok) fallbackJson = await res.json();
+        } catch {}
+
+        setData({
+          ...fallbackJson,
+          articles: realArticles.map(a => ({
+            id: a.id,
+            title: a.title_fr,
+            category: a.category_code,
+            subCategory: a.sub_category_code,
+            format: a.type,
+            status: a.status,
+            publishedAt: a.published_at,
+          })),
+          categories: realCategories,
+          briefs: realBriefs,
+        });
       } catch (e) {
         console.error('Error fetching admin data', e);
       } finally {

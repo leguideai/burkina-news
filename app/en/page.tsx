@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { getLatestIssue } from '@/data/mock/issues';
 import { getLatestBrief } from '@/data/mock/briefs';
-import { getArticles } from '@/data/mock/articles';
 import { getKeyIndicators } from '@/data/mock/indicators';
 import { getProjects, getProjectStats } from '@/data/mock/projects';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
 import { getAdminStore } from '@/data/admin-store';
+import { articlesApi } from '@/lib/api/articles';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
 import { 
   ArrowRight, 
   Clock, 
@@ -20,14 +22,34 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 
-export default function HomePageEn() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePageEn() {
   const store = getAdminStore();
   const config = store.homepageConfig;
   const latestIssue = getLatestIssue('en');
   const latestBrief = getLatestBrief('en');
   const indicators = getKeyIndicators('en');
   const projectStats = getProjectStats();
-  const enArticles = getArticles('en');
+
+  let liveArticles: Article[] = [];
+  try {
+    const res = await articlesApi.listArticles({ limit: 50 });
+    if (res.articles && res.articles.length > 0) {
+      liveArticles = res.articles.map(dto => {
+        const mapped = mapArticleDTOToArticle(dto);
+        if (dto.title_en) mapped.title = dto.title_en;
+        if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+        return mapped;
+      });
+    }
+  } catch {
+    // API error
+  }
+
+  const enArticles = liveArticles.length > 0 
+    ? liveArticles 
+    : (store.articles || []);
 
   const normalizeId = (id?: string) => (id || '').replace(/^art-0*/, 'art-');
   const matchId = (aId: string, targetId?: string) => 
@@ -41,7 +63,7 @@ export default function HomePageEn() {
     .map(id => enArticles.find(a => matchId(a.id, id)))
     .filter(Boolean) as typeof enArticles;
 
-  const fallbackSecondaries = enArticles.filter(a => a.id !== leadArticle.id);
+  const fallbackSecondaries = leadArticle ? enArticles.filter(a => a.id !== leadArticle.id) : enArticles;
   const secondaryArticles = configuredSecondaries.length > 0 ? configuredSecondaries : fallbackSecondaries.slice(0, 4);
 
   const featuredProjects = getProjects('en').slice(0, 3);
@@ -52,7 +74,7 @@ export default function HomePageEn() {
   const issueArticles = latestIssue ? enArticles.filter(a => a.issueId === latestIssue.id) : [];
   const issueSourcesCount = issueArticles.length > 0 
     ? issueArticles.reduce((acc, curr) => acc + curr.sourceCount, 0)
-    : leadArticle.sourceCount;
+    : (leadArticle?.sourceCount || 0);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#faf8f5]">

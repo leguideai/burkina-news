@@ -291,3 +291,237 @@ export interface UpdateSubCategoryInput {
   is_activated?: boolean;
 }
 
+// ─── Articles & Grandes Enquêtes d'Investigation (Semaine 4 / Phase F4) ──
+
+export type ArticleFormat =
+  | 'decryptage'
+  | 'terrain'
+  | 'vrai-ou-faux'
+  | 'edito'
+  | 'le-chiffre'
+  | 'trois-questions'
+  | 'analyse';
+
+export type ArticleStatus = 'draft' | 'review' | 'published' | 'archived';
+
+export type ArticleConfidence = 'high' | 'medium' | 'low';
+
+export interface DocumentSourceDTO {
+  id?: string;
+  name: string;
+  url?: string;
+  type: string; // e.g. 'rapport_officiel', 'decret', 'proces_verbal', 'interview', 'statistiques'
+  excerpt?: string;
+  date?: string;
+}
+
+export interface ArticleDTO {
+  id: string;
+  slug: string;
+  title_fr: string;
+  title_en?: string;
+  excerpt_fr: string;
+  excerpt_en?: string;
+  body_fr: string;
+  body_en?: string;
+  category_code: string;
+  category?: CategoryDTO;
+  sub_category_code?: string;
+  sub_category?: SubCategoryDTO;
+  featured_image?: string;
+  image?: string;
+  featured_image_caption?: string;
+  status: ArticleStatus;
+  type: ArticleFormat;
+  confidence_level: ArticleConfidence;
+  author_id: string;
+  author?: AdminUserDTO;
+  tags: string[];
+  sources: DocumentSourceDTO[];
+  source_count: number;
+  read_time: number;
+  word_count: number;
+  issue_id?: string;
+  is_exclusive: boolean;
+  is_lead: boolean;
+  published_at?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ArticleDetailDTO extends ArticleDTO {
+  related_articles?: ArticleDTO[];
+}
+
+export interface CreateArticleInput {
+  title_fr: string;
+  title_en?: string;
+  excerpt_fr: string;
+  excerpt_en?: string;
+  body_fr: string;
+  body_en?: string;
+  category_code: string;
+  sub_category_code?: string;
+  featured_image?: string;
+  image?: string;
+  featured_image_caption?: string;
+  status?: ArticleStatus;
+  type?: ArticleFormat;
+  confidence_level?: ArticleConfidence;
+  tags?: string[];
+  sources?: DocumentSourceDTO[];
+  issue_id?: string;
+  is_exclusive?: boolean;
+  is_lead?: boolean;
+  published_at?: string;
+}
+
+export interface UpdateArticleInput {
+  title_fr?: string;
+  title_en?: string;
+  excerpt_fr?: string;
+  excerpt_en?: string;
+  body_fr?: string;
+  body_en?: string;
+  category_code?: string;
+  sub_category_code?: string;
+  featured_image?: string;
+  image?: string;
+  featured_image_caption?: string;
+  status?: ArticleStatus;
+  type?: ArticleFormat;
+  confidence_level?: ArticleConfidence;
+  tags?: string[];
+  sources?: DocumentSourceDTO[];
+  issue_id?: string;
+  is_exclusive?: boolean;
+  is_lead?: boolean;
+  published_at?: string;
+}
+
+export interface ArticleFilterParams {
+  page?: number;
+  limit?: number;
+  category?: string;
+  sub_category?: string;
+  type?: string;
+  format?: string;
+  confidence_level?: string;
+  status?: string;
+  tag?: string;
+  search?: string;
+}
+
+// ─── Le Fil (Dépêches 60s & Éditions Hebdomadaires — Semaine 5 / Phase F5) ─
+
+export interface BriefFactDTO {
+  id: string;
+  brief_id?: string | null;
+  time: string;
+  date?: string;
+  text_fr: string;
+  text_en?: string;
+  source: string;
+  source_url?: string;
+  category_code: string;
+  category?: CategoryDTO;
+  why_watch_fr?: string;
+  why_watch_en?: string;
+  image?: string;
+  order_num: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface BriefDTO {
+  id: string;
+  title: string;
+  title_en?: string;
+  slug: string;
+  date: string;
+  week_number: number;
+  year: number;
+  image?: string;
+  summary?: string;
+  summary_en?: string;
+  is_published: boolean;
+  created_by_id?: string;
+  created_by?: AdminUserDTO;
+  facts?: BriefFactDTO[];
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface CreateBriefInput {
+  title: string;
+  title_en?: string;
+  slug?: string;
+  date?: string;
+  week_number?: number;
+  year?: number;
+  image?: string;
+  summary?: string;
+  summary_en?: string;
+  is_published?: boolean;
+}
+
+export interface UpdateBriefInput {
+  title?: string;
+  title_en?: string;
+  slug?: string;
+  date?: string;
+  week_number?: number;
+  year?: number;
+  image?: string;
+  summary?: string;
+  summary_en?: string;
+  is_published?: boolean;
+}
+
+export interface CreateFactInput {
+  brief_id?: string | null;
+  time?: string;
+  date?: string;
+  text_fr: string;
+  text_en?: string;
+  source: string;
+  source_url?: string;
+  category_code: string;
+  why_watch_fr?: string;
+  why_watch_en?: string;
+  image?: string;
+  order_num?: number;
+}
+
+export interface UpdateFactInput {
+  brief_id?: string | null;
+  time?: string;
+  date?: string;
+  text_fr?: string;
+  text_en?: string;
+  source?: string;
+  source_url?: string;
+  category_code?: string;
+  why_watch_fr?: string;
+  why_watch_en?: string;
+  image?: string;
+  order_num?: number;
+}
+
+export interface BriefFilterParams {
+  year?: number;
+  week_number?: number;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface FactFilterParams {
+  brief_id?: string;
+  category?: string;
+  date?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+

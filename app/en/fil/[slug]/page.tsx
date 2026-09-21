@@ -1,28 +1,83 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ExternalLink, ShieldCheck, Camera, Calendar, Clock, ChevronRight, Hash } from 'lucide-react';
-import { briefs, getBriefs, getBriefBySlug } from '@/data/mock/briefs';
+import { filApi } from '@/lib/api/fil';
+import { BriefDTO } from '@/lib/api/types';
+import { briefs as staticBriefs, getBriefs, getBriefBySlug } from '@/data/mock/briefs';
 import { categories } from '@/data/mock/categories';
 import { getSourceUrl } from '@/data/sources';
 
 export function generateStaticParams() {
-  return briefs.map((brief) => ({
+  return staticBriefs.map((brief) => ({
     slug: brief.slug,
   }));
 }
 
+export const revalidate = 60;
+
 export default async function BriefDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const brief = getBriefBySlug(slug, 'en');
-  const enBriefs = getBriefs('en');
-  
+  let brief: BriefDTO | null = null;
+  let allBriefs: BriefDTO[] = [];
+
+  try {
+    const res = await filApi.listBriefs({ limit: 50 });
+    allBriefs = res.briefs || [];
+    brief = await filApi.getBriefBySlug(slug);
+  } catch {
+    const mock = getBriefBySlug(slug, 'en');
+    if (mock) {
+      brief = {
+        id: mock.id,
+        title: mock.titleEn || mock.title,
+        title_en: mock.titleEn,
+        slug: mock.slug,
+        date: mock.date,
+        week_number: mock.weekNumber,
+        year: new Date(mock.date).getFullYear() || 2026,
+        image: mock.image,
+        summary: mock.summary,
+        summary_en: mock.summaryEn,
+        is_published: true,
+        created_at: mock.date,
+        facts: mock.facts.map((f, i) => ({
+          id: `fact-${mock.id}-${i}`,
+          time: f.time,
+          date: mock.date,
+          text_fr: f.text,
+          text_en: f.textEn || f.text,
+          source: f.source,
+          source_url: f.sourceUrl,
+          category_code: (f.category as string) || 'economie',
+          why_watch_fr: f.whyWatch,
+          why_watch_en: f.whyWatchEn,
+          image: f.image,
+          order_num: i + 1,
+          created_at: mock.date,
+        })),
+      };
+      allBriefs = getBriefs('en').map(b => ({
+        id: b.id,
+        title: b.titleEn || b.title,
+        title_en: b.titleEn,
+        slug: b.slug,
+        date: b.date,
+        week_number: b.weekNumber,
+        year: new Date(b.date).getFullYear() || 2026,
+        is_published: true,
+        created_at: b.date,
+        facts: [],
+      }));
+    }
+  }
+
   if (!brief) {
     notFound();
   }
 
-  const currentIndex = enBriefs.findIndex((b) => b.slug === slug);
-  const prevBrief = currentIndex < enBriefs.length - 1 ? enBriefs[currentIndex + 1] : null;
-  const nextBrief = currentIndex > 0 ? enBriefs[currentIndex - 1] : null;
+  const currentIndex = allBriefs.findIndex((b) => b.slug === slug);
+  const prevBrief = currentIndex < allBriefs.length - 1 ? allBriefs[currentIndex + 1] : null;
+  const nextBrief = currentIndex > 0 ? allBriefs[currentIndex - 1] : null;
 
   const date = new Date(brief.date);
   const formattedDate = date.toLocaleDateString('en-US', {
@@ -32,6 +87,7 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
   });
 
   const heroImageSrc = brief.image || '/images/lead.jpeg';
+  const displayTitle = brief.title_en || brief.title;
 
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
@@ -45,7 +101,7 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
             <span>/</span>
             <Link href="/en/fil" className="hover:text-[#0b4627]">The Brief</Link>
             <span>/</span>
-            <span className="text-[#141414] font-bold">Week {brief.weekNumber}</span>
+            <span className="text-[#141414] font-bold">Week {brief.week_number}</span>
           </nav>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#141414]">
@@ -56,91 +112,96 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
                 <span className="text-[#555555]">{formattedDate}</span>
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight">
-                {brief.title}
+                {displayTitle}
               </h1>
             </div>
 
             <div className="bg-[#faf8f5] border border-[#e6dfd5] p-3 text-right shrink-0">
-              <span className="font-mono text-xs font-bold text-[#0b4627] block">10 Verified & Sourced Facts</span>
-              <span className="text-[10px] font-serif text-[#737373]">Weekly fact registry</span>
+              <span className="font-mono text-xs font-bold text-[#0b4627] block">
+                {brief.facts?.length || 10} Sourced & Verified Facts
+              </span>
+              <span className="text-[10px] font-serif text-[#737373]">Weekly chronicle</span>
             </div>
           </div>
 
         </div>
       </header>
 
-      {/* 2. Main Timeline Layout */}
+      {/* 2. Main Content Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Main Column (Col 8) */}
-          <div className="lg:col-span-8 space-y-8">
+          {/* 10 Facts Timeline (Col 8) */}
+          <div className="lg:col-span-8 space-y-6">
             
-            {/* Lead Cover Image with documentary badge */}
-            <div className="border border-[#e6dfd5] bg-white overflow-hidden shadow-xs">
-              <div className="aspect-[21/9] w-full bg-neutral-100 relative">
+            {/* Weekly Hero Evidence Photo */}
+            <div className="bg-white border border-[#e6dfd5] overflow-hidden">
+              <div className="aspect-[16/9] w-full bg-neutral-100 relative">
                 <img 
                   src={heroImageSrc} 
-                  alt={brief.title}
+                  alt={displayTitle}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-3 left-3 bg-[#141414]/90 text-white px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5">
-                  <Camera size={12} className="text-[#ffd8a8]" />
-                  <span>Documentary Evidence · Week {brief.weekNumber}</span>
+                <div className="absolute top-3 left-3 bg-[#141414]/90 text-white px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-sm">
+                  <Camera size={12} />
+                  <span>Documentary Evidence · Week {brief.week_number}</span>
                 </div>
               </div>
-              <div className="p-3 bg-[#faf8f5] border-t border-[#e6dfd5] text-[11px] font-serif text-[#737373] flex justify-between items-center">
-                <span>Field evidence & documentary records collected in Burkina Faso</span>
-                <span className="font-mono text-[10px] text-[#0b4627] font-semibold">Burkina News Newsroom</span>
+              <div className="p-3 bg-[#faf8f5] border-t border-[#e6dfd5] text-[11px] font-serif text-[#555555] flex flex-wrap justify-between items-center gap-2">
+                <span>Documentary photography · Burkina News Archive</span>
+                <span className="font-mono text-[10px] text-[#0b4627] font-semibold">
+                  {brief.facts?.length || 10} certified facts without opinion
+                </span>
               </div>
             </div>
 
-            {/* Introductory Statement */}
-            <div className="bg-white border-l-4 border-[#0b4627] p-4 text-xs font-serif text-[#444444] leading-relaxed">
-              <p>
-                <strong>Methodology:</strong> The Brief records 10 factual events of the week. No analysis or speculation: only auditable facts substantiated by a ministerial decree, an official statistical bulletin, a multilateral agency release, or direct verified observation.
-              </p>
-            </div>
-
-            {/* The 10 Facts Timeline */}
-            <div className="space-y-6">
-              {brief.facts.map((fact, idx) => {
-                const factAnchor = `fait-${idx + 1}`;
+            {/* Facts Chronological List */}
+            <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5]">
+              {brief.facts?.map((fact, index) => {
+                const catInfo = fact.category_code ? categories.find(c => c.code === fact.category_code) : null;
+                const factImageSrc = fact.image || '/images/lead.jpeg';
+                const factText = fact.text_en || fact.text_fr;
+                const factWhyWatch = fact.why_watch_en || fact.why_watch_fr;
+                
                 return (
                   <article 
-                    key={idx} 
-                    id={factAnchor}
-                    className="group bg-white border border-[#e6dfd5] p-6 sm:p-7 hover:border-[#141414] transition-all scroll-mt-24 target:bg-[#f4eee3] target:border-l-4 target:border-l-[#0b4627]"
+                    key={fact.id || index} 
+                    id={`fact-${index + 1}`}
+                    className="p-6 hover:bg-[#faf8f5] transition-colors scroll-mt-24 target:bg-[#f4eee3]/80 target:border-l-4 target:border-l-[#0b4627]"
                   >
-                    {/* Topline: Number, Time, Category, Permlink */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-[#e6dfd5]">
+                    
+                    {/* Header Row */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-4 border-b border-[#e6dfd5]">
                       <div className="flex items-center gap-2">
                         <a 
-                          href={`#${factAnchor}`} 
-                          className="bg-[#0b4627] text-white text-[10px] font-mono font-bold px-2 py-0.5 uppercase tracking-wider flex items-center gap-1 hover:bg-[#072e1a] transition-colors"
-                          title="Fact permalink"
+                          href={`#fact-${index + 1}`}
+                          className="font-mono text-xs font-bold text-[#0b4627] bg-[#f4eee3] hover:bg-[#e9efe8] px-2 py-0.5 border border-[#e6dfd5] inline-flex items-center gap-1 transition-colors"
+                          title="Permalink to this fact"
                         >
-                          <Hash size={10} />
-                          <span>Fact {idx + 1}/10 · {fact.time}</span>
+                          <Hash size={11} className="opacity-60" />
+                          <span>Fact {index + 1}/{brief.facts?.length || 10}</span>
+                          <span className="text-[#555555]">· [{fact.time}]</span>
                         </a>
 
-                        <Link 
-                          href={`/en/${fact.category}`}
-                          className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#737373] hover:text-[#0b4627] transition-colors"
-                        >
-                          {fact.category}
-                        </Link>
+                        {catInfo && (
+                          <Link 
+                            href={`/en/${fact.category_code}`}
+                            className="text-[10px] font-mono font-bold uppercase text-[#555555] hover:text-[#0b4627] hover:underline"
+                            title={`View all ${catInfo.nameEn} reports`}
+                          >
+                            {catInfo.nameEn}
+                          </Link>
+                        )}
                       </div>
 
-                      {/* External Official Source Link */}
-                      <div className="text-xs font-serif text-[#737373] flex items-center gap-1">
-                        <span>Source:</span>
+                      <div className="text-[11px] font-serif text-[#737373]">
+                        Source:{' '}
                         <a 
-                          href={getSourceUrl(fact.source)} 
-                          target="_blank" 
+                          href={getSourceUrl(fact.source, fact.source_url)}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="font-bold text-[#0b4627] hover:underline inline-flex items-center gap-0.5"
-                          title={`Verify with official institution: ${fact.source}`}
+                          title={`Open official portal of ${fact.source}`}
                         >
                           <span>{fact.source}</span>
                           <ExternalLink size={10} />
@@ -148,106 +209,111 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
                       </div>
                     </div>
 
-                    {/* Fact Body with Image Evidence */}
-                    <div className="flex flex-col sm:flex-row gap-5 items-start mb-4">
-                      {fact.image && (
-                        <div className="w-full sm:w-44 aspect-[4/3] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
-                          <img 
-                            src={fact.image} 
-                            alt="Documentary evidence"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                      )}
+                    {/* Fact Body with Photographic Evidence */}
+                    <div className="flex flex-col sm:flex-row gap-5 items-start">
                       
-                      <p className="text-sm sm:text-base font-serif text-[#141414] leading-relaxed flex-1">
-                        {fact.text}
-                      </p>
-                    </div>
-
-                    {/* Why Watch Note */}
-                    {fact.whyWatch && (
-                      <div className="bg-[#faf8f5] border border-[#e6dfd5] p-3.5 text-xs font-serif">
-                        <span className="font-mono text-[10px] uppercase text-[#0b4627] font-bold block mb-1">
-                          Strategic Implications :
-                        </span>
-                        <p className="text-[#555555] leading-relaxed">
-                          {fact.whyWatch}
-                        </p>
+                      {/* Photographic Evidence Thumbnail */}
+                      <div className="w-full sm:w-32 aspect-[4/3] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <img 
+                          src={factImageSrc} 
+                          alt={`Evidence photo - Fact ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                    )}
 
-                    {/* Fact Footer Actions */}
-                    <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-between items-center text-[11px] font-mono">
-                      <a 
-                        href={`#${factAnchor}`} 
-                        className="text-[#737373] hover:text-[#0b4627] flex items-center gap-1"
-                      >
-                        <Hash size={11} />
-                        <span>Permalink: #{factAnchor}</span>
-                      </a>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-serif text-[#141414] leading-relaxed mb-3 font-medium">
+                          {factText}
+                        </p>
 
-                      <a 
-                        href={getSourceUrl(fact.source)} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-[#0b4627] font-bold hover:underline inline-flex items-center gap-1"
-                      >
-                        <span>Verify with {fact.source}</span>
-                        <ExternalLink size={11} />
-                      </a>
+                        {factWhyWatch && (
+                          <div className="bg-[#faf8f5] border-l-2 border-[#0b4627] p-3 text-xs font-serif text-[#444444] mb-3">
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0b4627] block mb-1">
+                              Why watch this fact:
+                            </span>
+                            <p className="leading-relaxed">{factWhyWatch}</p>
+                          </div>
+                        )}
+
+                        {/* Direct Contextual Links */}
+                        <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                          <a 
+                            href={getSourceUrl(fact.source, fact.source_url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#0b4627] font-semibold hover:underline inline-flex items-center gap-1"
+                          >
+                            <ShieldCheck size={12} />
+                            <span>Verify with {fact.source} ↗</span>
+                          </a>
+
+                          {catInfo && (
+                            <Link 
+                              href={`/en/${fact.category_code}`}
+                              className="text-[#737373] hover:text-[#141414] hover:underline inline-flex items-center gap-0.5"
+                            >
+                              <span>Category {catInfo.nameEn}</span>
+                              <ChevronRight size={12} />
+                            </Link>
+                          )}
+                        </div>
+
+                      </div>
                     </div>
+
                   </article>
                 );
               })}
             </div>
 
-            {/* Navigation between editions */}
-            <div className="flex justify-between items-center pt-8 border-t border-[#141414]">
+            {/* Bottom Week Navigation Bar */}
+            <div className="flex justify-between items-center bg-white border border-[#e6dfd5] p-4 text-xs font-mono">
               {prevBrief ? (
                 <Link 
                   href={`/en/fil/${prevBrief.slug}`}
-                  className="font-mono text-xs font-bold text-[#141414] hover:text-[#0b4627] flex items-center gap-1"
+                  className="px-3 py-2 border border-[#e6dfd5] hover:border-[#141414] text-[#141414] font-bold uppercase inline-flex items-center gap-1.5 transition-colors"
                 >
-                  <ArrowLeft size={14} />
-                  <span>Week {prevBrief.weekNumber} (Previous)</span>
+                  <ArrowLeft size={13} />
+                  <span>Previous Week {prevBrief.week_number}</span>
                 </Link>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
 
-              {nextBrief ? (
+              {nextBrief && (
                 <Link 
                   href={`/en/fil/${nextBrief.slug}`}
-                  className="font-mono text-xs font-bold text-[#141414] hover:text-[#0b4627] flex items-center gap-1"
+                  className="px-3 py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white font-bold uppercase inline-flex items-center gap-1.5 transition-colors"
                 >
-                  <span>Week {nextBrief.weekNumber} (Next)</span>
-                  <ArrowRight size={14} />
+                  <span>Next Week {nextBrief.week_number}</span>
+                  <ArrowRight size={13} />
                 </Link>
-              ) : <div />}
+              )}
             </div>
 
           </div>
 
-          {/* Sidebar (Col 4) */}
+          {/* 3. Sidebar (Col 4) : Past Weeks & Archives */}
           <aside className="lg:col-span-4 space-y-6">
             
-            {/* Past Weeks Navigation */}
-            <div className="bg-white border-2 border-[#141414] p-5">
-              <div className="flex justify-between items-center pb-2 mb-3 border-b border-[#141414]">
+            {/* Direct Access to Other Weekly Editions */}
+            <div className="bg-white border border-[#141414] p-5">
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#141414]">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
                   Past Brief Editions
                 </h3>
                 <span className="text-[10px] font-mono text-[#0b4627] font-bold">
-                  {briefs.length} weeks
+                  {allBriefs.length} weeks
                 </span>
               </div>
 
               <p className="text-xs font-serif text-[#555555] mb-4 leading-relaxed">
-                Directly access verified facts from previous weeks:
+                Access verified facts from preceding weeks directly:
               </p>
 
               <div className="space-y-3">
-                {enBriefs.map((b) => {
-                  const isCurrent = b.slug === brief.slug;
+                {allBriefs.map((b) => {
+                  const isCurrent = b.slug === brief?.slug;
                   const bDate = new Date(b.date).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -268,7 +334,7 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
                         <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
                           <img 
                             src={b.image || '/images/lead.jpeg'} 
-                            alt={b.title}
+                            alt={b.title_en || b.title}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -276,7 +342,7 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-1 mb-0.5">
                             <span className="font-mono text-xs font-bold text-[#141414]">
-                              Week {b.weekNumber}
+                              Week {b.week_number}
                             </span>
                             {isCurrent && (
                               <span className="text-[9px] font-mono font-bold bg-[#0b4627] text-white px-1.5 py-0.2 uppercase">
@@ -285,7 +351,7 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
                             )}
                           </div>
                           <span className="text-[11px] font-serif text-[#737373] block truncate">
-                            {bDate} · 10 facts
+                            {bDate} · {b.facts?.length || 10} facts
                           </span>
                         </div>
                       </div>
@@ -299,7 +365,7 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
                   href="/en/fil"
                   className="font-mono text-xs font-bold text-[#0b4627] hover:underline inline-flex items-center gap-1"
                 >
-                  <span>All Brief archives</span>
+                  <span>All archives of The Brief</span>
                   <ArrowRight size={12} />
                 </Link>
               </div>
@@ -308,10 +374,10 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
             {/* Editorial Protocol Box */}
             <div className="bg-[#faf8f5] border border-[#e6dfd5] p-5">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] pb-2 mb-3 border-b border-[#e6dfd5]">
-                Traceability Standard
+                Evidence Protocol
               </h3>
               <p className="text-xs font-serif text-[#555555] leading-relaxed mb-3">
-                Every fact is recorded after direct verification against the primary issuing document or direct visual evidence on the ground.
+                Every fact is published only after primary source verification against official documents or authenticated field evidence.
               </p>
               <Link href="/en/methode" className="font-mono text-xs font-bold text-[#0b4627] hover:underline block">
                 Read our methodology →
@@ -323,7 +389,7 @@ export default async function BriefDetailPageEn({ params }: { params: Promise<{ 
               href="/en"
               className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
             >
-              ← Back to Front Page
+              ← Back to homepage
             </Link>
           </aside>
 

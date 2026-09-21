@@ -2,8 +2,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Download, BookOpen, ShieldCheck } from 'lucide-react';
 import { issues, getIssueBySlug } from '@/data/mock/issues';
-import { getArticles } from '@/data/mock/articles';
-import { categories } from '@/data/mock/categories';
+import { articlesApi } from '@/lib/api/articles';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
+
+export const dynamic = 'force-dynamic';
 
 export function generateStaticParams() {
   return issues.map((issue) => ({
@@ -19,9 +22,22 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const enArticles = getArticles('en');
+  let enArticles: Article[] = [];
+  try {
+    const res = await articlesApi.listArticles({ limit: 100 });
+    if (res.articles) {
+      enArticles = res.articles.map(dto => {
+        const mapped = mapArticleDTOToArticle(dto);
+        if (dto.title_en) mapped.title = dto.title_en;
+        if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+        return mapped;
+      });
+    }
+  } catch {
+    enArticles = [];
+  }
   const issueArticles = issue.articleIds
-    .map(id => enArticles.find(a => a.id === id))
+    .map(id => enArticles.find(a => a.id === id || a.slug === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
   const date = new Date(issue.publicationDate);

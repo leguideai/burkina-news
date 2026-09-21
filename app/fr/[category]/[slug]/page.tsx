@@ -1,19 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { articles, getArticleBySlug, getArticles } from '@/data/mock/articles';
-import { categories, getCategoryByCode } from '@/data/mock/categories';
-import { getSubCategoryByCode } from '@/data/mock/referentiel';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import ArticleBodyRenderer from '@/components/editorial/ArticleBodyRenderer';
 import { ArrowLeft, Clock, ShieldCheck, FileText, Share2, Printer, ChevronRight, Bookmark } from 'lucide-react';
+import { articlesApi } from '@/lib/api/articles';
+import { categoriesApi } from '@/lib/api/categories';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
 
-export function generateStaticParams() {
-  return articles.map((article) => ({
-    category: article.category,
-    slug: article.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export default async function ArticleDetailPage({ 
   params 
@@ -21,18 +17,55 @@ export default async function ArticleDetailPage({
   params: Promise<{ category: string; slug: string }> 
 }) {
   const { category: categoryCode, slug } = await params;
-  const article = getArticleBySlug(slug);
-  const category = getCategoryByCode(categoryCode as any);
-  const subCategory = article?.subCategory ? getSubCategoryByCode(article.subCategory) : undefined;
+  let article: Article | null = null;
+  let relatedArticles: Article[] = [];
+  let categoryNameFr = categoryCode;
+  let subCategoryNameFr = '';
+
+  // 1. Fetch live article by slug from PostgreSQL
+  try {
+    const apiArticle = await articlesApi.getArticle(slug);
+    if (apiArticle && apiArticle.id) {
+      article = mapArticleDTOToArticle(apiArticle);
+    }
+  } catch {
+    // API error / Not found
+  }
 
   if (!article) {
     notFound();
   }
 
+  // 2. Fetch category & subcategory dynamically from PostgreSQL
+  try {
+    const catDto = await categoriesApi.getCategory(categoryCode);
+    if (catDto) {
+      categoryNameFr = catDto.name_fr || categoryCode;
+      if (article.subCategory && catDto.sub_categories) {
+        const sub = catDto.sub_categories.find(s => s.code === article?.subCategory);
+        if (sub) {
+          subCategoryNameFr = sub.name_fr;
+        }
+      }
+    }
+  } catch {
+    categoryNameFr = categoryCode;
+  }
+
+  // 3. Fetch related articles from PostgreSQL
+  try {
+    const relRes = await articlesApi.listArticles({ category: article.category, limit: 10 });
+    if (relRes.articles) {
+      relatedArticles = relRes.articles
+        .filter(a => a.slug !== article?.slug && a.id !== article?.id)
+        .slice(0, 2)
+        .map(mapArticleDTOToArticle);
+    }
+  } catch {
+    relatedArticles = [];
+  }
+
   const relatedProjects = getProjectsByCategory(article.category).slice(0, 2);
-  const relatedArticles = getArticles('fr')
-    .filter(a => a.category === article.category && a.id !== article.id)
-    .slice(0, 2);
 
   const date = new Date(article.publishedAt);
   const formattedDate = date.toLocaleDateString('fr-FR', {
@@ -53,13 +86,13 @@ export default async function ArticleDetailPage({
             <Link href="/fr" className="hover:text-[#0b4627]">Accueil</Link>
             <span>/</span>
             <Link href={`/fr/${article.category}`} className="hover:text-[#0b4627]">
-              {category?.nameFr || article.category}
+              {categoryNameFr}
             </Link>
-            {subCategory && (
+            {subCategoryNameFr && (
               <>
                 <span>/</span>
-                <Link href={`/fr/${article.category}?sub=${subCategory.code}`} className="text-[#0b4627] font-semibold hover:underline">
-                  {subCategory.nameFr}
+                <Link href={`/fr/${article.category}?sub=${article.subCategory}`} className="text-[#0b4627] font-semibold hover:underline">
+                  {subCategoryNameFr}
                 </Link>
               </>
             )}
@@ -73,14 +106,14 @@ export default async function ArticleDetailPage({
               href={`/fr/${article.category}`}
               className="bg-[#0b4627] text-white px-2.5 py-0.5 font-bold hover:bg-[#072e1a] transition-colors"
             >
-              {category?.nameFr || article.category}
+              {categoryNameFr}
             </Link>
-            {subCategory && (
+            {subCategoryNameFr && (
               <Link 
-                href={`/fr/${article.category}?sub=${subCategory.code}`}
+                href={`/fr/${article.category}?sub=${article.subCategory}`}
                 className="bg-[#f4eee3] text-[#0b4627] border border-[#0b4627]/30 px-2 py-0.5 font-bold hover:bg-[#0b4627] hover:text-white transition-colors"
               >
-                {subCategory.nameFr}
+                {subCategoryNameFr}
               </Link>
             )}
             <span className="text-[#737373]">·</span>
@@ -105,7 +138,7 @@ export default async function ArticleDetailPage({
           {/* Bylines & Verification Meta */}
           <div className="pt-4 border-t border-[#141414] flex flex-wrap justify-between items-center gap-4 text-xs font-serif">
             <div className="flex items-center gap-3">
-              <span className="font-bold text-[#141414]">Par La Rédaction</span>
+              <span className="font-bold text-[#141414]">{article.author || 'La Rédaction'}</span>
               <span className="text-[#737373]">·</span>
               <span className="text-[#555555]">{formattedDate}</span>
               <span className="text-[#737373]">·</span>
@@ -134,6 +167,7 @@ export default async function ArticleDetailPage({
                 <img 
                   src={article.image || '/images/lead.jpeg'} 
                   alt={article.title}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -163,7 +197,7 @@ export default async function ArticleDetailPage({
             {article.tags && article.tags.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 pt-2">
                 <span className="font-mono text-[10px] uppercase text-[#737373]">Mots-clés :</span>
-                {article.tags.map(tag => (
+                {article.tags.map((tag: string) => (
                   <span key={tag} className="px-2.5 py-1 bg-white border border-[#e6dfd5] text-[11px] font-mono text-[#141414]">
                     #{tag}
                   </span>
@@ -185,7 +219,7 @@ export default async function ArticleDetailPage({
               <dl className="divide-y divide-[#e6dfd5] text-xs font-mono">
                 <div className="py-2 flex justify-between">
                   <span className="text-[#737373]">Rubrique :</span>
-                  <span className="font-bold text-[#141414]">{category?.nameFr || article.category}</span>
+                  <span className="font-bold text-[#141414]">{categoryNameFr}</span>
                 </div>
                 <div className="py-2 flex justify-between">
                   <span className="text-[#737373]">Niveau de preuve :</span>
@@ -235,7 +269,7 @@ export default async function ArticleDetailPage({
               </div>
             )}
 
-            {/* Related Investigations */}
+            {/* Related Investigations (Pure PostgreSQL) */}
             {relatedArticles.length > 0 && (
               <div className="bg-white border border-[#e6dfd5] p-5">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#141414]">
@@ -248,6 +282,7 @@ export default async function ArticleDetailPage({
                         <img 
                           src={art.image || '/images/lead.jpeg'} 
                           alt={art.title}
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -270,7 +305,7 @@ export default async function ArticleDetailPage({
               href={`/fr/${article.category}`}
               className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
             >
-              ← Retour à la rubrique {category?.nameFr}
+              ← Retour à la rubrique {categoryNameFr}
             </Link>
 
           </aside>

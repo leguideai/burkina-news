@@ -1,5 +1,4 @@
 import { projects, getProjectBySlug } from '@/data/mock/projects';
-import { getArticles } from '@/data/mock/articles';
 import { getIndicatorByCode } from '@/data/mock/indicators';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_ORDER } from '@/data/types';
@@ -7,6 +6,11 @@ import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalL
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSourceUrl } from '@/data/sources';
+import { articlesApi } from '@/lib/api/articles';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
+
+export const dynamic = 'force-dynamic';
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -23,9 +27,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   }
 
   const currentIndex = PROJECT_STATUS_ORDER.indexOf(project.currentStatus);
-  const allArticles = getArticles('fr');
+  let allArticles: Article[] = [];
+  try {
+    const res = await articlesApi.listArticles({ limit: 100 });
+    if (res.articles) {
+      allArticles = res.articles.map(mapArticleDTOToArticle);
+    }
+  } catch {
+    allArticles = [];
+  }
   const linkedArticles = project.linkedArticleIds
-    .map(id => allArticles.find(a => a.id === id))
+    .map(id => allArticles.find(a => a.id === id || a.slug === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
   // Indicateurs RELANCE liés (Brief Samba v5, Section 4.1)

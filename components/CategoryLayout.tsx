@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, usePathname } from 'next/navigation';
-import { CategoryCode } from '@/data/types';
-import { getCategoryByCode, getActiveSubCategories } from '@/data/mock/categories';
-import { getArticlesByCategory } from '@/data/mock/articles';
+import { Article, Category, CategoryCode } from '@/data/types';
+import { getCategoryByCode } from '@/data/mock/categories';
 import { getProjectsByCategory } from '@/data/mock/projects';
 import { getIndicatorsByCategory } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import { ArrowRight, ChevronRight, Filter } from 'lucide-react';
+import { articlesApi } from '@/lib/api/articles';
+import { categoriesApi } from '@/lib/api/categories';
+import { mapArticleDTOToArticle, mapCategoryDTOToCategory } from '@/lib/api/mappers';
 
 interface CategoryLayoutProps {
   categoryCode: CategoryCode;
@@ -18,22 +20,52 @@ interface CategoryLayoutProps {
 }
 
 function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProps) {
-  const category = getCategoryByCode(categoryCode);
   const isEn = lang === 'en';
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  
+
+  // Instant fallback for category header while API hydrates
+  const fallbackCategory = useMemo(() => getCategoryByCode(categoryCode), [categoryCode]);
+
+  // Live dynamic states
+  const [category, setCategory] = useState<Category | undefined>(fallbackCategory);
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   // Directly driven by URL search params (?sub=...) for instant Header & tab responsiveness
   const selectedSubCategory = searchParams.get('sub') || 'all';
 
-  const allArticles = useMemo(() => {
-    return getArticlesByCategory(categoryCode, lang);
-  }, [categoryCode, lang]);
+  // Load real category and real articles from Go backend / PostgreSQL
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const catDto = await categoriesApi.getCategory(categoryCode);
+        if (isMounted && catDto && catDto.code) {
+          setCategory(mapCategoryDTOToCategory(catDto));
+        }
+      } catch {
+        // Silent fallback to local category
+      }
 
-  // Sub-categories activées selon la règle de seuil (>= 2 contenus publiés)
-  const activeSubCategories = useMemo(() => {
-    return getActiveSubCategories(categoryCode, allArticles);
-  }, [categoryCode, allArticles]);
+      try {
+        const res = await articlesApi.listArticles({ category: categoryCode, limit: 100 });
+        if (isMounted && res.articles) {
+          setAllArticles(res.articles.map(mapArticleDTOToArticle));
+        }
+      } catch {
+        // API error
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [categoryCode]);
 
   // Filtrage des articles selon la sous-rubrique sélectionnée
   const filteredArticles = useMemo(() => {
@@ -137,8 +169,20 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
           
           {/* Main Editorial Articles (Col 8) */}
           <div className="lg:col-span-8 flex flex-col gap-6">
-            
-            {filteredArticles.length === 0 ? (
+            {isLoading && allArticles.length === 0 ? (
+              <div className="space-y-6 animate-pulse">
+                <div className="bg-white border border-[#e6dfd5] p-6 h-80 flex flex-col justify-end">
+                  <div className="h-4 bg-neutral-200 w-1/4 mb-3"></div>
+                  <div className="h-8 bg-neutral-200 w-3/4 mb-2"></div>
+                  <div className="h-4 bg-neutral-200 w-full mb-1"></div>
+                  <div className="h-4 bg-neutral-200 w-2/3"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="bg-white border border-[#e6dfd5] h-56"></div>
+                  <div className="bg-white border border-[#e6dfd5] h-56"></div>
+                </div>
+              </div>
+            ) : filteredArticles.length === 0 ? (
               <div className="bg-white border border-[#e6dfd5] p-10 sm:p-14 text-center my-4">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#be185d] block mb-2">
                   {isEn ? "Editorial Archive" : "Archives Éditoriales"}

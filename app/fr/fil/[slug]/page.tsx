@@ -1,20 +1,75 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ExternalLink, ShieldCheck, Camera, Calendar, Clock, ChevronRight, Hash } from 'lucide-react';
-import { briefs, getBriefs, getBriefBySlug } from '@/data/mock/briefs';
+import { filApi } from '@/lib/api/fil';
+import { BriefDTO } from '@/lib/api/types';
+import { briefs as staticBriefs, getBriefs, getBriefBySlug } from '@/data/mock/briefs';
 import { categories } from '@/data/mock/categories';
 import { getSourceUrl } from '@/data/sources';
 
 export function generateStaticParams() {
-  return briefs.map((brief) => ({
+  return staticBriefs.map((brief) => ({
     slug: brief.slug,
   }));
 }
 
+export const revalidate = 60;
+
 export default async function BriefDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const brief = getBriefBySlug(slug);
-  const allBriefs = getBriefs('fr');
+  let brief: BriefDTO | null = null;
+  let allBriefs: BriefDTO[] = [];
+
+  try {
+    const res = await filApi.listBriefs({ limit: 50 });
+    allBriefs = res.briefs || [];
+    brief = await filApi.getBriefBySlug(slug);
+  } catch {
+    const mock = getBriefBySlug(slug);
+    if (mock) {
+      brief = {
+        id: mock.id,
+        title: mock.title,
+        title_en: mock.titleEn,
+        slug: mock.slug,
+        date: mock.date,
+        week_number: mock.weekNumber,
+        year: new Date(mock.date).getFullYear() || 2026,
+        image: mock.image,
+        summary: mock.summary,
+        summary_en: mock.summaryEn,
+        is_published: true,
+        created_at: mock.date,
+        facts: mock.facts.map((f, i) => ({
+          id: `fact-${mock.id}-${i}`,
+          time: f.time,
+          date: mock.date,
+          text_fr: f.text,
+          text_en: f.textEn,
+          source: f.source,
+          source_url: f.sourceUrl,
+          category_code: (f.category as string) || 'economie',
+          why_watch_fr: f.whyWatch,
+          why_watch_en: f.whyWatchEn,
+          image: f.image,
+          order_num: i + 1,
+          created_at: mock.date,
+        })),
+      };
+      allBriefs = getBriefs('fr').map(b => ({
+        id: b.id,
+        title: b.title,
+        title_en: b.titleEn,
+        slug: b.slug,
+        date: b.date,
+        week_number: b.weekNumber,
+        year: new Date(b.date).getFullYear() || 2026,
+        is_published: true,
+        created_at: b.date,
+        facts: [],
+      }));
+    }
+  }
   
   if (!brief) {
     notFound();
@@ -45,7 +100,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
             <span>/</span>
             <Link href="/fr/fil" className="hover:text-[#0b4627]">Le Fil</Link>
             <span>/</span>
-            <span className="text-[#141414] font-bold">Semaine {brief.weekNumber}</span>
+            <span className="text-[#141414] font-bold">Semaine {brief.week_number}</span>
           </nav>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#141414]">
@@ -61,7 +116,9 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
             </div>
 
             <div className="bg-[#faf8f5] border border-[#e6dfd5] p-3 text-right shrink-0">
-              <span className="font-mono text-xs font-bold text-[#0b4627] block">10 Faits Sourcés & Vérifiés</span>
+              <span className="font-mono text-xs font-bold text-[#0b4627] block">
+                {brief.facts?.length || 10} Faits Sourcés & Vérifiés
+              </span>
               <span className="text-[10px] font-serif text-[#737373]">Chronique hebdomadaire</span>
             </div>
           </div>
@@ -86,24 +143,26 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                 />
                 <div className="absolute top-3 left-3 bg-[#141414]/90 text-white px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-sm">
                   <Camera size={12} />
-                  <span>Documentaire de la Semaine {brief.weekNumber}</span>
+                  <span>Documentaire de la Semaine {brief.week_number}</span>
                 </div>
               </div>
               <div className="p-3 bg-[#faf8f5] border-t border-[#e6dfd5] text-[11px] font-serif text-[#555555] flex flex-wrap justify-between items-center gap-2">
                 <span>Photographie documentaire · Archives Rédaction Burkina News</span>
-                <span className="font-mono text-[10px] text-[#0b4627] font-semibold">10 faits certifiés sans opinion</span>
+                <span className="font-mono text-[10px] text-[#0b4627] font-semibold">
+                  {brief.facts?.length || 10} faits certifiés sans opinion
+                </span>
               </div>
             </div>
 
             {/* Facts Chronological List */}
             <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5]">
-              {brief.facts.map((fact, index) => {
-                const catInfo = fact.category ? categories.find(c => c.code === fact.category) : null;
+              {brief.facts?.map((fact, index) => {
+                const catInfo = fact.category_code ? categories.find(c => c.code === fact.category_code) : null;
                 const factImageSrc = fact.image || '/images/lead.jpeg';
                 
                 return (
                   <article 
-                    key={index} 
+                    key={fact.id || index} 
                     id={`fait-${index + 1}`}
                     className="p-6 hover:bg-[#faf8f5] transition-colors scroll-mt-24 target:bg-[#f4eee3]/80 target:border-l-4 target:border-l-[#0b4627]"
                   >
@@ -117,13 +176,13 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                           title="Lien permanent vers ce fait"
                         >
                           <Hash size={11} className="opacity-60" />
-                          <span>Fait {index + 1}/10</span>
+                          <span>Fait {index + 1}/{brief.facts?.length || 10}</span>
                           <span className="text-[#555555]">· [{fact.time}]</span>
                         </a>
 
                         {catInfo && (
                           <Link 
-                            href={`/fr/${fact.category}`}
+                            href={`/fr/${fact.category_code}`}
                             className="text-[10px] font-mono font-bold uppercase text-[#555555] hover:text-[#0b4627] hover:underline"
                             title={`Voir tous les contenus ${catInfo.nameFr}`}
                           >
@@ -135,7 +194,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                       <div className="text-[11px] font-serif text-[#737373]">
                         Source :{' '}
                         <a 
-                          href={getSourceUrl(fact.source, fact.sourceUrl)}
+                          href={getSourceUrl(fact.source, fact.source_url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-bold text-[#0b4627] hover:underline inline-flex items-center gap-0.5"
@@ -161,22 +220,22 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
 
                       <div className="flex-1 min-w-0">
                         <p className="text-base font-serif text-[#141414] leading-relaxed mb-3 font-medium">
-                          {fact.text}
+                          {fact.text_fr}
                         </p>
 
-                        {fact.whyWatch && (
+                        {fact.why_watch_fr && (
                           <div className="bg-[#faf8f5] border-l-2 border-[#0b4627] p-3 text-xs font-serif text-[#444444] mb-3">
                             <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0b4627] block mb-1">
                               Pourquoi surveiller ce fait :
                             </span>
-                            <p className="leading-relaxed">{fact.whyWatch}</p>
+                            <p className="leading-relaxed">{fact.why_watch_fr}</p>
                           </div>
                         )}
 
                         {/* Direct Contextual Links */}
                         <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
                           <a 
-                            href={getSourceUrl(fact.source, fact.sourceUrl)}
+                            href={getSourceUrl(fact.source, fact.source_url)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-[#0b4627] font-semibold hover:underline inline-flex items-center gap-1"
@@ -187,7 +246,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
 
                           {catInfo && (
                             <Link 
-                              href={`/fr/${fact.category}`}
+                              href={`/fr/${fact.category_code}`}
                               className="text-[#737373] hover:text-[#141414] hover:underline inline-flex items-center gap-0.5"
                             >
                               <span>Rubrique {catInfo.nameFr}</span>
@@ -212,7 +271,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                   className="px-3 py-2 border border-[#e6dfd5] hover:border-[#141414] text-[#141414] font-bold uppercase inline-flex items-center gap-1.5 transition-colors"
                 >
                   <ArrowLeft size={13} />
-                  <span>Semaine {prevBrief.weekNumber} précédente</span>
+                  <span>Semaine {prevBrief.week_number} précédente</span>
                 </Link>
               ) : (
                 <div />
@@ -223,7 +282,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                   href={`/fr/fil/${nextBrief.slug}`}
                   className="px-3 py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white font-bold uppercase inline-flex items-center gap-1.5 transition-colors"
                 >
-                  <span>Semaine {nextBrief.weekNumber} suivante</span>
+                  <span>Semaine {nextBrief.week_number} suivante</span>
                   <ArrowRight size={13} />
                 </Link>
               )}
@@ -241,7 +300,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                   Éditions du Fil Hebdo
                 </h3>
                 <span className="text-[10px] font-mono text-[#0b4627] font-bold">
-                  {briefs.length} semaines
+                  {allBriefs.length} semaines
                 </span>
               </div>
 
@@ -250,8 +309,8 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
               </p>
 
               <div className="space-y-3">
-                {briefs.map((b) => {
-                  const isCurrent = b.slug === brief.slug;
+                {allBriefs.map((b) => {
+                  const isCurrent = b.slug === brief?.slug;
                   const bDate = new Date(b.date).toLocaleDateString('fr-FR', {
                     day: 'numeric',
                     month: 'short',
@@ -280,7 +339,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-1 mb-0.5">
                             <span className="font-mono text-xs font-bold text-[#141414]">
-                              Semaine {b.weekNumber}
+                              Semaine {b.week_number}
                             </span>
                             {isCurrent && (
                               <span className="text-[9px] font-mono font-bold bg-[#0b4627] text-white px-1.5 py-0.2 uppercase">
@@ -289,7 +348,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                             )}
                           </div>
                           <span className="text-[11px] font-serif text-[#737373] block truncate">
-                            {bDate} · 10 faits
+                            {bDate} · {b.facts?.length || 10} faits
                           </span>
                         </div>
                       </div>

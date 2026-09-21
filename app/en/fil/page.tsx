@@ -1,14 +1,55 @@
 import Link from 'next/link';
 import { ArrowRight, Clock, ShieldCheck } from 'lucide-react';
+import { filApi } from '@/lib/api/fil';
+import { BriefDTO } from '@/lib/api/types';
 import { getBriefs } from '@/data/mock/briefs';
+import FilLiveStream from '@/components/fil/FilLiveStream';
 
 export const metadata = {
   title: 'The Brief | Burkina News',
   description: 'Every Sunday, ten sourced facts of the week. No analysis, no opinion: verified facts.',
 };
 
-export default function FilPageEn() {
-  const briefs = getBriefs('en');
+export const revalidate = 60;
+
+export default async function FilPageEn() {
+  let briefs: BriefDTO[] = [];
+  try {
+    const res = await filApi.listBriefs({ limit: 50 });
+    briefs = res.briefs || [];
+  } catch {
+    const mockBriefs = getBriefs('en');
+    briefs = mockBriefs.map(b => ({
+      id: b.id,
+      title: b.titleEn || b.title,
+      title_en: b.titleEn,
+      slug: b.slug,
+      date: b.date,
+      week_number: b.weekNumber,
+      year: new Date(b.date).getFullYear() || 2026,
+      image: b.image,
+      summary: b.summary,
+      summary_en: b.summaryEn,
+      is_published: true,
+      created_at: b.date,
+      facts: b.facts.map((f, i) => ({
+        id: `fact-${b.id}-${i}`,
+        time: f.time,
+        date: b.date,
+        text_fr: f.text,
+        text_en: f.textEn || f.text,
+        source: f.source,
+        source_url: f.sourceUrl,
+        category_code: (f.category as string) || 'economie',
+        why_watch_fr: f.whyWatch,
+        why_watch_en: f.whyWatchEn,
+        image: f.image,
+        order_num: i + 1,
+        created_at: b.date,
+      })),
+    }));
+  }
+
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
       
@@ -25,7 +66,7 @@ export default function FilPageEn() {
             <div>
               <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] mb-1">
                 <span className="w-2 h-2 rounded-full bg-[#0b4627] animate-pulse"></span>
-                <span>Weekly Fact Chronicle</span>
+                <span>Weekly Fact Chronicle & 60s Dispatches</span>
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight">
                 The Brief (Weekly)
@@ -41,6 +82,10 @@ export default function FilPageEn() {
 
       {/* Main Content Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+        
+        {/* SSE Live Streaming Component */}
+        <FilLiveStream locale="en" />
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Main List (Col 8) */}
@@ -59,6 +104,8 @@ export default function FilPageEn() {
                   year: 'numeric'
                 });
 
+                const displayTitle = brief.title_en || brief.title;
+
                 return (
                   <article 
                     key={brief.id} 
@@ -67,14 +114,14 @@ export default function FilPageEn() {
                     <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-[#e6dfd5]">
                       <div className="flex items-center gap-2">
                         <span className="bg-[#0b4627] text-white text-[10px] font-mono font-bold px-2 py-0.5 uppercase tracking-wider">
-                          Week {brief.weekNumber}
+                          Week {brief.week_number}
                         </span>
                         <span className="font-mono text-xs font-bold text-[#141414]">
                           {formattedDate}
                         </span>
                       </div>
                       <span className="text-xs font-mono text-[#0b4627] font-semibold">
-                        {brief.facts.length} verified facts
+                        {brief.facts?.length || 10} verified facts
                       </span>
                     </div>
 
@@ -83,7 +130,7 @@ export default function FilPageEn() {
                       <div className="aspect-[21/9] w-full overflow-hidden bg-neutral-100 border border-[#e6dfd5] mb-6">
                         <img 
                           src={brief.image} 
-                          alt={`Cover week ${brief.weekNumber}`}
+                          alt={`Cover week ${brief.week_number}`}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -91,13 +138,13 @@ export default function FilPageEn() {
 
                     {/* Preview of first 3 facts */}
                     <div className="space-y-3 mb-6">
-                      {brief.facts.slice(0, 3).map((fact, idx) => (
+                      {brief.facts?.slice(0, 3).map((fact, idx) => (
                         <div key={idx} className="flex gap-3 text-xs font-serif items-start">
                           <span className="font-mono text-[11px] text-[#0b4627] font-bold shrink-0 mt-0.5">
                             [{fact.time}]
                           </span>
                           <p className="text-[#333333] leading-relaxed line-clamp-2">
-                            {fact.text}
+                            {fact.text_en || fact.text_fr}
                           </p>
                         </div>
                       ))}
@@ -111,7 +158,7 @@ export default function FilPageEn() {
                         href={`/en/fil/${brief.slug}`}
                         className="font-mono font-bold text-xs text-[#0b4627] hover:underline inline-flex items-center gap-1"
                       >
-                        Read all {brief.facts.length} facts <ArrowRight size={12} />
+                        Read all {brief.facts?.length || 10} facts <ArrowRight size={12} />
                       </Link>
                     </div>
                   </article>

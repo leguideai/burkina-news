@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, FileText, Construction, BarChart3, ChevronRight, X } from 'lucide-react';
-import { getArticles } from '@/data/mock/articles';
+import { articlesApi } from '@/lib/api/articles';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
 import { getProjects } from '@/data/mock/projects';
 import { getIndicators } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
@@ -15,8 +17,26 @@ type FilterType = 'all' | 'articles' | 'projects' | 'indicators';
 export default function SearchPageEn() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
+  const [enArticles, setEnArticles] = useState<Article[]>([]);
 
-  const enArticles = useMemo(() => getArticles('en'), []);
+  // Load 48 live articles in real-time from PostgreSQL
+  useEffect(() => {
+    let isMounted = true;
+    articlesApi.listArticles({ limit: 100 })
+      .then(res => {
+        if (isMounted && res.articles) {
+          setEnArticles(res.articles.map(dto => {
+            const mapped = mapArticleDTOToArticle(dto);
+            if (dto.title_en) mapped.title = dto.title_en;
+            if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+            return mapped;
+          }));
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   const enProjects = useMemo(() => getProjects('en'), []);
   const enIndicators = useMemo(() => getIndicators('en'), []);
 
@@ -49,7 +69,7 @@ export default function SearchPageEn() {
       projects: filteredProjects,
       indicators: filteredIndicators
     };
-  }, [query]);
+  }, [query, enArticles, enProjects, enIndicators]);
 
   const totalResults = searchResults.articles.length + searchResults.projects.length + searchResults.indicators.length;
   const isSearching = query.trim().length > 0;
@@ -69,7 +89,7 @@ export default function SearchPageEn() {
 
           <div className="pb-6 border-b border-[#141414]">
             <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] block mb-1">
-              Documentary Engine
+              Documentary Engine (PostgreSQL)
             </span>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight mb-6">
               Search Archives & Data
@@ -161,7 +181,7 @@ export default function SearchPageEn() {
               Explore Our Complete Documentary Base
             </h3>
             <p className="text-xs sm:text-sm font-serif text-[#555555] leading-relaxed mb-6">
-              Search across investigative dossiers, the national project registry (target: 60 major sites), or PND RELANCE statistical series.
+              Search across investigative dossiers, the national project registry, or PND RELANCE statistical series.
             </p>
             <div className="flex flex-wrap justify-center gap-2 text-xs font-mono">
               <button onClick={() => setQuery('Or')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414]">
@@ -196,7 +216,7 @@ export default function SearchPageEn() {
         ) : (
           <div className="space-y-12">
             
-            {/* Investigations Results */}
+            {/* Investigations Results (Pure PostgreSQL) */}
             {(filter === 'all' || filter === 'articles') && searchResults.articles.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">

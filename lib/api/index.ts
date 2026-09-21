@@ -8,4 +8,7 @@ export * from './auth';
 export * from './users';
 export * from './media';
 export * from './categories';
+export * from './articles';
+export * from './fil';
 export * from './health';
+export * from './mappers';
