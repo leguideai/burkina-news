@@ -29,7 +29,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Category, Article, Project, SubCategory, CategoryCode } from '@/data/types';
-import { categoriesApi, CategoryDTO, SubCategoryDTO, normalizeRoleCode } from '@/lib/api';
+import { categoriesApi, articlesApi, CategoryDTO, SubCategoryDTO, normalizeRoleCode } from '@/lib/api';
 import { useAdminAuth } from '@/components/admin/AuthGuard';
 import { useToast } from '@/components/admin/Toast';
 import { useMicum } from '@/components/admin/MicumContext';
@@ -161,15 +161,20 @@ export default function AdminRubriquesPage() {
         setSubCategories([]);
       }
 
-      // 2. Chargement des articles pour les métriques de publication
+      // 2. Chargement des articles réels depuis l'API Go pour les métriques de publication
       try {
-        const resArticles = await fetch('/api/admin/data');
-        if (resArticles.ok) {
-          const data = await resArticles.json();
-          setArticles(data.articles || []);
-        }
+        const resArticles = await articlesApi.adminListArticles({ limit: 1000 });
+        const mappedArticles = (resArticles.articles || []).map(a => ({
+          ...a,
+          id: a.id,
+          category: a.category_code,
+          subCategory: a.sub_category_code || '',
+          title: a.title_fr,
+          slug: a.slug,
+        })) as any;
+        setArticles(mappedArticles);
       } catch {
-        // Silencieux
+        setArticles([]);
       }
     } catch (err: any) {
       console.error('Erreur lors du chargement des rubriques depuis PostgreSQL :', err);

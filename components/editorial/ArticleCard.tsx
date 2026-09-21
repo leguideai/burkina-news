@@ -13,12 +13,12 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
   const isEn = lang === 'en';
   const title = isEn && article.titleEn ? article.titleEn : article.title;
   const excerpt = isEn && article.excerptEn ? article.excerptEn : article.excerpt;
-  const imageSrc = article.image || article.imageUrl || '/images/lead.jpeg';
+  const imageSrc = article.image || article.imageUrl || (article as any).featured_image || (article as any).featuredImage || '/images/lead.jpeg';
   const articleHref = `/${isEn ? 'en' : 'fr'}/${article.category}/${article.slug}`;
   const verifiedSourcesLabel = isEn ? `${article.sourceCount} verified sources` : `${article.sourceCount} sources vérifiées`;
 
   const subCategoryObj = article.subCategory ? getSubCategoryByCode(article.subCategory) : undefined;
-  const subCategoryName = subCategoryObj ? (isEn ? subCategoryObj.nameEn : subCategoryObj.nameFr) : undefined;
+  const subCategoryName = subCategoryObj ? (isEn ? subCategoryObj.nameEn : subCategoryObj.nameFr) : article.subCategory;
 
   // 1. LEAD VARIANT (Main centerpiece story)
   if (variant === 'lead') {
@@ -28,6 +28,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           <img 
             src={imageSrc} 
             alt={title}
+            onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
           />
         </div>
@@ -80,6 +81,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           <img 
             src={imageSrc} 
             alt={title}
+            onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
@@ -124,6 +126,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           <img 
             src={imageSrc} 
             alt={title}
+            onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
@@ -157,6 +160,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
         <img 
           src={imageSrc} 
           alt={title}
+          onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>

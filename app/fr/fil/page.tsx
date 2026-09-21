@@ -1,14 +1,56 @@
 import Link from 'next/link';
 import { ArrowRight, Clock, ShieldCheck } from 'lucide-react';
+import { filApi } from '@/lib/api/fil';
+import { BriefDTO } from '@/lib/api/types';
 import { getBriefs } from '@/data/mock/briefs';
+import FilLiveStream from '@/components/fil/FilLiveStream';
 
 export const metadata = {
   title: 'Le Fil | Burkina News',
   description: 'Chaque dimanche, dix faits sourcés de la semaine. Pas d\'analyse, pas d\'opinion : les faits.',
 };
 
-export default function FilPage() {
-  const briefs = getBriefs('fr');
+export const revalidate = 60; // Revalidation ISR toutes les 60 secondes
+
+export default async function FilPage() {
+  let briefs: BriefDTO[] = [];
+  try {
+    const res = await filApi.listBriefs({ limit: 50 });
+    briefs = res.briefs || [];
+  } catch {
+    // Fallback build-time si l'API n'est pas encore joignable
+    const mockBriefs = getBriefs('fr');
+    briefs = mockBriefs.map(b => ({
+      id: b.id,
+      title: b.title,
+      title_en: b.titleEn,
+      slug: b.slug,
+      date: b.date,
+      week_number: b.weekNumber,
+      year: new Date(b.date).getFullYear() || 2026,
+      image: b.image,
+      summary: b.summary,
+      summary_en: b.summaryEn,
+      is_published: true,
+      created_at: b.date,
+      facts: b.facts.map((f, i) => ({
+        id: `fact-${b.id}-${i}`,
+        time: f.time,
+        date: b.date,
+        text_fr: f.text,
+        text_en: f.textEn,
+        source: f.source,
+        source_url: f.sourceUrl,
+        category_code: (f.category as string) || 'economie',
+        why_watch_fr: f.whyWatch,
+        why_watch_en: f.whyWatchEn,
+        image: f.image,
+        order_num: i + 1,
+        created_at: b.date,
+      })),
+    }));
+  }
+
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
       
@@ -25,7 +67,7 @@ export default function FilPage() {
             <div>
               <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] mb-1">
                 <span className="w-2 h-2 rounded-full bg-[#0b4627] animate-pulse"></span>
-                <span>Chronique Factuelle Hebdomadaire</span>
+                <span>Chronique Factuelle Hebdomadaire & Dépêches 60s</span>
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight">
                 Le Fil de la Semaine
@@ -41,6 +83,10 @@ export default function FilPage() {
 
       {/* Main Content Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+        
+        {/* Module de Streaming Live SSE (Dépêches instantanées 60 secondes) */}
+        <FilLiveStream locale="fr" />
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Main List (Col 8) */}
@@ -64,11 +110,13 @@ export default function FilPage() {
                     <div className="flex flex-wrap justify-between items-center gap-2 pb-3 mb-4 border-b border-[#e6dfd5]">
                       <div className="flex items-center gap-2">
                         <span className="bg-[#0b4627] text-white px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider">
-                          Semaine {brief.weekNumber}
+                          Semaine {brief.week_number}
                         </span>
                         <span className="font-mono text-xs text-[#737373]">{formattedDate}</span>
                       </div>
-                      <span className="text-xs font-mono font-bold text-[#0b4627]">10 faits vérifiés</span>
+                      <span className="text-xs font-mono font-bold text-[#0b4627]">
+                        {brief.facts?.length || 10} faits vérifiés
+                      </span>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-5 mb-4">
@@ -90,10 +138,10 @@ export default function FilPage() {
                         </h2>
 
                         <ul className="space-y-2 text-xs font-serif text-[#444444] divide-y divide-neutral-100">
-                          {brief.facts.slice(0, 3).map((fact, idx) => (
+                          {brief.facts?.slice(0, 3).map((fact, idx) => (
                             <li key={idx} className="pt-2 first:pt-0 flex items-start gap-2">
                               <span className="font-mono text-[11px] font-bold text-[#0b4627] shrink-0">[{fact.time}]</span>
-                              <span className="line-clamp-2 leading-relaxed">{fact.text}</span>
+                              <span className="line-clamp-2 leading-relaxed">{fact.text_fr}</span>
                             </li>
                           ))}
                         </ul>

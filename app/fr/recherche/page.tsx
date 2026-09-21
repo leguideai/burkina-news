@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, FileText, Construction, BarChart3, ChevronRight, X } from 'lucide-react';
-import { getArticles } from '@/data/mock/articles';
+import { articlesApi } from '@/lib/api/articles';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
 import { getProjects } from '@/data/mock/projects';
 import { getIndicators } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
@@ -15,8 +17,21 @@ type FilterType = 'all' | 'articles' | 'projects' | 'indicators';
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
+  const [articles, setArticles] = useState<Article[]>([]);
 
-  const articles = useMemo(() => getArticles('fr'), []);
+  // Charge les 48 articles en temps réel depuis la base PostgreSQL
+  useEffect(() => {
+    let isMounted = true;
+    articlesApi.listArticles({ limit: 100 })
+      .then(res => {
+        if (isMounted && res.articles) {
+          setArticles(res.articles.map(mapArticleDTOToArticle));
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   const projects = useMemo(() => getProjects('fr'), []);
   const indicators = useMemo(() => getIndicators('fr'), []);
 
@@ -49,7 +64,7 @@ export default function SearchPage() {
       projects: filteredProjects,
       indicators: filteredIndicators
     };
-  }, [query]);
+  }, [query, articles, projects, indicators]);
 
   const totalResults = searchResults.articles.length + searchResults.projects.length + searchResults.indicators.length;
   const isSearching = query.trim().length > 0;
@@ -69,7 +84,7 @@ export default function SearchPage() {
 
           <div className="pb-6 border-b border-[#141414]">
             <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] block mb-1">
-              Base Documentaire & Articles
+              Base Documentaire & Articles (PostgreSQL)
             </span>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight mb-4">
               Recherche dans les Archives
@@ -166,7 +181,7 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* 1. Articles Results */}
+        {/* 1. Articles Results (Pure PostgreSQL) */}
         {(filter === 'all' || filter === 'articles') && searchResults.articles.length > 0 && (
           <section className="mb-12">
             <div className="pb-2 mb-6 border-b-2 border-[#141414] flex justify-between items-center">

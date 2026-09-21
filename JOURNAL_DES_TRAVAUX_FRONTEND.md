@@ -27,7 +27,9 @@
   - **🚀 DevOps :** Déploiement Vercel (Frontend) synchronisé avec Railway (Backend Go + PostgreSQL) et Cloudflare R2 (Stockage CDN).
   - **Jalon F4.0 :** Raccordement réel de la gestion des Rubriques & Sous-rubriques (`/admin/rubriques`) à l'API Go (`categoriesApi`) avec persistance PostgreSQL et création dynamique pour alimenter la rédaction d'articles.
   - **Jalon F4.0.1 :** Enrichissement contextuel de MICUM pour la page Rubriques (`registerEditor` + `updateEditorData`) et ajout de la capacité d'annulation (abort) des requêtes IA en cours sur tout le back-office.
-- **Phase prête à être traitée :** **Phase F4.1 — Raccordement du Module Articles & Grandes Enquêtes d'Investigation** à l'API Go réelle (synchronisée avec la Semaine 4 du Backend).
+  - **Phase F4 (F4.1, F4.2, F4.3) :** Module Articles & Grandes Enquêtes d'Investigation 100% raccordé à l'API Go (Service typé `articlesApi`, Catalogue `/admin/articles` avec Skeletons et KPIs réels, Formulaires de rédaction `/admin/articles/nouveau` et `/admin/articles/[id]` sans mock, et lecture publique dynamique bilingue).
+  - **Phase F5 (F5.0 à F5.4) :** Module Le Fil & Flux SSE temps réel 100% raccordé à l'API Go (Service typé `filApi`, Hook React `useFilStream`, Composant `FilLiveStream`, Desk rédactionnel `/admin/fil` avec CRUD réel des éditions et dépêches 60s, et pages publiques bilingues synchronisées).
+- **Prochaine phase au programme :** **Phase F6 — Intégration Tracker Chantiers (6 Statuts) & Baromètre RELANCE** (synchronisée avec la Semaine 6 du Backend).
 
 ---
 
@@ -237,7 +239,204 @@
 
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F4.1 à F10 synchronisées avec les semaines backend)*
+### 📰 Phase F4 : Raccordement Complet du Module Articles & Grandes Enquêtes d'Investigation à l'API Go
+- **Date :** 21 Septembre 2026
+- **Objectif :** Raccorder l'intégralité du cycle de vie des articles d'investigation au backend Go (Semaine 4) : création du client API typé `articlesApi`, éradication des données locales mockées de `/api/admin/data` et de `@/data/mock/referentiel`, dynamisation du catalogue `/admin/articles` avec Skeletons de chargement et KPIs temps réel, et connexion des formulaires de rédaction et d'édition (`/admin/articles/nouveau`, `/admin/articles/[id]`) avec prise en charge dynamique des rubriques, téléversement média Cloudflare R2 / Local et synchronisation du copilote IA Micum.
+- **Fichiers créés / modifiés :**
+  - `lib/api/types.ts` :
+    - Définition des types d'investigation : `ArticleFormat` (7 formats : `decryptage`, `terrain`, `vrai-ou-faux`, `edito`, `le-chiffre`, `trois-questions`, `analyse`), `ArticleStatus` (`draft`, `review`, `published`, `archived`), `ArticleConfidence` (`high`, `medium`, `low`).
+    - DTOs complets : `DocumentSourceDTO`, `ArticleDTO`, `ArticleDetailDTO`, `CreateArticleInput`, `UpdateArticleInput`, `ArticleFilterParams`.
+  - `lib/api/articles.ts` :
+    - Client API singleton `articlesApi` :
+      - `listArticles` : Consultation publique paginée avec filtres combinés.
+      - `getArticle` : Consultation d'une enquête par slug avec articles connexes.
+      - `adminListArticles` : Liste complète des articles de la rédaction avec filtres par statut et recherche.
+      - `adminGetArticle` : Récupération des données pour l'éditeur.
+      - `createArticle` : Création sécurisée avec injection du token JWT de l'auteur.
+      - `updateArticle` : Mise à jour complète (textes, traductions, métadonnées).
+      - `updateArticleStatus` : Workflow de transition de statut éditorial.
+      - `deleteArticle` : Suppression sécurisée RBAC.
+  - `lib/api/index.ts` :
+    - Export centralisé de `articlesApi` et des DTOs associés.
+  - `components/admin/ArticleEditorForm.tsx` :
+    - Éradication de l'import statique `SUB_CATEGORIES` depuis `@/data/mock/referentiel`.
+    - Chargement dynamique et asynchrone des rubriques et sous-rubriques depuis PostgreSQL via `categoriesApi.listCategories()`.
+    - Normalisation bidirectionnelle des champs (`title` / `title_fr`, `excerpt` / `excerpt_fr`, `body` / `body_fr`, etc.).
+    - Connexion du composant `ImageUploader` vers le dossier `content`.
+    - Préservation totale du pont contextuel Micum (`registerEditor` et `updateEditorData`) pour l'assistance IA en direct.
+  - `app/admin/articles/page.tsx` :
+    - Remplacement des appels `/api/admin/data` par `articlesApi.adminListArticles()`.
+    - Intégration de filtres serveur réactifs (rubrique, format, statut éditorial, recherche texte).
+    - Calcul dynamique des KPIs sur les articles réels (total, rubrique Histoire, enquêtes décryptage, bilinguisme EN).
+    - Badges de statuts clairs (`Publié`, `En relecture`, `Archivé`, `Brouillon`).
+    - Modale de confirmation et suppression directe via `articlesApi.deleteArticle(id)`.
+  - `app/admin/articles/nouveau/page.tsx` :
+    - Soumission directe vers `articlesApi.createArticle()` avec notification toast et redirection vers le catalogue.
+  - `app/admin/articles/[id]/page.tsx` :
+    - Chargement réel de l'enquête par `articlesApi.adminGetArticle(id)` avec Skeleton de chargement.
+    - Mise à jour en base via `articlesApi.updateArticle(id, payload)`.
+  - `app/fr/[category]/[slug]/page.tsx` & `app/en/[category]/[slug]/page.tsx` :
+    - Résolution dynamique de l'enquête depuis l'API Go (`articlesApi.getArticle(slug)`) avec fallback résilient sur les articles statiques pour la compilation `next build`.
+- **Vérifications :**
+  - Compilation TypeScript sans faute : `npx tsc --noEmit` validé avec code de sortie 0.
+- **État :** Validé et terminé.
+
+---
+
+### ⚡ Phase F5 : Intégration Le Fil (Dépêches 60s, Éditions Hebdo & Streaming SSE)
+- **Date :** 21 Septembre 2026
+- **Objectif :** Raccorder l'intégralité du module Le Fil au backend Go (Semaine 5) : streaming temps réel Server-Sent Events (SSE) pour les dépêches 60 secondes, consolidation des éditions hebdomadaires de 10 faits vérifiés, éradication définitive de `/api/admin/data` dans le desk `/admin/fil`, et dynamisation des pages publiques bilingues (`/fr/fil`, `/en/fil`, `/fr/fil/[slug]`, `/en/fil/[slug]`).
+- **Fichiers créés / modifiés :**
+  - `lib/api/types.ts` :
+    - Définition des interfaces DTOs : `BriefDTO`, `BriefFactDTO`, `CreateBriefInput`, `UpdateBriefInput`, `CreateFactInput`, `UpdateFactInput`, `BriefFilterParams`, `FactFilterParams`.
+  - `lib/api/fil.ts` :
+    - Service client singleton `filApi` :
+      - `listFacts` : Consultation paginée des faits vérifiés 60s.
+      - `listBriefs` : Consultation paginée des éditions hebdomadaires consolidées.
+      - `getBriefBySlug` : Récupération d'une édition avec tous ses faits rattachés.
+      - `getStreamUrl` : URL absolue du flux SSE (`/fil/stream`).
+      - `adminListBriefs` : Liste complète des éditions pour le back-office.
+      - `adminCreateBrief` & `adminUpdateBrief` & `adminDeleteBrief` : CRUD d'éditions hebdomadaires.
+      - `adminCreateFact` & `adminUpdateFact` & `adminDeleteFact` : CRUD de dépêches avec broadcast SSE instantané.
+  - `lib/api/index.ts` :
+    - Export centralisé de `filApi` et des DTOs associés.
+  - `hooks/useFilStream.ts` :
+    - Hook React robuste de connexion EventSource à `/api/v1/fil/stream` avec gestion sécurisée de l'exécution côté client (`typeof window !== 'undefined'`), reconnexion automatique exponentielle plafonnée à 15s, gestion du heartbeat 30s et écouteurs d'événements typés (`connected`, `heartbeat`, `new_fact`, `update_fact`, `delete_fact`, `new_brief`, `update_brief`, `delete_brief`).
+  - `components/fil/FilLiveStream.tsx` :
+    - Composant d'affichage du flux direct 60s avec balise d'état pulsante (`Diffusion SSE active` / `Connexion en attente`), liste des dernières dépêches reçues en temps réel et liens vers les sources officielles.
+  - `app/admin/fil/page.tsx` :
+    - Refonte complète du desk rédactionnel sans aucune dépendance mock ou `/api/admin/data`.
+    - Raccordement direct à `filApi` et `categoriesApi`.
+    - Indicateur visuel d'état du flux SSE en direct dans l'en-tête.
+    - Gestion dynamique des éditions et sélection d'édition avec rechargement des 10 faits.
+    - Modales bilingues FR/EN complètes avec prévisualisation et traduction Micum.
+  - `app/fr/fil/page.tsx` & `app/en/fil/page.tsx` :
+    - Intégration du composant `<FilLiveStream />` en tête de page pour le direct des dépêches.
+    - Récupération dynamique des éditions depuis `filApi.listBriefs()` avec fallback résilient pour le rendu statique `next build`.
+  - `app/fr/fil/[slug]/page.tsx` & `app/en/fil/[slug]/page.tsx` :
+    - Chargement de l'édition spécifique via `filApi.getBriefBySlug(slug)`.
+    - Affichage des 10 faits avec horodatage, rubrique, source primaire vérifiable et angle déontologique ("Pourquoi surveiller").
+- **Vérifications :**
+  - Validation du typage strict : `npx tsc --noEmit` exécuté avec 0 erreur (code de sortie 0).
+  - Tests backend complets : `go test -v ./...` (100% PASS, 0 régression).
+  - Compilation binaire backend : `go build -v -o /dev/null ./cmd/api` (code 0).
+- **État :** Validé et terminé.
+
+---
+
+### 🛡️ Phase F4.4 : Éradication Totale des Mocks du Back-Office & Raccordement aux 48 Articles Réels
+- **Date :** 21 Septembre 2026
+- **Objectif :** Supprimer l'ensemble des données mockées résiduelles dans le back-office (`/admin`), connecter le Dashboard d'accueil `/admin` et la page `/admin/rubriques` aux endpoints réels (`articlesApi`, `categoriesApi`, `filApi`), et garantir la pleine exploitation des 48 articles d'investigation injectés via le seed PostgreSQL du backend Go.
+- **Fichiers modifiés :**
+  - `app/admin/rubriques/page.tsx` :
+    - Remplacement de l'appel résiduel `fetch('/api/admin/data')` par `articlesApi.adminListArticles({ limit: 1000 })`.
+    - Calcul en direct des compteurs d'articles par rubrique et sous-rubrique sur la base des 48 articles réels enregistrés dans PostgreSQL.
+    - Synchronisation en temps réel avec le contexte du copilote IA Micum.
+  - `app/admin/page.tsx` (Dashboard Général) :
+    - Remplacement de la dépendance exclusive à `/api/admin/data` par les appels combinés à `articlesApi.adminListArticles({ limit: 1000 })`, `categoriesApi.listCategories()` et `filApi.adminListBriefs({ limit: 50 })`.
+    - Calcul dynamique des KPIs majeurs : total des articles d'investigation (48 articles réels), répartition par rubrique (y compris Histoire), état des dépêches du Fil, et affichage des articles récents issus de la base de données.
+    - Fallback résilient préservé pour les modules futurs (Tracker de chantiers et signalements de contact prévus en Semaines 6 et 8).
+- **Vérifications :**
+  - Compilation TypeScript sans faute : `npx tsc --noEmit` validé avec 0 erreur (code 0).
+  - Validation des tests backend : `go test -v ./...` (100% PASS).
+  - Binaire API Go : compilation réussie `go build -v -o /dev/null ./cmd/api` (code 0).
+- **État :** Validé et terminé.
+
+---
+
+### 🖼️ Phase F4.5 : Pagination du Catalogue d'Articles, Rétablissement des Images Distinctes & Filtrage par Sous-Rubriques
+- **Date :** 21 Septembre 2026
+- **Objectif :** Résoudre l'affichage homogène de l'image de substitution (`/images/lead.jpeg`) sur l'ensemble des 48 articles du catalogue back-office, paginer la table des articles (`/admin/articles`) pour éviter le chargement monolithique d'un seul bloc, et afficher les sous-rubriques associées avec filtrage dynamique contextuel :
+  - **Correction de l'affichage des vignettes :**
+    - Résolution de la divergence de nommage du champ média entre l'entité Go (`Image`) et l'interface DTO frontend (`featured_image`).
+    - Mise en place de la lecture bivalente `art.image || art.featured_image || '/images/lead.jpeg'` avec gestionnaire `onError` garantissant le repli gracieux sans rupture visuelle.
+    - Rétablissement des visuels d'enquêtes authentiques (Unsplash, Sidwaya, usines industrielles) sur chaque ligne du catalogue.
+  - **Mise en place de la pagination complète :**
+    - Ajout des états de pagination (`currentPage`, `pageSize` par défaut à 10, `meta`).
+    - Sélecteur de taille de page configurable (10, 15, 20 ou 50 articles par vue).
+    - Barre de navigation inférieure avec compteurs textuels précis (*"Affichage de 1 à 10 sur 48 articles"*), boutons *Précédent* / *Suivant* désactivés aux bornes, et numéros de pages interactifs avec mise en valeur de la page active en vert Faso `#087443`.
+    - Réinitialisation automatique à la page 1 lors de l'application de tout filtre ou terme de recherche.
+  - **Gestion des Sous-Rubriques :**
+    - Affichage de la sous-rubrique sous la rubrique principale dans la deuxième colonne avec chevron typographique (`› {sous_rubrique}`).
+    - Sélecteur de sous-rubriques dynamique apparaissant automatiquement dès qu'une rubrique principale est sélectionnée, alimenté par `category.sub_categories`.
+  - **Indépendance des KPIs globaux du catalogue :**
+    - Dissociation du chargement des KPIs (`loadKpis` sur l'ensemble des articles en base) pour que le total (48 articles), le compte Histoire (8), les Grands Décryptages (12) et le bilinguisme (48/48) restent exhaustifs et ne soient pas tronqués par la pagination de la table.
+- **Fichiers modifiés :**
+  - `app/admin/articles/page.tsx` : Intégration de la pagination, du filtrage sous-rubrique, de l'affichage des images et des KPIs découplés.
+  - `lib/api/types.ts` : Support normalisé de `image` et `featured_image` sur `ArticleDTO`.
+  - `lib/api/articles.ts` : Normalisation bivalente des champs d'image dans les réponses d'API.
+  - `CHRONOLOGIE_ET_SUIVI_FRONTEND.md` : Ajout de la tâche F4.5 validée.
+- **Vérifications :**
+  - Validation TypeScript : `npx tsc --noEmit` exécuté avec succès (code 0, 0 erreur).
+- **État :** Validé et terminé.
+
+---
+
+### 🌐 Phase F4.6 : Raccordement Complet de l'Espace Visiteur (FR & EN) aux Données Dynamiques PostgreSQL
+- **Date :** 21 Septembre 2026
+- **Objectif :** Raccorder l'ensemble des pages publiques de consultation de l'espace visiteur (en français et en anglais) aux articles et rubriques réels de la base PostgreSQL, afin d'assurer une synchronisation immédiate avec le back-office et d'éradiquer les mocks côté lecteur :
+  - **Module d'adaptation universel (`lib/api/mappers.ts`) :**
+    - Implémentation des fonctions pures `mapArticleDTOToArticle`, `mapCategoryDTOToCategory` et `mapSubCategoryDTOToSubCategory`.
+    - Garantit la compatibilité ascendante stricte entre les DTOs RESTful de l'API Go et les types d'interface UI (`Article`, `Category`, `SubCategory`).
+    - Gestion robuste du bilinguisme (champs anglais `title_en`, `excerpt_en`, `body_en`, `name_en` avec repli textuel sur le français si non renseigné).
+  - **Pages de rubriques dynamiques (`components/CategoryLayout.tsx`) :**
+    - Récupération dynamique des 48 articles d'investigation via `articlesApi.listArticles({ category: categoryCode, limit: 100 })`.
+    - Récupération des rubriques et sous-rubriques officielles via `categoriesApi.getCategory(categoryCode)`.
+    - Calcul en direct des compteurs d'articles publiés par sous-rubrique (`category.subCategories`) et filtrage instantané par le paramètre URL `?sub=...`.
+    - Maintien du préchargement statique immédiat pour éliminer tout temps de chargement vide ou saut visuel (CLS).
+  - **Pages d'accueil publiques (`app/fr/page.tsx` & `app/en/page.tsx`) :**
+    - Transition des Server Components vers le chargement asynchrone des 48 articles réels via `articlesApi.listArticles({ limit: 50 })`.
+    - Composition dynamique de la Une : article Lead (décryptage d'ouverture), sélection des 4 enquêtes secondaires, enquête de terrain et fact-check avec visuels authentiques issus de PostgreSQL.
+    - Fallback résilient préservé pour le store local en cas d'indisponibilité réseau ou lors de la compilation statique `next build`.
+  - **Sécurisation des composants visuels (`ArticleCard.tsx` & `Header.tsx`) :**
+    - Normalisation de la lecture des images sur les 4 variantes de cartes (`lead`, `horizontal`, `compact`, `default`) avec gestionnaire d'erreur `onError` vers `/images/lead.jpeg`.
+    - Alimentation du méga-menu desktop et du menu mobile de `Header.tsx` à partir des rubriques et sous-rubriques réelles chargées via `categoriesApi.listCategories(true)`.
+- **Fichiers modifiés / créés :**
+  - `lib/api/mappers.ts` : Fonctions d'adaptation universelles des DTOs en modèles métier.
+  - `lib/api/index.ts` : Export centralisé des mappers.
+  - `components/CategoryLayout.tsx` : Raccordement dynamique des pages de rubriques `/fr/[category]` et `/en/[category]`.
+  - `app/fr/page.tsx` & `app/en/page.tsx` : Raccordement asynchrone des pages d'accueil bilingues.
+  - `components/editorial/ArticleCard.tsx` : Gestion bivalente des images et gestionnaire `onError`.
+  - `components/layout/Header.tsx` : Synchronisation des sous-rubriques dans la navigation.
+  - `CHRONOLOGIE_ET_SUIVI_FRONTEND.md` : Ajout de la tâche F4.6 validée.
+- **Vérifications :**
+  - Compilation TypeScript : `npx tsc --noEmit` exécuté avec succès (code 0, 0 erreur).
+  - Tests backend : `go test -v ./...` validé à 100% (PASS).
+  - Binaire backend : compilation réussie `go build -v -o /dev/null ./cmd/api` (code 0).
+- **État :** Validé et terminé.
+
+---
+
+### 🚀 Phase F4.7 : Éradication Définitive des Mocks d'Articles & Raccordement 100% PostgreSQL de la Lecture et Recherche (FR & EN)
+- **Date :** 21 Septembre 2026
+- **Objectif :** Atteindre 0 import mock d'articles dans l'intégralité du frontend, connecter les pages de lecture d'article (`/[category]/[slug]`), le moteur de recherche documentaire (`/recherche`), les pages de numéros (`/numeros/[slug]`) et les chantiers liés (`/tracker/projets/[slug]`) aux endpoints réels de l'API Go et à PostgreSQL.
+- **Réalisations clés :**
+  - **Pages de lecture d'article (`app/fr/[category]/[slug]/page.tsx` & `app/en/[category]/[slug]/page.tsx`) :**
+    - Suppression totale de `getArticleBySlug`, `getCategoryByCode`, `getSubCategoryByCode` et `getArticles`.
+    - Chargement direct de l'enquête par son slug via `articlesApi.getArticle(slug)`.
+    - Chargement dynamique de la rubrique et de la sous-rubrique via `categoriesApi.getCategory(categoryCode)`.
+    - Chargement des articles connexes (« Sur le Même Sujet ») via `articlesApi.listArticles({ category: article.category, limit: 10 })` avec exclusion de l'article courant.
+    - Configuration `export const dynamic = 'force-dynamic'` pour un cycle de vie 100% dynamique.
+  - **Moteur de recherche bilingue (`app/fr/recherche/page.tsx` & `app/en/recherche/page.tsx`) :**
+    - Suppression totale de `getArticles('fr')` et `getArticles('en')`.
+    - Chargement asynchrone des 48 articles réels via `articlesApi.listArticles({ limit: 100 })` et recherche réactive instantanée sur les données PostgreSQL réelles.
+  - **Pages d'accueil FR/EN (`app/fr/page.tsx` & `app/en/page.tsx`) :**
+    - Suppression des imports `articles` et `getArticles`. Remplacement par les articles réels issus de `articlesApi.listArticles({ limit: 50 })` avec garde sécurisée.
+  - **Pages de projets tracker & numéros (`app/fr/tracker/projets/[slug]/page.tsx`, `app/en/tracker/projets/[slug]/page.tsx`, `app/fr/numeros/[slug]/page.tsx`, `app/en/numeros/[slug]/page.tsx`) :**
+    - Suppression des imports `@/data/mock/articles` et raccordement à `articlesApi.listArticles({ limit: 100 })`.
+  - **Composant Rubrique (`components/CategoryLayout.tsx`) :**
+    - Élimination de `getArticlesByCategory`. Remplacement par un état initial vide avec Skeletons animés élégants jusqu'à l'arrivée des articles PostgreSQL.
+- **Vérifications :**
+  - Validation du typage strict : `npx tsc --noEmit` validé avec 0 erreur (code 0).
+  - Tests backend : `go test -v ./...` validé à 100% (PASS).
+  - Compilation binaire backend : `go build -v -o /dev/null ./cmd/api` (code 0).
+  - Synchronisation Swagger : `swag init -g cmd/api/main.go -o docs` (code 0).
+  - Recherche globale de `@/data/mock/articles` dans le code : **0 occurrence restante**.
+- **État :** Validé et terminé.
+
+---
+
+*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F6 à F10 synchronisées avec les semaines backend)*
 
 
 

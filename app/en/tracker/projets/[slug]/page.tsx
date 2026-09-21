@@ -1,5 +1,4 @@
 import { projects, getProjectBySlug } from '@/data/mock/projects';
-import { getArticles } from '@/data/mock/articles';
 import { getIndicators } from '@/data/mock/indicators';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { PROJECT_STATUS_LABELS_EN, PROJECT_STATUS_ORDER } from '@/data/types';
@@ -7,6 +6,11 @@ import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalL
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSourceUrl } from '@/data/sources';
+import { articlesApi } from '@/lib/api/articles';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
+
+export const dynamic = 'force-dynamic';
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -23,9 +27,22 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
   }
 
   const currentIndex = PROJECT_STATUS_ORDER.indexOf(project.currentStatus);
-  const enArticles = getArticles('en');
+  let enArticles: Article[] = [];
+  try {
+    const res = await articlesApi.listArticles({ limit: 100 });
+    if (res.articles) {
+      enArticles = res.articles.map(dto => {
+        const mapped = mapArticleDTOToArticle(dto);
+        if (dto.title_en) mapped.title = dto.title_en;
+        if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+        return mapped;
+      });
+    }
+  } catch {
+    enArticles = [];
+  }
   const linkedArticles = project.linkedArticleIds
-    .map(id => enArticles.find(a => a.id === id))
+    .map(id => enArticles.find(a => a.id === id || a.slug === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
   const allIndicators = getIndicators('en');

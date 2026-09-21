@@ -2,11 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper, ChevronDown } from 'lucide-react';
 import { NAV_CATEGORIES, UI_STRINGS } from '@/data/mock/translations';
 import { JOURNAL_PRODUCTS } from '@/data/mock/referentiel';
 import { categories as ALL_CATEGORIES } from '@/data/mock/categories';
+import { categoriesApi } from '@/lib/api/categories';
+import { CategoryDTO } from '@/lib/api/types';
+import { mapCategoryDTOToCategory } from '@/lib/api/mappers';
 import Tooltip from '@/components/ui/Tooltip';
 
 export default function Header() {
@@ -18,6 +21,32 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dynamicCategories, setDynamicCategories] = useState<CategoryDTO[]>([]);
+
+  // Load real categories & subcategories from Go API / PostgreSQL
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const list = await categoriesApi.listCategories(true);
+        if (isMounted && list && list.length > 0) {
+          setDynamicCategories(list);
+        }
+      } catch {
+        // Silent fallback
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeCategoriesData = useMemo(() => {
+    if (dynamicCategories.length > 0) {
+      return dynamicCategories.map(mapCategoryDTOToCategory);
+    }
+    return ALL_CATEGORIES;
+  }, [dynamicCategories]);
 
   // Target links for language toggle
   const frUrl = isEn ? pathname.replace(/^\/en/, '/fr') : pathname;
@@ -225,7 +254,7 @@ export default function Header() {
             {categories.map((cat) => {
               const active = pathname.startsWith(cat.href);
               const catCode = cat.href.split('/').pop();
-              const categoryData = ALL_CATEGORIES.find(c => c.code === catCode);
+              const categoryData = activeCategoriesData.find(c => c.code === catCode);
               return (
                 <div key={cat.href} className="relative group">
                   <Link
@@ -417,7 +446,7 @@ export default function Header() {
               {isEn ? "Investigative Sections & Sub-Rubrics" : "Rubriques & Sous-Rubriques d'Enquête"}
             </div>
             <div className="space-y-2">
-              {ALL_CATEGORIES.map((cat) => (
+              {activeCategoriesData.map((cat) => (
                 <div key={cat.code} className="border border-[#e6dfd5] bg-[#faf8f5] p-2.5 rounded-xs">
                   <div className="flex items-center justify-between mb-1.5">
                     <Link

@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { getLatestIssue } from '@/data/mock/issues';
 import { getLatestBrief } from '@/data/mock/briefs';
-import { articles } from '@/data/mock/articles';
 import { getKeyIndicators } from '@/data/mock/indicators';
 import { projects, getProjectStats } from '@/data/mock/projects';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
 import { getAdminStore } from '@/data/admin-store';
+import { articlesApi } from '@/lib/api/articles';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
+import { Article } from '@/data/types';
 import { 
   ArrowRight, 
   Clock, 
@@ -24,10 +26,25 @@ import {
   FileCheck
 } from 'lucide-react';
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
   const store = getAdminStore();
   const config = store.homepageConfig;
-  const articlesList = store.articles && store.articles.length > 0 ? store.articles : articles;
+
+  let liveArticles: Article[] = [];
+  try {
+    const res = await articlesApi.listArticles({ limit: 50 });
+    if (res.articles && res.articles.length > 0) {
+      liveArticles = res.articles.map(mapArticleDTOToArticle);
+    }
+  } catch {
+    // API error
+  }
+
+  const articlesList = liveArticles.length > 0 
+    ? liveArticles 
+    : (store.articles || []);
 
   const latestIssue = getLatestIssue();
   const latestBrief = getLatestBrief();
@@ -46,7 +63,7 @@ export default function HomePage() {
     .map(id => articlesList.find(a => matchId(a.id, id)))
     .filter(Boolean) as typeof articlesList;
 
-  const fallbackSecondaries = articlesList.filter(a => a.id !== leadArticle.id);
+  const fallbackSecondaries = leadArticle ? articlesList.filter(a => a.id !== leadArticle.id) : articlesList;
   const secondaryArticles = configuredSecondaries.length > 0 ? configuredSecondaries : fallbackSecondaries.slice(0, 4);
 
   const featuredProjects = projects.slice(0, 3);
@@ -57,7 +74,7 @@ export default function HomePage() {
   const issueArticles = latestIssue ? articlesList.filter(a => a.issueId === latestIssue.id) : [];
   const issueSourcesCount = issueArticles.length > 0 
     ? issueArticles.reduce((acc, curr) => acc + curr.sourceCount, 0)
-    : leadArticle.sourceCount;
+    : (leadArticle?.sourceCount || 0);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#faf8f5]">
