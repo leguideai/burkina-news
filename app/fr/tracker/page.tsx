@@ -1,14 +1,19 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { getProjects, getProjectStats } from '@/data/mock/projects';
 import { getKeyIndicators } from '@/data/mock/indicators';
+import { trackerApi } from '@/lib/api/tracker';
+import { barometreApi } from '@/lib/api/barometre';
+import { mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { 
   PROJECT_STATUS_LABELS, 
   PROJECT_STATUS_ORDER,
-  ProjectStatus 
+  ProjectStatus,
+  Project,
+  Indicator
 } from '@/data/types';
 import { 
   Search, 
@@ -38,9 +43,46 @@ export default function TrackerPage() {
   const [selectedProvince, setSelectedProvince] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const projects = useMemo(() => getProjects('fr'), []);
-  const stats = getProjectStats();
-  const keyIndicators = useMemo(() => getKeyIndicators('fr'), []);
+  const [projects, setProjects] = useState<Project[]>(() => getProjects('fr'));
+  const [stats, setStats] = useState(() => getProjectStats());
+  const [keyIndicators, setKeyIndicators] = useState<Indicator[]>(() => getKeyIndicators('fr'));
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const [projRes, statsRes, indRes] = await Promise.allSettled([
+          trackerApi.listProjects({ limit: 100 }),
+          trackerApi.getStats(),
+          barometreApi.listIndicators(),
+        ]);
+
+        if (!isMounted) return;
+
+        if (projRes.status === 'fulfilled' && projRes.value.projects && projRes.value.projects.length > 0) {
+          setProjects(projRes.value.projects.map(mapProjectDTOToProject));
+        }
+
+        if (statsRes.status === 'fulfilled' && statsRes.value) {
+          setStats({
+            total: statsRes.value.total_projects,
+            byStatus: statsRes.value.by_status as any,
+          });
+        }
+
+        if (indRes.status === 'fulfilled' && indRes.value && indRes.value.length > 0) {
+          const mappedInds = indRes.value.map(mapIndicatorDTOToIndicator);
+          const filtered = mappedInds.filter(i => ['PIB-CROISSANCE', 'ELEC-CAPACITE', 'OR-PRODUCTION', 'PAUVRETE'].includes(i.code));
+          if (filtered.length > 0) {
+            setKeyIndicators(filtered);
+          }
+        }
+      } catch (e) {
+        console.error('Erreur de synchronisation Tracker API :', e);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, []);
 
   const sectors = useMemo(() => Array.from(new Set(projects.map(p => p.sector))), [projects]);
   const regions = useMemo(() => Array.from(new Set(projects.map(p => p.region))), [projects]);

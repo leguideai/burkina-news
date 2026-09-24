@@ -28,6 +28,8 @@ import {
   PROJECT_STATUS_ORDER,
   CategoryCode 
 } from '@/data/types';
+import { trackerApi } from '@/lib/api/tracker';
+import { mapProjectDTOToProject } from '@/lib/api/mappers';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
@@ -85,12 +87,26 @@ export default function AdminProjectsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger les projets.');
-      const data = await res.json();
-      setProjects(data.projects || []);
+      const res = await trackerApi.listProjects({ limit: 100 });
+      if (res.projects && res.projects.length > 0) {
+        setProjects(res.projects.map(mapProjectDTOToProject));
+      } else {
+        const fallback = await fetch('/api/admin/data');
+        if (fallback.ok) {
+          const data = await fallback.json();
+          setProjects(data.projects || []);
+        }
+      }
     } catch (err: any) {
-      error('Erreur', err.message);
+      try {
+        const fallback = await fetch('/api/admin/data');
+        if (fallback.ok) {
+          const data = await fallback.json();
+          setProjects(data.projects || []);
+        }
+      } catch {
+        error('Erreur', err.message);
+      }
     } finally {
       setTimeout(() => setLoading(false), 350);
     }
@@ -138,24 +154,13 @@ export default function AdminProjectsPage() {
     }
 
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'update_project_status',
-          payload: {
-            projectId: statusModalProject.id,
-            newStatus,
-            date: statusDate,
-            source: statusSource,
-            note: statusNoteFr,
-            noteEn: statusNoteEn,
-          }
-        })
+      await trackerApi.adminChangeProjectStatus(statusModalProject.id, {
+        status: newStatus,
+        date: statusDate,
+        source: statusSource,
+        note: statusNoteFr,
+        note_en: statusNoteEn,
       });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors du changement de statut.');
 
       success(
         'Statut vérifié et archivé',
@@ -172,14 +177,7 @@ export default function AdminProjectsPage() {
   // Delete project
   const handleDelete = async (id: string, title: string) => {
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete_project', payload: { id } })
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur lors de la suppression.');
+      await trackerApi.adminDeleteProject(id);
 
       success('Chantier retiré', `Le projet "${title}" a été supprimé du Tracker.`);
       setIsDeletingId(null);

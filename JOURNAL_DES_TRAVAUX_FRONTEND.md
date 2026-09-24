@@ -436,7 +436,40 @@
 
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F6 à F10 synchronisées avec les semaines backend)*
+### 🏗️ Phase F6 : Intégration Tracker des Chantiers (6 Statuts stricts) & Baromètre RELANCE
+- **Date :** 21 Septembre 2026
+- **Objectif :** Connecter la cartographie des 60 chantiers d'infrastructure (les 6 statuts stricts de la direction, l'historique non-écrasé des PV, les acteurs, les budgets en FCFA) et le Baromètre RELANCE des indicateurs macroéconomiques du PND 2026-2030 aux endpoints réels de l'API Go et à PostgreSQL.
+- **Réalisations clés :**
+  - **Types & Contrats DTOs (`lib/api/types.ts`) :**
+    - Typage strict des 6 statuts officiels : `annonce`, `engage`, `en-construction`, `inaugure`, `operationnel`, `impact-mesure`.
+    - DTOs pour les chantiers : `ProjectDTO`, `ProjectStatsDTO`, `ProjectStatusHistoryDTO`, `ProjectActorDTO`, `ProjectSourceDTO`, `ProjectFilterParams`.
+    - DTOs pour le Baromètre : `IndicatorDTO`, `IndicatorDataPointDTO`, `IndicatorFilterParams`.
+    - DTOs de mutations administratives : `CreateProjectInput`, `UpdateProjectInput`, `ChangeProjectStatusInput`, `CreateIndicatorInput`, `UpdateIndicatorInput`, `CreateDataPointInput`.
+  - **Services Clients API & Adaptateurs (`lib/api/tracker.ts`, `lib/api/barometre.ts`, `lib/api/mappers.ts`, `lib/api/index.ts`) :**
+    - `trackerApi` : implémentation complète des méthodes de consultation (`listProjects`, `getProject`, `getStats`) et de gestion administrative (`adminCreateProject`, `adminUpdateProject`, `adminChangeProjectStatus`, `adminDeleteProject`).
+    - `barometreApi` : implémentation des méthodes publiques (`listIndicators`, `getIndicator`) et administratives (`adminCreateIndicator`, `adminUpdateIndicator`, `adminAddDataPoint`, `adminDeleteIndicator`).
+    - Fonctions d'adaptation universelles `mapProjectDTOToProject` et `mapIndicatorDTOToIndicator` garantissant la compatibilité ascendante et le bilinguisme (FR/EN) sur l'ensemble de l'interface utilisateur.
+  - **Espace d'Administration Back-Office (`/admin/projets` & `/admin/indicateurs`) :**
+    - `app/admin/projets/page.tsx` : affichage des chantiers réels de PostgreSQL avec leurs budgets FCFA et taux d'avancement, modale de changement de statut strict avec archivage obligatoire d'un PV contradictoire, et suppression protégée.
+    - `app/admin/projets/nouveau/page.tsx` : formulaire complet de création de chantier raccordé à `trackerApi.adminCreateProject`.
+    - `app/admin/projets/[id]/page.tsx` : formulaire d'édition de fiche documentaire raccordé à `trackerApi.adminUpdateProject`.
+    - `app/admin/indicateurs/page.tsx` : tableau de bord des indicateurs du Baromètre RELANCE avec création, mise à jour des cibles 2028/2030 et suppression via `barometreApi`.
+  - **Espace Visiteur Public (FR & EN) :**
+    - `app/fr/tracker/page.tsx` & `app/en/tracker/page.tsx` : raccordement dynamique des statistiques globales (`trackerApi.getStats`), des chantiers réels (`trackerApi.listProjects`) et du Baromètre RELANCE (`barometreApi.listIndicators`) avec filtrage interactif.
+    - `app/fr/tracker/projets/[slug]/page.tsx` & `app/en/tracker/projets/[slug]/page.tsx` : fiche détaillée de chantier avec historique des PV et documents officiels (`trackerApi.getProject`).
+    - `app/fr/tracker/indicateurs/page.tsx` & `app/en/tracker/indicateurs/page.tsx` : catalogue complet des indicateurs macroéconomiques (`barometreApi.listIndicators`).
+    - `app/fr/tracker/indicateurs/[slug]/page.tsx` & `app/en/tracker/indicateurs/[slug]/page.tsx` : fiche détaillée d'un indicateur avec historique annuel et projets liés (`barometreApi.getIndicator`).
+- **Vérifications :**
+  - Validation du typage strict TypeScript et des contrats d'interfaces DTO.
+  - Tests unitaires et d'intégration backend : `go test -v ./...` (100% PASS).
+  - Compilation binaire Go : `go build -v -o /dev/null ./cmd/api` et `go build -v -o /dev/null ./cmd/seed` (code 0).
+  - Documentation Swagger OpenAPI 3.0 régénérée avec succès.
+- **État :** Validé et terminé. Phase F6 100% achevée.
+
+---
+
+*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F7 à F10 synchronisées avec les semaines backend)*
+
 
 
 

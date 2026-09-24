@@ -525,3 +525,260 @@ export interface FactFilterParams {
   limit?: number;
 }
 
+// ─── Tracker des Chantiers (Semaine 6 / Phase F6) ──────────────────────────
+
+export type ProjectStatusType =
+  | 'annonce'
+  | 'engage'
+  | 'en-construction'
+  | 'inaugure'
+  | 'operationnel'
+  | 'impact-mesure';
+
+export interface ProjectStatusHistoryDTO {
+  id: string;
+  project_id: string;
+  status: ProjectStatusType;
+  date: string;
+  source: string;
+  note?: string;
+  note_en?: string;
+  document_url?: string;
+  created_by_id?: string | null;
+  created_at: string;
+}
+
+export interface ProjectActorDTO {
+  id: string;
+  project_id: string;
+  role: string;
+  role_en?: string;
+  name: string;
+  created_at: string;
+}
+
+export interface ProjectSourceDTO {
+  id: string;
+  project_id: string;
+  title: string;
+  url: string;
+  date: string;
+  institution?: string;
+  created_at: string;
+}
+
+export interface ProjectDTO {
+  id: string;
+  code: string;
+  title: string;
+  title_en?: string;
+  slug: string;
+  description: string;
+  description_en?: string;
+  category: string;
+  region: string;
+  province?: string;
+  sector: string;
+  current_status: ProjectStatusType;
+  pnd_program?: string;
+  reliability?: string;
+  amount?: string;
+  currency?: string;
+  capacity?: string;
+  image?: string;
+  featured_image?: string;
+  linked_indicator_codes?: string[];
+  linked_article_ids?: string[];
+  last_verified_at?: string;
+  status_history?: ProjectStatusHistoryDTO[];
+  actors?: ProjectActorDTO[];
+  sources?: ProjectSourceDTO[];
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ProjectStatsDTO {
+  total_projects: number;
+  by_status: Record<string, number>;
+  by_region: Record<string, number>;
+  by_sector: Record<string, number>;
+  average_progress?: number;
+}
+
+export interface ProjectFilterParams {
+  page?: number;
+  limit?: number;
+  region?: string;
+  sector?: string;
+  status?: string;
+  category?: string;
+  search?: string;
+}
+
+export interface CreateActorInput {
+  role: string;
+  role_en?: string;
+  name: string;
+}
+
+export interface CreateSourceInput {
+  title: string;
+  url: string;
+  date?: string;
+  institution?: string;
+}
+
+export interface CreateProjectInput {
+  title: string;
+  title_en?: string;
+  description: string;
+  description_en?: string;
+  category: string;
+  region: string;
+  province?: string;
+  sector: string;
+  current_status: ProjectStatusType;
+  pnd_program?: string;
+  reliability?: string;
+  amount?: string;
+  currency?: string;
+  capacity?: string;
+  image?: string;
+  linked_indicator_codes?: string[];
+  linked_article_ids?: string[];
+  actors?: CreateActorInput[];
+  sources?: CreateSourceInput[];
+  initial_source?: string;
+  initial_note?: string;
+}
+
+export interface UpdateProjectInput {
+  title?: string;
+  title_en?: string;
+  description?: string;
+  description_en?: string;
+  category?: string;
+  region?: string;
+  province?: string;
+  sector?: string;
+  pnd_program?: string;
+  reliability?: string;
+  amount?: string;
+  currency?: string;
+  capacity?: string;
+  image?: string;
+  linked_indicator_codes?: string[];
+  linked_article_ids?: string[];
+  actors?: CreateActorInput[];
+  sources?: CreateSourceInput[];
+}
+
+export interface ChangeProjectStatusInput {
+  status: ProjectStatusType;
+  date?: string;
+  source: string;
+  note?: string;
+  note_en?: string;
+  document_url?: string;
+}
+
+// ─── Baromètre RELANCE & Indicateurs (Semaine 6 / Phase F6) ───────────────
+
+export interface IndicatorDataPointDTO {
+  id: string;
+  indicatorId?: string;
+  year: number;
+  value: number;
+  source: string;
+  created_at?: string;
+}
+
+export interface IndicatorDTO {
+  id: string;
+  code: string;
+  name: string;
+  name_en?: string;
+  definition: string;
+  definition_en?: string;
+  unit: string;
+  baseline_value: number;
+  baseline_year: number;
+  target_2028?: number | null;
+  target_2030?: number | null;
+  current_value: number;
+  current_year: number;
+  trend: 'up' | 'down' | 'stable' | string;
+  source: string;
+  category: string;
+  program?: string;
+  program_en?: string;
+  pillar?: string;
+  pillar_en?: string;
+  image?: string;
+  featured_image?: string;
+  linked_project_slugs?: string[];
+  history?: IndicatorDataPointDTO[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface IndicatorFilterParams {
+  category?: string;
+  pillar?: string;
+  search?: string;
+}
+
+export interface CreateDataPointInput {
+  year: number;
+  value: number;
+  source: string;
+}
+
+export interface CreateIndicatorInput {
+  code: string;
+  name: string;
+  name_en?: string;
+  definition: string;
+  definition_en?: string;
+  unit: string;
+  baseline_value: number;
+  baseline_year: number;
+  target_2028?: number;
+  target_2030?: number;
+  current_value: number;
+  current_year: number;
+  trend?: string;
+  source: string;
+  category?: string;
+  program?: string;
+  program_en?: string;
+  pillar?: string;
+  pillar_en?: string;
+  image?: string;
+  linked_project_slugs?: string[];
+  history?: CreateDataPointInput[];
+}
+
+export interface UpdateIndicatorInput {
+  name?: string;
+  name_en?: string;
+  definition?: string;
+  definition_en?: string;
+  unit?: string;
+  baseline_value?: number;
+  baseline_year?: number;
+  target_2028?: number;
+  target_2030?: number;
+  current_value?: number;
+  current_year?: number;
+  trend?: string;
+  source?: string;
+  category?: string;
+  program?: string;
+  program_en?: string;
+  pillar?: string;
+  pillar_en?: string;
+  image?: string;
+  linked_project_slugs?: string[];
+}
+

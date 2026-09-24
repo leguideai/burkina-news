@@ -1,14 +1,16 @@
 import { projects, getProjectBySlug } from '@/data/mock/projects';
 import { getIndicators } from '@/data/mock/indicators';
 import StatusBadge from '@/components/tracker/StatusBadge';
-import { PROJECT_STATUS_LABELS_EN, PROJECT_STATUS_ORDER } from '@/data/types';
+import { PROJECT_STATUS_LABELS_EN, PROJECT_STATUS_ORDER, Project, Indicator, Article } from '@/data/types';
 import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSourceUrl } from '@/data/sources';
 import { articlesApi } from '@/lib/api/articles';
-import { mapArticleDTOToArticle } from '@/lib/api/mappers';
-import { Article } from '@/data/types';
+import { trackerApi } from '@/lib/api/tracker';
+import { barometreApi } from '@/lib/api/barometre';
+import { mapArticleDTOToArticle, mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
+import { localizeProject, localizeIndicator } from '@/data/localize';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +22,20 @@ export function generateStaticParams() {
 
 export default async function ProjectDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug, 'en');
+
+  let project: Project | undefined;
+  try {
+    const dto = await trackerApi.getProject(slug);
+    if (dto) {
+      project = localizeProject(mapProjectDTOToProject(dto), 'en');
+    }
+  } catch {
+    project = getProjectBySlug(slug, 'en');
+  }
+
+  if (!project) {
+    project = getProjectBySlug(slug, 'en');
+  }
 
   if (!project) {
     notFound();
@@ -45,7 +60,17 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
     .map(id => enArticles.find(a => a.id === id || a.slug === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
-  const allIndicators = getIndicators('en');
+  let liveIndicators: Indicator[] = [];
+  try {
+    const indDtos = await barometreApi.listIndicators();
+    if (indDtos && indDtos.length > 0) {
+      liveIndicators = indDtos.map(mapIndicatorDTOToIndicator).map(i => localizeIndicator(i, 'en'));
+    }
+  } catch {
+    liveIndicators = [];
+  }
+
+  const allIndicators = liveIndicators.length > 0 ? liveIndicators : getIndicators('en');
   const linkedIndicators = (project.linkedIndicatorCodes || [])
     .map(code => allIndicators.find(i => i.code === code))
     .filter((i): i is NonNullable<typeof i> => i !== undefined);

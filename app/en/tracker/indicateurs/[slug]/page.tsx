@@ -1,10 +1,17 @@
 import { getIndicatorByCode, indicators } from '@/data/mock/indicators';
 import { getProjects, getProjectsByCategory } from '@/data/mock/projects';
+import { barometreApi } from '@/lib/api/barometre';
+import { trackerApi } from '@/lib/api/tracker';
+import { mapIndicatorDTOToIndicator, mapProjectDTOToProject } from '@/lib/api/mappers';
+import { localizeIndicator, localizeProject } from '@/data/localize';
+import { Indicator, Project } from '@/data/types';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowRight, ArrowLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSourceUrl } from '@/data/sources';
+
+export const dynamic = 'force-dynamic';
 
 export function generateStaticParams() {
   return indicators.map((indicator) => ({
@@ -14,20 +21,45 @@ export function generateStaticParams() {
 
 export default async function IndicatorDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const indicator = getIndicatorByCode(slug, 'en');
+
+  let indicator: Indicator | undefined;
+  try {
+    const dto = await barometreApi.getIndicator(slug);
+    if (dto) {
+      indicator = localizeIndicator(mapIndicatorDTOToIndicator(dto), 'en');
+    }
+  } catch {
+    indicator = getIndicatorByCode(slug, 'en');
+  }
+
+  if (!indicator) {
+    indicator = getIndicatorByCode(slug, 'en');
+  }
 
   if (!indicator) {
     notFound();
   }
 
-  const allProjects = getProjects('en');
+  // Chantiers concrets du Tracker associés (Live API + Fallback)
+  let allProjects: Project[] = [];
+  try {
+    const projRes = await trackerApi.listProjects({ limit: 100 });
+    if (projRes.projects && projRes.projects.length > 0) {
+      allProjects = projRes.projects.map(mapProjectDTOToProject).map(p => localizeProject(p, 'en'));
+    } else {
+      allProjects = getProjects('en');
+    }
+  } catch {
+    allProjects = getProjects('en');
+  }
+
   const directLinkedProjects = allProjects.filter(p => 
-    p.linkedIndicatorCodes?.includes(indicator.code) || 
-    indicator.linkedProjectSlugs?.includes(p.slug)
+    p.linkedIndicatorCodes?.includes(indicator!.code) || 
+    indicator!.linkedProjectSlugs?.includes(p.slug)
   );
   const relatedProjects = directLinkedProjects.length > 0 
     ? directLinkedProjects 
-    : getProjectsByCategory(indicator.category, 'en').slice(0, 3);
+    : allProjects.filter(p => p.category === indicator!.category).slice(0, 3);
   
   const progressPercent = indicator.target2030 && indicator.baselineValue
     ? Math.min(100, Math.max(0, ((indicator.currentValue - indicator.baselineValue) / (indicator.target2030 - indicator.baselineValue)) * 100))

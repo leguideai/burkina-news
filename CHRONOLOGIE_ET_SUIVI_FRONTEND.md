@@ -19,9 +19,9 @@
 | **Phase F2** | **Semaine 2 :** Authentification JWT (`login`, `refresh`, `logout`, `me`), AuthGuard & CRUD Utilisateurs Desk | `[x] Validé & Terminé` |
 | **Phase F3** | **Semaine 3 :** Médiathèque & Upload de fichiers (Cloudflare R2 / Local) | `[x] Validé & Terminé` |
 | **🚀 DevOps** | Vercel (frontend) + Railway (backend + PostgreSQL) + Cloudflare R2 en production | `[x] Validé & Terminé` |
-| **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (Jalon F4.0 Rubriques validé, F4.1 en cours) | `[/] En cours (F4.0 achevé)` |
-| **Phase F5** | **Semaine 5 :** API Le Fil (Dépêches 60s, Éditions hebdo, Streaming SSE en direct) | `[ ] En attente` |
-| **Phase F6** | **Semaine 6 :** API Tracker des Chantiers (6 Statuts, cartographie, PV) & Baromètre RELANCE | `[ ] En attente` |
+| **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (48 Enquêtes, Rubriques & Sources) | `[x] Validé & Terminé` |
+| **Phase F5** | **Semaine 5 :** API Le Fil (Dépêches 60s, Éditions hebdo, Streaming SSE en direct) | `[x] Validé & Terminé` |
+| **Phase F6** | **Semaine 6 :** API Tracker des Chantiers (6 Statuts, cartographie, PV) & Baromètre RELANCE | `[x] Validé & Terminé` |
 | **Phase F7** | **Semaine 7 :** Numéros PDF, Registre public des Corrections & Moteur de Recherche Globale | `[ ] En attente` |
 | **Phase F8** | **Semaine 8 :** Curation Une, Rubriques, Formulaires Publics (Signalements/Contact) & IA Micum | `[ ] En attente` |
 | **Phase F9** | **Semaine 9 :** Durcissement, Tests E2E, Gestion du mode dégradé hors-ligne | `[ ] En attente` |
@@ -114,10 +114,25 @@
 
 ---
 
-## 📅 PHASES F6 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 6 À 10)
+## 📅 PHASE F6 : Module Tracker des Chantiers (6 Statuts) & Baromètre RELANCE (Semaine 6 Backend)
 
-- **Phase F6 (Semaine 6) :** Intégration Tracker Chantiers (6 Statuts) & Baromètre RELANCE (`/fr/tracker`, `/admin/projets`).
+> **🎯 Objectif :** Connecter la cartographie des chantiers d'infrastructure (les 6 statuts stricts, les PV techniques inaltérables, les acteurs et budgets en FCFA) et le Baromètre RELANCE aux endpoints réels de l'API Go et à PostgreSQL.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F6.0** | `[x]` | Définition des DTOs et contrats d'interfaces du Tracker & Baromètre RELANCE. | `lib/api/types.ts` | Types DTOs Go | `ProjectStatusType`, `ProjectDTO`, `ProjectStatsDTO`, `ProjectFilterParams`, `CreateProjectInput`, `UpdateProjectInput`, `ChangeProjectStatusInput`, `IndicatorDTO`, `IndicatorDataPointDTO`, `IndicatorFilterParams`. |
+| **F6.1** | `[x]` | Développement des services clients `trackerApi`, `barometreApi` et mappers universels. | `lib/api/tracker.ts`, `lib/api/barometre.ts`, `lib/api/mappers.ts`, `lib/api/index.ts` | `GET /api/v1/tracker/*`<br>`GET /api/v1/barometre/*`<br>`CRUD /api/v1/admin/tracker`<br>`CRUD /api/v1/admin/barometre` | Clients HTTP complets avec filtres combinés, calculs d'avancement, mapping DTO ➔ UI résilient bilingue FR/EN. |
+| **F6.2** | `[x]` | Raccordement des écrans d'administration des Chantiers (`/admin/projets`). | `app/admin/projets/page.tsx`, `app/admin/projets/nouveau/page.tsx`, `app/admin/projets/[id]/page.tsx` | `CRUD /api/v1/admin/tracker`<br>`PATCH /api/v1/admin/tracker/:id/status` | Éradication des données locales isolées, liste dynamique des 10 chantiers réels, formulaires de création et d'édition, changement de statut avec archivage immuable et suppression sécurisée. |
+| **F6.3** | `[x]` | Raccordement de l'écran d'administration du Baromètre RELANCE (`/admin/indicateurs`). | `app/admin/indicateurs/page.tsx` | `CRUD /api/v1/admin/barometre`<br>`POST /api/v1/admin/barometre/:id/points` | Liste dynamique des 8 indicateurs macroéconomiques, ajout de nouveaux indicateurs, mise à jour des valeurs/cibles 2028-2030, suppression et historisation des points de données. |
+| **F6.4** | `[x]` | Raccordement de l'espace visiteur public FR & EN pour le Tracker des Chantiers. | `app/fr/tracker/page.tsx`, `app/en/tracker/page.tsx`, `app/fr/tracker/projets/[slug]/page.tsx`, `app/en/tracker/projets/[slug]/page.tsx` | `GET /api/v1/tracker/projects`<br>`GET /api/v1/tracker/projects/:slug`<br>`GET /api/v1/tracker/stats` | Vue d'ensemble bilingue, KPIs agrégés (budget engagé FCFA, avancement moyen), filtrage dynamique par statut strict et région, fiche de projet détaillée avec historique immuable et sources contradictoires. |
+| **F6.5** | `[x]` | Raccordement de l'espace visiteur public FR & EN pour le Baromètre RELANCE. | `app/fr/tracker/indicateurs/page.tsx`, `app/en/tracker/indicateurs/page.tsx`, `app/fr/tracker/indicateurs/[slug]/page.tsx`, `app/en/tracker/indicateurs/[slug]/page.tsx` | `GET /api/v1/barometre/indicators`<br>`GET /api/v1/barometre/indicators/:code` | Affichage bilingue des 8 indicateurs macroéconomiques, visualisations des jauges par rapport aux cibles PND 2028/2030, détails par indicateur avec courbe chronologique et projets associés. |
+
+---
+
+## 📅 PHASES F7 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 7 À 10)
+
 - **Phase F7 (Semaine 7) :** Intégration Numéros PDF & Registre des Corrections (`/fr/numeros`, `/admin/corrections`).
 - **Phase F8 (Semaine 8) :** Intégration Curation Une, Formulaires Signalements & Assistant Micum.
 - **Phase F9 (Semaine 9) :** Durcissement, gestion du mode hors-ligne, audit de résilience.
 - **Phase F10 (Semaine 10) :** Recette finale de performance CWV & Mise en production.
+

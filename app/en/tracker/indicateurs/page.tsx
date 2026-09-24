@@ -1,15 +1,29 @@
 import Link from 'next/link';
 import { getIndicators } from '@/data/mock/indicators';
+import { barometreApi } from '@/lib/api/barometre';
+import { mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
+import { localizeIndicator } from '@/data/localize';
 import IndicatorCard from '@/components/tracker/IndicatorCard';
 import { ArrowLeft, BarChart2 } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'RELANCE Barometer 2026–2030 | Burkina News',
   description: 'Independent monitoring dashboard for Key Performance Indicators of the National Development Plan (PND RELANCE) 2026-2030.',
 };
 
-export default function IndicatorsPageEn() {
-  const enIndicators = getIndicators('en');
+export default async function IndicatorsPageEn() {
+  let enIndicators = getIndicators('en');
+  try {
+    const dtos = await barometreApi.listIndicators();
+    if (dtos && dtos.length > 0) {
+      enIndicators = dtos.map(mapIndicatorDTOToIndicator).map(i => localizeIndicator(i, 'en'));
+    }
+  } catch {
+    enIndicators = getIndicators('en');
+  }
+
   const groupedIndicators = enIndicators.reduce((acc, indicator) => {
     if (!acc[indicator.category]) {
       acc[indicator.category] = [];

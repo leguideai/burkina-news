@@ -1,15 +1,28 @@
 import Link from 'next/link';
 import { getIndicators } from '@/data/mock/indicators';
+import { barometreApi } from '@/lib/api/barometre';
+import { mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import IndicatorCard from '@/components/tracker/IndicatorCard';
 import { ArrowLeft, BarChart2 } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Baromètre RELANCE 2026–2030 | Burkina News',
   description: 'Tableau de bord de suivi des indicateurs clés de performance du Plan National de Développement (PND) 2026-2030.',
 };
 
-export default function IndicatorsPage() {
-  const indicators = getIndicators('fr');
+export default async function IndicatorsPage() {
+  let indicators = getIndicators('fr');
+  try {
+    const dtos = await barometreApi.listIndicators();
+    if (dtos && dtos.length > 0) {
+      indicators = dtos.map(mapIndicatorDTOToIndicator);
+    }
+  } catch {
+    indicators = getIndicators('fr');
+  }
+
   const groupedIndicators = indicators.reduce((acc, indicator) => {
     if (!acc[indicator.category]) {
       acc[indicator.category] = [];
