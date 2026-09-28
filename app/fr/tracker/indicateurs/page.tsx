@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getIndicators } from '@/data/mock/indicators';
 import { barometreApi } from '@/lib/api/barometre';
+import { categoriesApi } from '@/lib/api/categories';
 import { mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import IndicatorCard from '@/components/tracker/IndicatorCard';
 import { ArrowLeft, BarChart2 } from 'lucide-react';
@@ -40,6 +41,17 @@ export default async function IndicatorsPage() {
     histoire: 'Histoire & Trajectoires',
     idees: 'Histoire & Trajectoires',
   };
+
+  try {
+    const realCats = await categoriesApi.listCategories(false);
+    if (realCats && realCats.length > 0) {
+      realCats.forEach(c => {
+        categoryNames[c.code] = c.name_fr;
+      });
+    }
+  } catch {
+    // fallback
+  }
 
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">

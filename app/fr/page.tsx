@@ -9,8 +9,12 @@ import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
 import { getAdminStore } from '@/data/admin-store';
 import { articlesApi } from '@/lib/api/articles';
 import { homepageApi } from '@/lib/api/homepage';
-import { mapArticleDTOToArticle } from '@/lib/api/mappers';
-import { Article } from '@/data/types';
+import { issuesApi } from '@/lib/api/issues';
+import { filApi } from '@/lib/api/fil';
+import { barometreApi } from '@/lib/api/barometre';
+import { trackerApi } from '@/lib/api/tracker';
+import { mapArticleDTOToArticle, mapIssueDTOToIssue, mapIndicatorDTOToIndicator, mapProjectDTOToProject } from '@/lib/api/mappers';
+import { Article, Project, Indicator, Issue } from '@/data/types';
 import { 
   ArrowRight, 
   Clock, 
@@ -68,10 +72,118 @@ export default async function HomePage() {
     ? liveArticles 
     : (store.articles || []);
 
-  const latestIssue = getLatestIssue();
-  const latestBrief = getLatestBrief();
-  const indicators = getKeyIndicators();
-  const projectStats = getProjectStats();
+  // 1. Dernier Numéro (API Go avec fallback mock)
+  let latestIssue: Issue | null = null;
+  try {
+    const issueRes = await issuesApi.listIssues({ limit: 1 });
+    if (issueRes.issues && issueRes.issues.length > 0) {
+      latestIssue = mapIssueDTOToIssue(issueRes.issues[0]);
+    }
+  } catch {
+    // fallback
+  }
+  if (!latestIssue) {
+    latestIssue = getLatestIssue();
+  }
+
+  // 2. Le Fil Hebdo / Dépêches 60s (API Go avec fallback mock)
+  interface HomeBriefFact {
+    time: string;
+    text: string;
+    textEn?: string;
+    category: string;
+    source?: string;
+    image?: string;
+  }
+  interface HomeBrief {
+    id: string;
+    title: string;
+    titleEn?: string;
+    slug: string;
+    date: string;
+    facts: HomeBriefFact[];
+  }
+
+  let latestBrief: HomeBrief | null = null;
+  try {
+    const briefRes = await filApi.listBriefs({ limit: 1 });
+    if (briefRes.briefs && briefRes.briefs.length > 0) {
+      const b = briefRes.briefs[0];
+      latestBrief = {
+        id: b.id,
+        title: b.title,
+        titleEn: b.title_en || b.title,
+        slug: b.slug,
+        date: b.date,
+        facts: (b.facts || []).map(f => ({
+          time: f.time,
+          text: f.text_fr,
+          textEn: f.text_en || f.text_fr,
+          category: f.category_code,
+          source: f.source,
+          image: f.image,
+        })),
+      };
+    }
+  } catch {
+    // fallback
+  }
+  if (!latestBrief) {
+    const fallbackB = getLatestBrief('fr');
+    latestBrief = fallbackB ? {
+      id: fallbackB.id,
+      title: fallbackB.title,
+      titleEn: fallbackB.titleEn,
+      slug: fallbackB.slug,
+      date: fallbackB.date,
+      facts: (fallbackB.facts || []).map(f => ({
+        time: f.time,
+        text: f.text,
+        textEn: f.textEn,
+        category: typeof f.category === 'string' ? f.category : 'economie',
+        source: f.source,
+        image: f.image,
+      })),
+    } : null;
+  }
+
+  // 3. Indicateurs RELANCE (API Go avec fallback mock)
+  let indicators: Indicator[] = [];
+  try {
+    const indRes = await barometreApi.listIndicators();
+    if (indRes && indRes.length > 0) {
+      indicators = indRes.slice(0, 4).map(mapIndicatorDTOToIndicator);
+    }
+  } catch {
+    // fallback
+  }
+  if (indicators.length === 0) {
+    indicators = getKeyIndicators('fr');
+  }
+
+  // 4. Chantiers & Statistiques Tracker (API Go avec fallback mock)
+  let featuredProjects: Project[] = [];
+  let projectStats: any = null;
+  try {
+    const [projRes, statsRes] = await Promise.allSettled([
+      trackerApi.listProjects({ limit: 3 }),
+      trackerApi.getStats(),
+    ]);
+    if (projRes.status === 'fulfilled' && projRes.value?.projects && projRes.value.projects.length > 0) {
+      featuredProjects = projRes.value.projects.map(mapProjectDTOToProject);
+    }
+    if (statsRes.status === 'fulfilled' && statsRes.value) {
+      projectStats = statsRes.value;
+    }
+  } catch {
+    // fallback
+  }
+  if (featuredProjects.length === 0) {
+    featuredProjects = projects.slice(0, 3);
+  }
+  if (!projectStats) {
+    projectStats = getProjectStats();
+  }
 
   const normalizeId = (id?: string) => (id || '').replace(/^art-0*/, 'art-');
   const matchId = (aId: string, targetId?: string) => 
@@ -88,7 +200,6 @@ export default async function HomePage() {
   const fallbackSecondaries = leadArticle ? articlesList.filter(a => a.id !== leadArticle.id) : articlesList;
   const secondaryArticles = configuredSecondaries.length > 0 ? configuredSecondaries : fallbackSecondaries.slice(0, 4);
 
-  const featuredProjects = projects.slice(0, 3);
   const terrainArticle = articlesList.find(a => matchId(a.id, config.terrainArticleId)) || articlesList[5];
   const factCheckArticle = articlesList.find(a => matchId(a.id, config.factCheckArticleId)) || articlesList[4];
   const featuredQuote = config.featuredQuote;

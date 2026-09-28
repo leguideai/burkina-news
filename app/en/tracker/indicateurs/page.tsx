@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getIndicators } from '@/data/mock/indicators';
 import { barometreApi } from '@/lib/api/barometre';
+import { categoriesApi } from '@/lib/api/categories';
 import { mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import { localizeIndicator } from '@/data/localize';
 import IndicatorCard from '@/components/tracker/IndicatorCard';
@@ -41,6 +42,17 @@ export default async function IndicatorsPageEn() {
     histoire: 'History & Trajectories',
     idees: 'History & Trajectories',
   };
+
+  try {
+    const realCats = await categoriesApi.listCategories(false);
+    if (realCats && realCats.length > 0) {
+      realCats.forEach(c => {
+        categoryNamesEn[c.code] = c.name_en || c.name_fr;
+      });
+    }
+  } catch {
+    // fallback
+  }
 
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">

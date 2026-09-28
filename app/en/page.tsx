@@ -9,8 +9,12 @@ import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
 import { getAdminStore } from '@/data/admin-store';
 import { articlesApi } from '@/lib/api/articles';
 import { homepageApi } from '@/lib/api/homepage';
-import { mapArticleDTOToArticle } from '@/lib/api/mappers';
-import { Article } from '@/data/types';
+import { issuesApi } from '@/lib/api/issues';
+import { filApi } from '@/lib/api/fil';
+import { barometreApi } from '@/lib/api/barometre';
+import { trackerApi } from '@/lib/api/tracker';
+import { mapArticleDTOToArticle, mapIssueDTOToIssue, mapIndicatorDTOToIndicator, mapProjectDTOToProject } from '@/lib/api/mappers';
+import { Article, Project, Indicator, Issue } from '@/data/types';
 import { 
   ArrowRight, 
   Clock, 
@@ -50,10 +54,128 @@ export default async function HomePageEn() {
     // API error fallback
   }
 
-  const latestIssue = getLatestIssue('en');
-  const latestBrief = getLatestBrief('en');
-  const indicators = getKeyIndicators('en');
-  const projectStats = getProjectStats();
+  // 1. Latest Issue (Go API with mock fallback)
+  let latestIssue: Issue | null = null;
+  try {
+    const issueRes = await issuesApi.listIssues({ limit: 1 });
+    if (issueRes.issues && issueRes.issues.length > 0) {
+      latestIssue = mapIssueDTOToIssue(issueRes.issues[0]);
+    }
+  } catch {
+    // fallback
+  }
+  if (!latestIssue) {
+    latestIssue = getLatestIssue('en');
+  }
+
+  // 2. Latest Brief / 60s Facts (Go API with mock fallback)
+  interface HomeBriefFact {
+    time: string;
+    text: string;
+    textEn?: string;
+    category: string;
+    source?: string;
+    image?: string;
+  }
+  interface HomeBrief {
+    id: string;
+    title: string;
+    titleEn?: string;
+    slug: string;
+    date: string;
+    facts: HomeBriefFact[];
+  }
+
+  let latestBrief: HomeBrief | null = null;
+  try {
+    const briefRes = await filApi.listBriefs({ limit: 1 });
+    if (briefRes.briefs && briefRes.briefs.length > 0) {
+      const b = briefRes.briefs[0];
+      latestBrief = {
+        id: b.id,
+        title: b.title_en || b.title,
+        titleEn: b.title_en || b.title,
+        slug: b.slug,
+        date: b.date,
+        facts: (b.facts || []).map(f => ({
+          time: f.time,
+          text: f.text_en || f.text_fr,
+          textEn: f.text_en || f.text_fr,
+          category: f.category_code,
+          source: f.source,
+          image: f.image,
+        })),
+      };
+    }
+  } catch {
+    // fallback
+  }
+  if (!latestBrief) {
+    const fallbackB = getLatestBrief('en');
+    latestBrief = fallbackB ? {
+      id: fallbackB.id,
+      title: fallbackB.titleEn || fallbackB.title,
+      titleEn: fallbackB.titleEn || fallbackB.title,
+      slug: fallbackB.slug,
+      date: fallbackB.date,
+      facts: (fallbackB.facts || []).map(f => ({
+        time: f.time,
+        text: f.textEn || f.text,
+        textEn: f.textEn || f.text,
+        category: typeof f.category === 'string' ? f.category : 'economie',
+        source: f.source,
+        image: f.image,
+      })),
+    } : null;
+  }
+
+  // 3. RELANCE Indicators (Go API with mock fallback)
+  let indicators: Indicator[] = [];
+  try {
+    const indRes = await barometreApi.listIndicators();
+    if (indRes && indRes.length > 0) {
+      indicators = indRes.slice(0, 4).map(dto => {
+        const ind = mapIndicatorDTOToIndicator(dto);
+        if (dto.name_en) ind.name = dto.name_en;
+        if (dto.definition_en) ind.definition = dto.definition_en;
+        return ind;
+      });
+    }
+  } catch {
+    // fallback
+  }
+  if (indicators.length === 0) {
+    indicators = getKeyIndicators('en');
+  }
+
+  // 4. Tracker Projects & Stats (Go API with mock fallback)
+  let featuredProjects: Project[] = [];
+  let projectStats: any = null;
+  try {
+    const [projRes, statsRes] = await Promise.allSettled([
+      trackerApi.listProjects({ limit: 3 }),
+      trackerApi.getStats(),
+    ]);
+    if (projRes.status === 'fulfilled' && projRes.value?.projects && projRes.value.projects.length > 0) {
+      featuredProjects = projRes.value.projects.map(dto => {
+        const p = mapProjectDTOToProject(dto);
+        if (dto.title_en) p.title = dto.title_en;
+        if (dto.description_en) p.description = dto.description_en;
+        return p;
+      });
+    }
+    if (statsRes.status === 'fulfilled' && statsRes.value) {
+      projectStats = statsRes.value;
+    }
+  } catch {
+    // fallback
+  }
+  if (featuredProjects.length === 0) {
+    featuredProjects = getProjects('en').slice(0, 3);
+  }
+  if (!projectStats) {
+    projectStats = getProjectStats();
+  }
 
   let liveArticles: Article[] = [];
   try {
@@ -89,7 +211,6 @@ export default async function HomePageEn() {
   const fallbackSecondaries = leadArticle ? enArticles.filter(a => a.id !== leadArticle.id) : enArticles;
   const secondaryArticles = configuredSecondaries.length > 0 ? configuredSecondaries : fallbackSecondaries.slice(0, 4);
 
-  const featuredProjects = getProjects('en').slice(0, 3);
   const terrainArticle = enArticles.find(a => matchId(a.id, config.terrainArticleId)) || enArticles[5];
   const factCheckArticle = enArticles.find(a => matchId(a.id, config.factCheckArticleId)) || enArticles[4];
   const featuredQuote = config.featuredQuote;
