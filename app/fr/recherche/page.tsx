@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Search, FileText, Construction, BarChart3, Radio, ChevronRight, X, Loader2 } from 'lucide-react';
 import { searchApi } from '@/lib/api/search';
 import { articlesApi } from '@/lib/api/articles';
@@ -15,10 +16,37 @@ import ProjectCard from '@/components/tracker/ProjectCard';
 
 type FilterType = 'all' | 'articles' | 'projects' | 'indicators' | 'facts';
 
-export default function SearchPage() {
-  const [query, setQuery] = useState('');
+function SearchContent() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams?.get('q') || '';
+  const [query, setQuery] = useState(initialQuery);
   const [filter, setFilter] = useState<FilterType>('all');
   const [loading, setLoading] = useState(false);
+
+  // Synchronisation avec les paramètres d'URL (ex: recherche depuis le header)
+  useEffect(() => {
+    const q = searchParams?.get('q') || '';
+    if (q !== query) {
+      setQuery(q);
+    }
+  }, [searchParams]);
+
+  // Synchronisation bidirectionnelle de l'URL au fil de la saisie (sans reload)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const currentParam = url.searchParams.get('q') || '';
+      if (query.trim()) {
+        if (currentParam !== query.trim()) {
+          url.searchParams.set('q', query.trim());
+          window.history.replaceState({}, '', url.toString());
+        }
+      } else if (currentParam) {
+        url.searchParams.delete('q');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+  }, [query]);
 
   // Données de secours / cache initial
   const [fallbackArticles, setFallbackArticles] = useState<Article[]>([]);
@@ -366,3 +394,16 @@ export default function SearchPage() {
     </div>
   );
 }
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#faf8f5] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-[#0b4627] animate-spin" />
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
+  );
+}
+
