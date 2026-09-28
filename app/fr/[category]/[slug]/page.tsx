@@ -1,16 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getProjectsByCategory } from '@/data/mock/projects';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import ArticleBodyRenderer from '@/components/editorial/ArticleBodyRenderer';
 import { ArrowLeft, Clock, ShieldCheck, FileText, Share2, Printer, ChevronRight, Bookmark } from 'lucide-react';
 import { articlesApi } from '@/lib/api/articles';
 import { categoriesApi } from '@/lib/api/categories';
-import { mapArticleDTOToArticle } from '@/lib/api/mappers';
-import { Article } from '@/data/types';
+import { trackerApi } from '@/lib/api/tracker';
+import { mapArticleDTOToArticle, mapProjectDTOToProject } from '@/lib/api/mappers';
+import { Article, Project } from '@/data/types';
 import { ArticleDTO } from '@/lib/api/types';
-import { getAdminStore } from '@/data/admin-store';
-import { getArticleBySlug } from '@/data/mock/articles';
 import SafeImage from '@/components/ui/SafeImage';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +21,7 @@ export default async function ArticleDetailPage({
   const { category: categoryCode, slug } = await params;
   let article: Article | null = null;
   let relatedArticles: Article[] = [];
+  let relatedProjects: Project[] = [];
   let categoryNameFr = categoryCode;
   let subCategoryNameFr = '';
 
@@ -40,16 +39,6 @@ export default async function ArticleDetailPage({
     }
   } catch {
     // API error / Not found
-  }
-
-  // Fallback to local admin store / mock articles if not resolved from API
-  if (!article) {
-    const store = getAdminStore();
-    const fallback = (store.articles || []).find(a => a.slug === slug || a.id === slug)
-      || getArticleBySlug(slug, 'fr');
-    if (fallback) {
-      article = fallback;
-    }
   }
 
   if (!article) {
@@ -87,14 +76,15 @@ export default async function ArticleDetailPage({
     }
   }
 
-  if (relatedArticles.length === 0) {
-    const store = getAdminStore();
-    relatedArticles = (store.articles || [])
-      .filter(a => a.category === article?.category && a.slug !== article?.slug && a.id !== article?.id)
-      .slice(0, 2);
+  // 4. Fetch related projects from Tracker dynamically
+  try {
+    const projRes = await trackerApi.listProjects({ category: article.category, limit: 2 });
+    if (projRes.projects) {
+      relatedProjects = projRes.projects.map(mapProjectDTOToProject);
+    }
+  } catch {
+    relatedProjects = [];
   }
-
-  const relatedProjects = getProjectsByCategory(article.category).slice(0, 2);
 
   const date = new Date(article.publishedAt);
   const formattedDate = date.toLocaleDateString('fr-FR', {

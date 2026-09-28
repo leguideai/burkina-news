@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { ArrowRight, Clock, ShieldCheck } from 'lucide-react';
 import { filApi } from '@/lib/api/fil';
 import { BriefDTO } from '@/lib/api/types';
-import { getBriefs } from '@/data/mock/briefs';
 import FilLiveStream from '@/components/fil/FilLiveStream';
 
 export const metadata = {
@@ -18,36 +17,7 @@ export default async function FilPageEn() {
     const res = await filApi.listBriefs({ limit: 50 });
     briefs = res.briefs || [];
   } catch {
-    const mockBriefs = getBriefs('en');
-    briefs = mockBriefs.map(b => ({
-      id: b.id,
-      title: b.titleEn || b.title,
-      title_en: b.titleEn,
-      slug: b.slug,
-      date: b.date,
-      week_number: b.weekNumber,
-      year: new Date(b.date).getFullYear() || 2026,
-      image: b.image,
-      summary: b.summary,
-      summary_en: b.summaryEn,
-      is_published: true,
-      created_at: b.date,
-      facts: b.facts.map((f, i) => ({
-        id: `fact-${b.id}-${i}`,
-        time: f.time,
-        date: b.date,
-        text_fr: f.text,
-        text_en: f.textEn || f.text,
-        source: f.source,
-        source_url: f.sourceUrl,
-        category_code: (f.category as string) || 'economie',
-        why_watch_fr: f.whyWatch,
-        why_watch_en: f.whyWatchEn,
-        image: f.image,
-        order_num: i + 1,
-        created_at: b.date,
-      })),
-    }));
+    briefs = [];
   }
 
   return (

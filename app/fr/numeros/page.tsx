@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Download } from 'lucide-react';
-import { getIssues } from '@/data/mock/issues';
 import { issuesApi } from '@/lib/api/issues';
 import { mapIssueDTOToIssue } from '@/lib/api/mappers';
 import { Issue } from '@/data/types';
@@ -13,7 +12,7 @@ export const metadata = {
 };
 
 export default async function IssuesPage() {
-  let issues: Issue[] = getIssues('fr');
+  let issues: Issue[] = [];
 
   try {
     const res = await issuesApi.listIssues({ limit: 50 });
@@ -22,7 +21,7 @@ export default async function IssuesPage() {
       issues = remote.map(mapIssueDTOToIssue);
     }
   } catch {
-    issues = getIssues('fr');
+    issues = [];
   }
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
