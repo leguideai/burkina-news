@@ -481,9 +481,9 @@ export default function TrackerPage() {
           </div>
 
           {/* ──────────────────────────────────────────────────────────
-              SLIM, STICKY-ON-SCROLL BAROMÈTRE RELANCE SIDEBAR (Col 4 / 3)
+              SLIM, STICKY-ON-SCROLL BAROMÈTRE RELANCE SIDEBAR (Col 4)
           ────────────────────────────────────────────────────────── */}
-          <aside className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-20 space-y-6">
+          <aside className="lg:col-span-4 lg:sticky lg:top-20 space-y-6">
             
             {/* The Slim Sticky Baromètre RELANCE Widget */}
             <div className="border border-[#141414] bg-white p-5 shadow-xs">
