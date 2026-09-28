@@ -15,7 +15,7 @@ export const projects: Project[] = [
     description: 'Construction d\'une centrale photovoltaïque de 30 MW à Koudougou pour renforcer le réseau électrique national et réduire la dépendance aux importations d\'électricité.',
     descriptionEn: 'Construction of a 30 MW utility-scale photovoltaic power plant in Koudougou to strengthen the national power transmission grid and curb thermal fuel and import dependence.',
     category: 'chantiers',
-    region: 'Centre-Ouest',
+    region: 'Nando',
     sector: 'Énergie',
     currentStatus: 'en-construction',
     statusHistory: [
@@ -61,7 +61,7 @@ export const projects: Project[] = [
   {
     id: 'proj-02',
     code: 'BKN-CH-0002',
-    province: 'Sanmatenga',
+    province: 'Sandbondtenga',
     reliability: 'A',
     pndProgram: 'Programme 3.1 — Transport ferroviaire',
     linkedIndicatorCodes: ['PDI'],
@@ -71,7 +71,7 @@ export const projects: Project[] = [
     description: 'Réhabilitation de la ligne ferroviaire de 100 km entre Ouagadougou et Kaya pour le transport de marchandises et de passagers. Le projet inclut la réfection des voies, la modernisation des gares et l\'acquisition de matériel roulant.',
     descriptionEn: 'Complete track upgrading of the 100-kilometer rail line between Ouagadougou and Kaya for freight and passenger transport, including track bed renewal, station signaling, and rolling stock modernization.',
     category: 'chantiers',
-    region: 'Centre-Nord',
+    region: 'Kuilsé',
     sector: 'Transport',
     currentStatus: 'engage',
     statusHistory: [
@@ -118,7 +118,7 @@ export const projects: Project[] = [
     description: 'Construction d\'une unité de transformation de mangues séchées et de jus, capacité de 10 000 tonnes/an, créant 350 emplois directs.',
     descriptionEn: 'Agro-industrial processing facility producing dried organic mangoes and bottled juice, featuring a 10,000-tonne annual capacity and creating 350 direct permanent jobs in the western agricultural basin.',
     category: 'agriculture',
-    region: 'Hauts-Bassins',
+    region: 'Guiriko',
     sector: 'Agro-industrie',
     currentStatus: 'operationnel',
     statusHistory: [
@@ -163,7 +163,7 @@ export const projects: Project[] = [
     description: 'Construction d\'un barrage d\'irrigation de 35 millions de m³ pour sécuriser la production agricole dans la province du Kourwéogo.',
     descriptionEn: 'Construction of a 35-million-cubic-meter earth reservoir dam to ensure year-round dry-season irrigation and crop resilience across Kourwéogo province.',
     category: 'agriculture',
-    region: 'Plateau-Central',
+    region: 'Oubri',
     sector: 'Eau / Irrigation',
     currentStatus: 'en-construction',
     statusHistory: [
@@ -206,7 +206,7 @@ export const projects: Project[] = [
     description: 'Construction d\'un hôpital régional de 150 lits à Dédougou, incluant un service d\'urgence, un bloc opératoire et un centre de radiologie.',
     descriptionEn: 'Construction of a modern 150-bed referral hospital facility in Dédougou equipped with 24/7 trauma care, surgical operating suites, and a digital radiology diagnostics hub.',
     category: 'societe',
-    region: 'Boucle du Mouhoun',
+    region: 'Bankui',
     sector: 'Santé',
     currentStatus: 'inaugure',
     statusHistory: [
@@ -290,7 +290,7 @@ export const projects: Project[] = [
     description: 'Réhabilitation et élargissement de 85 km de la route nationale RN1 entre Bobo-Dioulasso et Banfora.',
     descriptionEn: 'Major asphalt resurfacing, structural widening, and culvert reinforcement over 85 kilometers of strategic international highway RN1 connecting Bobo-Dioulasso and Banfora.',
     category: 'chantiers',
-    region: 'Cascades',
+    region: 'Tannounyan',
     sector: 'Routes',
     currentStatus: 'en-construction',
     statusHistory: [
@@ -316,7 +316,7 @@ export const projects: Project[] = [
   {
     id: 'proj-08',
     code: 'BKN-CH-0008',
-    province: 'Houet',
+    province: 'Tuy',
     reliability: 'A',
     pndProgram: 'Programme 4.1 — Agro-industrie',
     linkedIndicatorCodes: ['PIB-CROISSANCE', 'CEREAL-PROD'],
@@ -326,7 +326,7 @@ export const projects: Project[] = [
     description: 'Extension de la mine industrielle de Kiéré pour augmenter la capacité de production de 3 à 5 tonnes d\'or par an.',
     descriptionEn: 'Deep-pit capacity enlargement and carbon-in-leach processing expansion at the Kiéré commercial mine to scale steady-state gold output from 3 to 5 metric tonnes annually.',
     category: 'economie',
-    region: 'Sud-Ouest',
+    region: 'Guiriko',
     sector: 'Mines',
     currentStatus: 'operationnel',
     statusHistory: [
@@ -365,7 +365,7 @@ export const projects: Project[] = [
     description: 'Centrale photovoltaïque de 18 MW dans la province du Sourou, raccordée au réseau SONABEL.',
     descriptionEn: 'Utility-scale 18 MW photovoltaic park constructed in Sourou province, fully synchronized and feeding clean power into the SONABEL interconnected transmission grid.',
     category: 'chantiers',
-    region: 'Boucle du Mouhoun',
+    region: 'Sourou',
     sector: 'Énergie',
     currentStatus: 'impact-mesure',
     statusHistory: [
@@ -402,8 +402,8 @@ export const projects: Project[] = [
     title: 'Programme national de semences améliorées',
     titleEn: 'National Certified Seed Distribution Offensive',
     slug: 'programme-semences-ameliorees',
-    description: 'Distribution de 15 000 tonnes de semences certifiées dans les 13 régions pour la campagne agricole 2026.',
-    descriptionEn: 'Countrywide agricultural logistics initiative deploying 15,000 metric tonnes of drought-tolerant certified staple seeds across all 13 administrative regions for the 2026 campaign.',
+    description: 'Distribution de 15 000 tonnes de semences certifiées dans les 17 régions pour la campagne agricole 2026.',
+    descriptionEn: 'Countrywide agricultural logistics initiative deploying 15,000 metric tonnes of drought-tolerant certified staple seeds across all 17 administrative regions for the 2026 campaign.',
     category: 'agriculture',
     region: 'National',
     sector: 'Agriculture',

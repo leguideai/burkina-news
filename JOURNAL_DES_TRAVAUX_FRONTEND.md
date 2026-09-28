@@ -489,7 +489,44 @@
 
 ---
 
+### 🗺️ Phase F6.2 : Harmonisation Intégrale du Corpus Éditorial (Articles, Chantiers, Dépêches) & Résolution des Clés React Homonymes
+- **Date :** 28 Septembre 2026
+- **Objectif :** Résoudre les avertissements de duplication de clés React causés par les communes homonymes (`Boussouma` et `Namissiguima`) et déployer le découpage officiel (17 régions, 47 provinces, 351 communes) à l'ensemble du corpus éditorial : 10 chantiers majeurs, 40 articles d'investigation et dépêches du fil d'actualités.
+- **Réalisations clés :**
+  - **Résolution Définitive des Clés Dupliquées React :**
+    - Identification des homonymies territoriales réelles du Burkina Faso :
+      - *Boussouma* : commune dans le Boulgou (Région Nakambé) ET dans le Sandbondtenga (Région Kuilsé).
+      - *Namissiguima* : commune dans le Yatenga (Région Yaadga) ET dans le Sandbondtenga (Région Kuilsé).
+    - Déduplication par ensemble `Set` dans `getCommunesByCondition` (`data/mock/referentiel-territoire.ts`).
+    - Sécurisation des clés React avec suffixe d'index unique (`key={...-${c}-${idx}}`) dans `components/tracker/FilterBar.tsx`, `app/fr/tracker/page.tsx` et `app/en/tracker/page.tsx`.
+  - **Harmonisation des 10 Chantiers Majeurs (`data/mock/projects.ts`) :**
+    - Koudougou (`proj-01`) : Région Nando, Province Boulkiemdé.
+    - Kaya (`proj-02`) : Région Kuilsé, Province Sandbondtenga.
+    - Bobo-Dioulasso (`proj-03`) : Région Guiriko, Province Houet.
+    - Bassiéri (`proj-04`) : Région Oubri, Province Kourwéogo.
+    - Dédougou (`proj-05`) : Région Bankui, Province Mouhoun.
+    - Banfora (`proj-07`) : Région Tannounyan, Province Comoé.
+    - Kiéré (`proj-08`) : Région Guiriko, Province Tuy.
+    - Zina (`proj-09`) : Région Sourou, Province Sourou.
+    - Semences certifiées (`proj-10`) : Déploiement étendu aux 17 régions.
+  - **Harmonisation des Articles d'Investigation (`data/mock/articles.ts`) :**
+    - Article 19 (FMDL) : Remplacement de la province du Sanmatenga par Sandbondtenga (FR & EN).
+    - Article 23 (PDI) : Transition de l'ancienne Boucle du Mouhoun vers la région de Bankui (FR & EN, titre, slug et tags).
+    - Article 27 (RN11) : Désenclavement routier entre les régions du Djôrô et du Guiriko (au lieu de Sud-Ouest et Hauts-Bassins).
+    - Article 15 (Samendéni) : Impact agricole sur les régions du Guiriko et de Bankui.
+    - Article 35 (Pastoralisme) : Pistes transhumance dans les régions du Liptako et du Goulmou.
+    - Article 39 / 11 (Santé Dori) : CSPS de Dori rattaché à la région du Liptako (FR & EN).
+  - **Harmonisation des Dépêches (`data/mock/briefs.ts`) :**
+    - Dépêches 60s rattachées aux régions du Kuilsé et de Bankui.
+- **Vérifications :**
+  - Validation TypeScript sans erreur : `pnpm exec tsc --noEmit` (code 0).
+  - Zéro avertissement console React sur les homonymies de communes.
+- **État :** Validé et terminé.
+
+---
+
 *(Les entrées suivantes seront ajoutées lors de l'intégration des phases F7 à F10 synchronisées avec les semaines backend)*
+
 
 
 

@@ -45,20 +45,10 @@ const SECTORS = [
   'Télécoms & Numérique'
 ];
 
+import { BURKINA_REGIONS_17 } from '@/data/mock/referentiel-territoire';
+
 const REGIONS = [
-  'Centre (Ouagadougou)',
-  'Hauts-Bassins (Bobo-Dioulasso)',
-  'Boucle du Mouhoun',
-  'Cascades',
-  'Centre-Est',
-  'Centre-Nord',
-  'Centre-Ouest',
-  'Centre-Sud',
-  'Est',
-  'Nord',
-  'Plateau-Central',
-  'Sahel',
-  'Sud-Ouest',
+  ...BURKINA_REGIONS_17,
   'National (Multi-régions)'
 ];
 

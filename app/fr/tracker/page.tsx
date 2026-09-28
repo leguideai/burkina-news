@@ -297,8 +297,8 @@ export default function TrackerPage() {
               <option value="all">
                 {selectedProvince !== 'all' ? `Villes/Communes (${availableCommunes.length})` : `Toutes les 351 communes`}
               </option>
-              {availableCommunes.map(c => (
-                <option key={c} value={c}>
+              {availableCommunes.map((c, idx) => (
+                <option key={`fr-commune-${c}-${idx}`} value={c}>
                   {c}
                 </option>
               ))}

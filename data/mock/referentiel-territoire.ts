@@ -3294,10 +3294,10 @@ export function getProvincesByRegion(region?: string | null): string[] {
  * Retourne la liste des communes/villes conditionnées par la province ou la région sélectionnée
  */
 export function getCommunesByCondition(province?: string | null, region?: string | null): string[] {
+  let list: string[] = [];
   if (province && PROVINCE_COMMUNES_MAP[province]) {
-    return PROVINCE_COMMUNES_MAP[province];
-  }
-  if (region && REGION_PROVINCES_MAP[region]) {
+    list = PROVINCE_COMMUNES_MAP[province];
+  } else if (region && REGION_PROVINCES_MAP[region]) {
     const provs = REGION_PROVINCES_MAP[region];
     const communes: string[] = [];
     for (const p of provs) {
@@ -3305,9 +3305,13 @@ export function getCommunesByCondition(province?: string | null, region?: string
         communes.push(...PROVINCE_COMMUNES_MAP[p]);
       }
     }
-    return communes.sort((a, b) => a.localeCompare("fr"));
+    list = communes;
+  } else {
+    list = BURKINA_COMMUNES_351.map(c => c.commune);
   }
-  return BURKINA_COMMUNES_351.map(c => c.commune).sort((a, b) => a.localeCompare("fr"));
+
+  // Élimine les doublons stricts d'homonymie pour les listes de sélection (ex: Boussouma dans Boulgou et Sandbondtenga)
+  return Array.from(new Set(list)).sort((a, b) => a.localeCompare("fr"));
 }
 
 /**

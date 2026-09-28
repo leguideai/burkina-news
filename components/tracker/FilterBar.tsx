@@ -205,8 +205,8 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
                 ? `${lang === 'fr' ? 'Villes / Communes de' : 'Towns of'} ${filters.province} (${availableCommunes.length})`
                 : `${lang === 'fr' ? 'Toutes les 351 communes' : 'All 351 communes'}`}
             </option>
-            {availableCommunes.map((c) => (
-              <option key={c} value={c}>
+            {availableCommunes.map((c, idx) => (
+              <option key={`filterbar-commune-${c}-${idx}`} value={c}>
                 {c}
               </option>
             ))}
