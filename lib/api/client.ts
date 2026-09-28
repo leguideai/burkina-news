@@ -80,15 +80,17 @@ export const tokenStorage = {
   },
 };
 
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/$/, '');
+
 // ─── Client HTTP Principal ────────────────────────────────────────────────
 
 class ApiClient {
-  private baseURL: string;
+  public readonly baseURL: string;
   private isRefreshing = false;
   private refreshSubscribers: Array<(token: string) => void> = [];
 
   constructor() {
-    this.baseURL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/$/, '');
+    this.baseURL = API_BASE_URL;
   }
 
   private onTokenRefreshed(token: string) {

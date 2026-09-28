@@ -53,8 +53,15 @@ export const articlesApi = {
    * Consultation publique d'un article par son slug avec articles connexes suggérés
    */
   async getArticle(slug: string): Promise<ArticleDetailDTO> {
-    const res = await apiClient.get<ArticleDetailDTO>(`/articles/${encodeURIComponent(slug)}`);
-    return res.data;
+    const res = await apiClient.get<any>(`/articles/${encodeURIComponent(slug)}`);
+    const data = res.data;
+    if (data && data.article) {
+      return {
+        ...data.article,
+        related_articles: data.related || [],
+      };
+    }
+    return data;
   },
 
   /**

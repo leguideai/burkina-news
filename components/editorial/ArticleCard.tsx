@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Article } from '@/data/types';
 import { getSubCategoryByCode } from '@/data/mock/referentiel';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface ArticleCardProps {
   article: Article;
@@ -25,10 +26,9 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
     return (
       <article className="group flex flex-col bg-white border border-[#e6dfd5] p-6 sm:p-8">
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100 mb-6">
-          <img 
+          <SafeImage 
             src={imageSrc} 
             alt={title}
-            onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
           />
         </div>
@@ -78,10 +78,9 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
     return (
       <article className="group flex flex-col sm:flex-row gap-5 p-4 bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors">
         <div className="sm:w-1/3 aspect-[4/3] overflow-hidden bg-neutral-100 shrink-0">
-          <img 
+          <SafeImage 
             src={imageSrc} 
             alt={title}
-            onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
@@ -123,10 +122,9 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
     return (
       <article className="group flex gap-3 pb-4 mb-4 border-b border-[#e6dfd5] last:border-0 last:pb-0 last:mb-0 items-start">
         <div className="w-20 h-16 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
-          <img 
+          <SafeImage 
             src={imageSrc} 
             alt={title}
-            onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
@@ -157,10 +155,9 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
   return (
     <article className="group flex flex-col bg-white border border-[#e6dfd5] p-5 hover:border-[#141414] transition-colors h-full">
       <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4">
-        <img 
+        <SafeImage 
           src={imageSrc} 
           alt={title}
-          onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>

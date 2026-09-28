@@ -8,25 +8,48 @@ import ProjectCard from '@/components/tracker/ProjectCard';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
 import { getAdminStore } from '@/data/admin-store';
 import { articlesApi } from '@/lib/api/articles';
+import { homepageApi } from '@/lib/api/homepage';
 import { mapArticleDTOToArticle } from '@/lib/api/mappers';
 import { Article } from '@/data/types';
 import { 
   ArrowRight, 
   Clock, 
-  Search,
-  ExternalLink,
-  ChevronRight,
-  TrendingUp,
-  Quote,
-  CheckCircle2,
-  SlidersHorizontal
+  Search, 
+  ExternalLink, 
+  ChevronRight, 
+  TrendingUp, 
+  Quote, 
+  CheckCircle2, 
+  SlidersHorizontal 
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePageEn() {
   const store = getAdminStore();
-  const config = store.homepageConfig;
+  let config = store.homepageConfig;
+
+  try {
+    const hpRes = await homepageApi.getHomepage();
+    if (hpRes && hpRes.leadArticleId) {
+      config = {
+        leadArticleId: hpRes.leadArticleId,
+        secondaryArticleIds: hpRes.secondaryArticleIds || [],
+        terrainArticleId: hpRes.terrainArticleId,
+        factCheckArticleId: hpRes.factCheckArticleId,
+        featuredQuote: {
+          quoteFr: hpRes.featuredQuote?.quoteFr || config.featuredQuote.quoteFr,
+          quoteEn: hpRes.featuredQuote?.quoteEn || config.featuredQuote.quoteEn,
+          author: hpRes.featuredQuote?.author || config.featuredQuote.author,
+          contextFr: hpRes.featuredQuote?.contextFr || config.featuredQuote.contextFr,
+          contextEn: hpRes.featuredQuote?.contextEn || config.featuredQuote.contextEn,
+        }
+      };
+    }
+  } catch {
+    // API error fallback
+  }
+
   const latestIssue = getLatestIssue('en');
   const latestBrief = getLatestBrief('en');
   const indicators = getKeyIndicators('en');

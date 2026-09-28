@@ -8,6 +8,10 @@ import { articlesApi } from '@/lib/api/articles';
 import { categoriesApi } from '@/lib/api/categories';
 import { mapArticleDTOToArticle } from '@/lib/api/mappers';
 import { Article } from '@/data/types';
+import { ArticleDTO } from '@/lib/api/types';
+import { getAdminStore } from '@/data/admin-store';
+import { getArticleBySlug } from '@/data/mock/articles';
+import SafeImage from '@/components/ui/SafeImage';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,11 +29,27 @@ export default async function ArticleDetailPage({
   // 1. Fetch live article by slug from PostgreSQL
   try {
     const apiArticle = await articlesApi.getArticle(slug);
-    if (apiArticle && apiArticle.id) {
-      article = mapArticleDTOToArticle(apiArticle);
+    const raw = (apiArticle as any)?.article || apiArticle;
+    if (raw && raw.id) {
+      article = mapArticleDTOToArticle(raw);
+    }
+    if ((apiArticle as any)?.related) {
+      relatedArticles = ((apiArticle as any).related as ArticleDTO[]).map(mapArticleDTOToArticle);
+    } else if (apiArticle?.related_articles) {
+      relatedArticles = apiArticle.related_articles.map(mapArticleDTOToArticle);
     }
   } catch {
     // API error / Not found
+  }
+
+  // Fallback to local admin store / mock articles if not resolved from API
+  if (!article) {
+    const store = getAdminStore();
+    const fallback = (store.articles || []).find(a => a.slug === slug || a.id === slug)
+      || getArticleBySlug(slug, 'fr');
+    if (fallback) {
+      article = fallback;
+    }
   }
 
   if (!article) {
@@ -53,16 +73,25 @@ export default async function ArticleDetailPage({
   }
 
   // 3. Fetch related articles from PostgreSQL
-  try {
-    const relRes = await articlesApi.listArticles({ category: article.category, limit: 10 });
-    if (relRes.articles) {
-      relatedArticles = relRes.articles
-        .filter(a => a.slug !== article?.slug && a.id !== article?.id)
-        .slice(0, 2)
-        .map(mapArticleDTOToArticle);
+  if (relatedArticles.length === 0) {
+    try {
+      const relRes = await articlesApi.listArticles({ category: article.category, limit: 10 });
+      if (relRes.articles && relRes.articles.length > 0) {
+        relatedArticles = relRes.articles
+          .filter(a => a.slug !== article?.slug && a.id !== article?.id)
+          .slice(0, 2)
+          .map(mapArticleDTOToArticle);
+      }
+    } catch {
+      relatedArticles = [];
     }
-  } catch {
-    relatedArticles = [];
+  }
+
+  if (relatedArticles.length === 0) {
+    const store = getAdminStore();
+    relatedArticles = (store.articles || [])
+      .filter(a => a.category === article?.category && a.slug !== article?.slug && a.id !== article?.id)
+      .slice(0, 2);
   }
 
   const relatedProjects = getProjectsByCategory(article.category).slice(0, 2);
@@ -164,10 +193,9 @@ export default async function ArticleDetailPage({
             {/* Hero Photograph */}
             <div className="bg-white border border-[#e6dfd5] overflow-hidden">
               <div className="aspect-[16/10] w-full bg-neutral-100">
-                <img 
+                <SafeImage 
                   src={article.image || '/images/lead.jpeg'} 
                   alt={article.title}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -279,10 +307,9 @@ export default async function ArticleDetailPage({
                   {relatedArticles.map(art => (
                     <div key={art.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] flex gap-3 items-start">
                       <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
-                        <img 
+                        <SafeImage 
                           src={art.image || '/images/lead.jpeg'} 
                           alt={art.title}
-                          onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
                           className="w-full h-full object-cover"
                         />
                       </div>
