@@ -123,34 +123,54 @@ export function mapProjectDTOToProject(dto: ProjectDTO): Project {
  * Convertit un IndicatorDTO de l'API Go vers le format Indicator exploité par l'espace visiteur.
  */
 export function mapIndicatorDTOToIndicator(dto: IndicatorDTO): Indicator {
+  const d = dto as any;
+  const baselineValue = d.baseline_value !== undefined && d.baseline_value !== null
+    ? Number(d.baseline_value)
+    : (d.baselineValue !== undefined && d.baselineValue !== null ? Number(d.baselineValue) : 0);
+  const baselineYear = d.baseline_year !== undefined && d.baseline_year !== null
+    ? Number(d.baseline_year)
+    : (d.baselineYear !== undefined && d.baselineYear !== null ? Number(d.baselineYear) : 2020);
+  const currentValue = d.current_value !== undefined && d.current_value !== null
+    ? Number(d.current_value)
+    : (d.currentValue !== undefined && d.currentValue !== null ? Number(d.currentValue) : 0);
+  const currentYear = d.current_year !== undefined && d.current_year !== null
+    ? Number(d.current_year)
+    : (d.currentYear !== undefined && d.currentYear !== null ? Number(d.currentYear) : 2026);
+  const target2028 = d.target_2028 !== undefined && d.target_2028 !== null
+    ? Number(d.target_2028)
+    : (d.target2028 !== undefined && d.target2028 !== null ? Number(d.target2028) : undefined);
+  const target2030 = d.target_2030 !== undefined && d.target_2030 !== null
+    ? Number(d.target_2030)
+    : (d.target2030 !== undefined && d.target2030 !== null ? Number(d.target2030) : undefined);
+
   return {
     id: dto.id,
     code: dto.code,
     name: dto.name,
-    nameEn: dto.name_en || dto.name,
+    nameEn: dto.name_en || d.nameEn || dto.name,
     definition: dto.definition,
-    definitionEn: dto.definition_en || dto.definition,
-    unit: dto.unit,
-    baselineValue: dto.baseline_value,
-    baselineYear: dto.baseline_year,
-    target2028: dto.target_2028 ?? undefined,
-    target2030: dto.target_2030 ?? undefined,
-    currentValue: dto.current_value,
-    currentYear: dto.current_year,
+    definitionEn: dto.definition_en || d.definitionEn || dto.definition,
+    unit: dto.unit || '',
+    baselineValue,
+    baselineYear,
+    target2028,
+    target2030,
+    currentValue,
+    currentYear,
     trend: (dto.trend || 'stable') as 'up' | 'down' | 'stable',
-    source: dto.source,
+    source: dto.source || '',
     category: (dto.category || 'economie') as CategoryCode,
-    program: dto.program || '',
-    programEn: dto.program_en || '',
+    program: dto.program || d.programEn || '',
+    programEn: dto.program_en || d.programEn || '',
     pillar: dto.pillar || '',
-    pillarEn: dto.pillar_en || '',
+    pillarEn: dto.pillar_en || d.pillarEn || '',
     image: dto.image || dto.featured_image || '',
     history: (dto.history || []).map((p) => ({
       year: p.year,
       value: p.value,
       source: p.source,
     })),
-    linkedProjectSlugs: dto.linked_project_slugs || [],
+    linkedProjectSlugs: dto.linked_project_slugs || d.linkedProjectSlugs || [],
   };
 }
 

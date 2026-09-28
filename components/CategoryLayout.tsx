@@ -12,7 +12,10 @@ import ProjectCard from '@/components/tracker/ProjectCard';
 import { ArrowRight, ChevronRight, Filter } from 'lucide-react';
 import { articlesApi } from '@/lib/api/articles';
 import { categoriesApi } from '@/lib/api/categories';
-import { mapArticleDTOToArticle, mapCategoryDTOToCategory } from '@/lib/api/mappers';
+import { trackerApi } from '@/lib/api/tracker';
+import { barometreApi } from '@/lib/api/barometre';
+import { mapArticleDTOToArticle, mapCategoryDTOToCategory, mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
+import { Project, Indicator } from '@/data/types';
 
 interface CategoryLayoutProps {
   categoryCode: CategoryCode;
@@ -30,12 +33,14 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
   // Live dynamic states
   const [category, setCategory] = useState<Category | undefined>(fallbackCategory);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [sidebarProjects, setSidebarProjects] = useState<Project[]>(() => getProjectsByCategory(categoryCode, lang).slice(0, 2));
+  const [sidebarIndicators, setSidebarIndicators] = useState<Indicator[]>(() => getIndicatorsByCategory(categoryCode, lang).slice(0, 2));
   const [isLoading, setIsLoading] = useState(true);
 
   // Directly driven by URL search params (?sub=...) for instant Header & tab responsiveness
   const selectedSubCategory = searchParams.get('sub') || 'all';
 
-  // Load real category and real articles from Go backend / PostgreSQL
+  // Load real category, real articles, projects and indicators from Go backend / PostgreSQL
   useEffect(() => {
     let isMounted = true;
     (async () => {
@@ -55,6 +60,34 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
         }
       } catch {
         // API error
+      }
+
+      try {
+        const [projRes, indRes] = await Promise.allSettled([
+          trackerApi.listProjects({ category: categoryCode, limit: 4 }),
+          barometreApi.listIndicators({ category: categoryCode }),
+        ]);
+
+        if (isMounted) {
+          if (projRes.status === 'fulfilled' && projRes.value?.projects && projRes.value.projects.length > 0) {
+            setSidebarProjects(projRes.value.projects.slice(0, 2).map(dto => {
+              const p = mapProjectDTOToProject(dto);
+              if (isEn && dto.title_en) p.title = dto.title_en;
+              if (isEn && dto.description_en) p.description = dto.description_en;
+              return p;
+            }));
+          }
+          if (indRes.status === 'fulfilled' && indRes.value && indRes.value.length > 0) {
+            setSidebarIndicators(indRes.value.slice(0, 2).map(dto => {
+              const ind = mapIndicatorDTOToIndicator(dto);
+              if (isEn && dto.name_en) ind.name = dto.name_en;
+              if (isEn && dto.definition_en) ind.definition = dto.definition_en;
+              return ind;
+            }));
+          }
+        }
+      } catch {
+        // Fallback already populated
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -65,7 +98,7 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
     return () => {
       isMounted = false;
     };
-  }, [categoryCode]);
+  }, [categoryCode, isEn]);
 
   // Filtrage des articles selon la sous-rubrique sélectionnée
   const filteredArticles = useMemo(() => {
@@ -77,8 +110,8 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
     return <div>{isEn ? "Category not found" : "Catégorie introuvable"}</div>;
   }
 
-  const projects = getProjectsByCategory(categoryCode, lang).slice(0, 2);
-  const indicators = getIndicatorsByCategory(categoryCode, lang).slice(0, 2);
+  const projects = sidebarProjects;
+  const indicators = sidebarIndicators;
   const leadArticle = filteredArticles[0];
   const otherArticles = filteredArticles.slice(1);
 

@@ -20,7 +20,18 @@ import {
 import { useAdminAuth } from '@/components/admin/AuthGuard';
 import { SkeletonStat, SkeletonTable } from '@/components/admin/Skeleton';
 import { PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS } from '@/data/types';
-import { normalizeRoleCode, articlesApi, categoriesApi, filApi } from '@/lib/api';
+import { 
+  normalizeRoleCode, 
+  articlesApi, 
+  categoriesApi, 
+  filApi, 
+  trackerApi, 
+  barometreApi, 
+  signalementsApi, 
+  newsletterApi,
+  mapProjectDTOToProject,
+  mapIndicatorDTOToIndicator
+} from '@/lib/api';
 
 export default function AdminOverviewPage() {
   const { user } = useAdminAuth();
@@ -33,18 +44,34 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Chargement parallèle des services réels Go
-        const [articlesRes, categoriesRes, briefsRes] = await Promise.allSettled([
+        // Chargement parallèle de tous les services réels Go
+        const [
+          articlesRes, 
+          categoriesRes, 
+          briefsRes,
+          projectsRes,
+          indicatorsRes,
+          signalementsRes,
+          newsletterRes
+        ] = await Promise.allSettled([
           articlesApi.adminListArticles({ limit: 1000 }),
           categoriesApi.listCategories(),
           filApi.adminListBriefs({ limit: 50 }),
+          trackerApi.listProjects({ limit: 100 }),
+          barometreApi.listIndicators(),
+          signalementsApi.adminListSubmissions({ limit: 100 }),
+          newsletterApi.adminList({ limit: 100 }),
         ]);
 
         const realArticles = articlesRes.status === 'fulfilled' ? (articlesRes.value.articles || []) : [];
         const realCategories = categoriesRes.status === 'fulfilled' ? categoriesRes.value : [];
         const realBriefs = briefsRes.status === 'fulfilled' ? (briefsRes.value.briefs || []) : [];
+        const realProjects = projectsRes.status === 'fulfilled' ? (projectsRes.value.projects || []).map(mapProjectDTOToProject) : [];
+        const realIndicators = indicatorsRes.status === 'fulfilled' ? (indicatorsRes.value || []).map(mapIndicatorDTOToIndicator) : [];
+        const realContacts = signalementsRes.status === 'fulfilled' ? (signalementsRes.value.submissions || []) : [];
+        const realNewsletter = newsletterRes.status === 'fulfilled' ? (newsletterRes.value.subscribers || []) : [];
 
-        // Récupération des données secondaires en attente des phases F6 & F7
+        // Récupération des données secondaires pour repli résilient
         let fallbackJson: any = {};
         try {
           const res = await fetch('/api/admin/data');
@@ -53,7 +80,7 @@ export default function AdminOverviewPage() {
 
         setData({
           ...fallbackJson,
-          articles: realArticles.map(a => ({
+          articles: realArticles.length > 0 ? realArticles.map(a => ({
             id: a.id,
             title: a.title_fr,
             category: a.category_code,
@@ -61,9 +88,13 @@ export default function AdminOverviewPage() {
             format: a.type,
             status: a.status,
             publishedAt: a.published_at,
-          })),
-          categories: realCategories,
-          briefs: realBriefs,
+          })) : (fallbackJson.articles || []),
+          categories: realCategories.length > 0 ? realCategories : (fallbackJson.categories || []),
+          briefs: realBriefs.length > 0 ? realBriefs : (fallbackJson.briefs || []),
+          projects: realProjects.length > 0 ? realProjects : (fallbackJson.projects || []),
+          indicators: realIndicators.length > 0 ? realIndicators : (fallbackJson.indicators || []),
+          contacts: realContacts.length > 0 ? realContacts : (fallbackJson.contacts || []),
+          newsletter: realNewsletter.length > 0 ? realNewsletter : (fallbackJson.newsletter || []),
         });
       } catch (e) {
         console.error('Error fetching admin data', e);

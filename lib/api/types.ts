@@ -703,11 +703,17 @@ export interface IndicatorDTO {
   definition_en?: string;
   unit: string;
   baseline_value: number;
+  baselineValue?: number;
   baseline_year: number;
+  baselineYear?: number;
   target_2028?: number | null;
+  target2028?: number | null;
   target_2030?: number | null;
+  target2030?: number | null;
   current_value: number;
+  currentValue?: number;
   current_year: number;
+  currentYear?: number;
   trend: 'up' | 'down' | 'stable' | string;
   source: string;
   category: string;
@@ -718,6 +724,7 @@ export interface IndicatorDTO {
   image?: string;
   featured_image?: string;
   linked_project_slugs?: string[];
+  linkedProjectSlugs?: string[];
   history?: IndicatorDataPointDTO[];
   created_at?: string;
   updated_at?: string;

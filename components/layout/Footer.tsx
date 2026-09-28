@@ -2,10 +2,42 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { categoriesApi } from '@/lib/api/categories';
 
 export default function Footer({ lang }: { lang?: 'fr' | 'en' }) {
   const pathname = usePathname() || '';
   const isEn = lang === 'en' || pathname.startsWith('/en');
+
+  const [categories, setCategories] = useState<Array<{ code: string; nameFr: string; nameEn: string }>>([
+    { code: 'economie', nameFr: 'Économie', nameEn: 'Economy' },
+    { code: 'securite', nameFr: 'Sécurité', nameEn: 'Security' },
+    { code: 'chantiers', nameFr: 'Chantiers', nameEn: 'Infrastructure' },
+    { code: 'agriculture', nameFr: 'Agriculture', nameEn: 'Agriculture' },
+    { code: 'societe', nameFr: 'Société', nameEn: 'Society' },
+    { code: 'histoire', nameFr: 'Histoire', nameEn: 'History' },
+  ]);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const list = await categoriesApi.listCategories(false);
+        if (isMounted && list && list.length > 0) {
+          setCategories(list.map(c => ({
+            code: c.code,
+            nameFr: c.name_fr,
+            nameEn: c.name_en || c.name_fr,
+          })));
+        }
+      } catch {
+        // fallback
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <footer className="bg-[#072e1a] text-[#faf8f5] border-t-4 border-[#0b4627]">
@@ -46,12 +78,16 @@ export default function Footer({ lang }: { lang?: 'fr' | 'en' }) {
               {isEn ? "Sections" : "Rubriques"}
             </h4>
             <ul className="space-y-2 text-xs font-serif text-[#d1e3d9]">
-              <li><Link href={isEn ? "/en/economie" : "/fr/economie"} className="hover:text-white transition-colors">{isEn ? "Economy" : "Économie"}</Link></li>
-              <li><Link href={isEn ? "/en/securite" : "/fr/securite"} className="hover:text-white transition-colors">{isEn ? "Security" : "Sécurité"}</Link></li>
-              <li><Link href={isEn ? "/en/chantiers" : "/fr/chantiers"} className="hover:text-white transition-colors">{isEn ? "Infrastructure" : "Chantiers"}</Link></li>
-              <li><Link href={isEn ? "/en/agriculture" : "/fr/agriculture"} className="hover:text-white transition-colors">{isEn ? "Agriculture" : "Agriculture"}</Link></li>
-              <li><Link href={isEn ? "/en/societe" : "/fr/societe"} className="hover:text-white transition-colors">{isEn ? "Society" : "Société"}</Link></li>
-              <li><Link href={isEn ? "/en/histoire" : "/fr/histoire"} className="hover:text-white transition-colors">{isEn ? "History" : "Histoire"}</Link></li>
+              {categories.map((cat) => (
+                <li key={cat.code}>
+                  <Link 
+                    href={isEn ? `/en/${cat.code}` : `/fr/${cat.code}`} 
+                    className="hover:text-white transition-colors"
+                  >
+                    {isEn ? cat.nameEn : cat.nameFr}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
