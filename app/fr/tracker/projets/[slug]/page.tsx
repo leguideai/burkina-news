@@ -1,7 +1,7 @@
 import { projects, getProjectBySlug } from '@/data/mock/projects';
 import { getIndicatorByCode } from '@/data/mock/indicators';
 import StatusBadge from '@/components/tracker/StatusBadge';
-import { PROJECT_STATUS_LABELS, PROJECT_STATUS_ORDER, Project, Indicator, Article } from '@/data/types';
+import { PROJECT_STATUS_LABELS, PROJECT_STATUS_ORDER, PROJECT_STATUS_COLORS, Project, Indicator, Article } from '@/data/types';
 import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -10,6 +10,7 @@ import { articlesApi } from '@/lib/api/articles';
 import { trackerApi } from '@/lib/api/tracker';
 import { barometreApi } from '@/lib/api/barometre';
 import { mapArticleDTOToArticle, mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
+import PrintAuditButton from '@/components/tracker/PrintAuditButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,12 +102,18 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               {project.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-6 text-xs font-serif text-[#555555]">
-              <span className="flex items-center gap-1.5 text-[#0b4627] font-semibold">
-                <ShieldCheck size={14} /> Audit documentaire certifié
-              </span>
-              <span>·</span>
-              <span>Dernière vérification : {new Date(project.lastVerifiedAt).toLocaleDateString('fr-FR')}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-6 text-xs font-serif text-[#555555]">
+                <span className="flex items-center gap-1.5 text-[#0b4627] font-semibold">
+                  <ShieldCheck size={14} /> Audit documentaire certifié
+                </span>
+                <span>·</span>
+                <span>Dernière vérification : {new Date(project.lastVerifiedAt).toLocaleDateString('fr-FR')}</span>
+              </div>
+
+              <div className="no-print">
+                <PrintAuditButton lang="fr" variant="solid" />
+              </div>
             </div>
           </div>
 
@@ -159,18 +166,33 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               {/* Step indicator bar */}
               <div className="mb-8">
                 <div className="grid grid-cols-6 gap-1 mb-2">
-                  {PROJECT_STATUS_ORDER.map((s, idx) => (
-                    <div key={s} className="space-y-1">
-                      <div className={`h-2 ${idx <= currentIndex ? 'bg-[#0b4627]' : 'bg-neutral-200'}`} />
-                      <span className="text-[9px] font-mono uppercase text-[#737373] hidden sm:block truncate">
-                        {PROJECT_STATUS_LABELS[s]}
-                      </span>
-                    </div>
-                  ))}
+                  {PROJECT_STATUS_ORDER.map((s, idx) => {
+                    const isCompleted = idx <= currentIndex;
+                    const isCurrent = idx === currentIndex;
+                    const stepColor = PROJECT_STATUS_COLORS[s];
+                    return (
+                      <div key={s} className="space-y-1">
+                        <div 
+                          className="h-2 rounded-xs transition-colors"
+                          style={{ backgroundColor: isCompleted ? stepColor : '#E5E7EB' }}
+                        />
+                        <span 
+                          className={`text-[9px] font-mono uppercase hidden sm:block truncate ${
+                            isCurrent ? 'font-bold' : ''
+                          }`}
+                          style={{ color: isCompleted ? stepColor : '#737373' }}
+                        >
+                          {PROJECT_STATUS_LABELS[s]}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="sm:hidden flex justify-between items-center text-[10px] font-mono text-[#555555] bg-[#faf8f5] p-2 border border-[#e6dfd5]">
                   <span>Statut actuel :</span>
-                  <span className="font-bold text-[#0b4627]">{PROJECT_STATUS_LABELS[project.currentStatus]}</span>
+                  <span className="font-bold" style={{ color: PROJECT_STATUS_COLORS[project.currentStatus] }}>
+                    {PROJECT_STATUS_LABELS[project.currentStatus]}
+                  </span>
                 </div>
               </div>
 
@@ -178,7 +200,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <div className="space-y-6 relative border-l-2 border-[#0b4627] ml-2 pl-6">
                 {project.statusHistory.map((entry, idx) => (
                   <div key={idx} className="relative">
-                    <div className="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-[#0b4627] border-2 border-white"></div>
+                    <div 
+                      className="absolute -left-[31px] top-1 w-3 h-3 rounded-full border-2 border-white shadow-xs"
+                      style={{ backgroundColor: PROJECT_STATUS_COLORS[entry.status] }}
+                    />
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <StatusBadge status={entry.status} size="sm" />
                       <span className="font-mono text-xs font-bold text-[#141414]">

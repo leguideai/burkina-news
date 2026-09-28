@@ -522,6 +522,32 @@
   - Validation TypeScript sans erreur : `pnpm exec tsc --noEmit` (code 0).
   - Zéro avertissement console React sur les homonymies de communes.
 - **État :** Validé et terminé.
+ 
+---
+
+### Entrée F6.8 — Différenciation chromatique des 6 boutons filtres et barres d'avancement des cartes du Tracker
+- **Objectif :** Doter les 6 statuts du Tracker d'une identité visuelle immédiatement identifiable et intuitive, reflétant rigoureusement le niveau d'avancement réel des chantiers.
+- **Réalisations :**
+  - **Système de Design Statut (`data/types.ts`) :**
+    - 01 Annoncé : Ardoise `#64748B` (slate-500)
+    - 02 Engagé : Bleu royal `#2563EB` (blue-600)
+    - 03 En construction : Orange chantier `#EA580C` (orange-600)
+    - 04 Inauguré : Sarcelle / Cyan d'eau `#0D9488` (teal-600)
+    - 05 Opérationnel : Vert Faso `#087443` (emerald-700)
+    - 06 Impact mesuré : Violet améthyste `#7C3AED` (purple-600)
+    - Objet de thème unifié `PROJECT_STATUS_THEMES` avec styles actifs, pastilles, badges et jauges.
+  - **Boutons Filtres du Tracker (`app/fr/tracker/page.tsx` & `app/en/tracker/page.tsx`) :**
+    - Au repos : bordure supérieure d'accentuation spécifique de 3px, badge numéroté `01..06` avec point coloré dédié, et barre de progression calibrée.
+    - À l'état actif (`selectedStatus === status`) : fond plein et bordure dans la couleur vive du jalon, typographie blanche et icône checkmark blanche.
+  - **Fiches et Cartes Chantiers (`components/tracker/ProjectCard.tsx`) :**
+    - Jauge d'avancement 6 segments : chaque segment franchi jusqu'au statut actuel s'affiche dans la couleur exacte de son étape (ardoise ➔ bleu ➔ orange ➔ sarcelle ➔ vert ➔ violet), les segments non atteints restant gris neutre.
+    - Libellé d'avancement (`currentIndex + 1 / 6`) et nom du jalon mis en valeur dans la couleur exacte du statut.
+  - **Badges et Feuilles de Projet (`StatusBadge.tsx`, `app/fr/tracker/projets/[slug]/page.tsx`, `app/en/tracker/projets/[slug]/page.tsx`) :**
+    - Cohérence chromatique totale des badges d'état et des frises chronologiques d'audit contradictoire.
+- **Vérifications :**
+  - Validation TypeScript sans faute : `pnpm tsc --noEmit` (code 0).
+  - Tests unitaires et intégration Go backend : `go test ./...` (code 0).
+- **État :** Validé et terminé.
 
 ---
 

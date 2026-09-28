@@ -25,6 +25,8 @@ import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
 import MicumIcon from '@/components/admin/MicumIcon';
+import { signalementsApi } from '@/lib/api/signalements';
+import { correctionsApi } from '@/lib/api/corrections';
 
 interface Submission {
   id: string;
@@ -58,12 +60,37 @@ export default function AdminSignalementsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger les signalements.');
-      const data = await res.json();
-      setSubmissions(data.contacts || []);
+      const res = await signalementsApi.adminListSubmissions({ limit: 100 });
+      if (res.submissions && res.submissions.length > 0) {
+        setSubmissions(res.submissions.map(s => ({
+          id: s.id,
+          createdAt: s.created_at,
+          type: (s.type === 'error_report' ? 'error_report' : 'general'),
+          email: s.email,
+          url: s.url,
+          description: s.description,
+          source: s.source,
+          name: s.name,
+          category: s.category,
+          message: s.message,
+          status: s.status,
+        })));
+      } else {
+        const fallback = await fetch('/api/admin/data');
+        if (!fallback.ok) throw new Error('Impossible de charger les signalements.');
+        const data = await fallback.json();
+        setSubmissions(data.contacts || []);
+      }
     } catch (err: any) {
-      error('Erreur', err.message);
+      try {
+        const fallback = await fetch('/api/admin/data');
+        if (fallback.ok) {
+          const data = await fallback.json();
+          setSubmissions(data.contacts || []);
+        }
+      } catch {
+        error('Erreur', err.message);
+      }
     } finally {
       setTimeout(() => setLoading(false), 300);
     }
@@ -143,6 +170,27 @@ export default function AdminSignalementsPage() {
         validatedBy: corrValidator,
       };
 
+      try {
+        await correctionsApi.adminCreateCorrection({
+          date: payload.date,
+          article_title: payload.articleTitle,
+          article_slug: payload.articleSlug,
+          previous_text: payload.previousText,
+          corrected_text: payload.correctedText,
+          reason: payload.reason,
+          validated_by: payload.validatedBy,
+        });
+
+        if (convertingReport?.id) {
+          await signalementsApi.adminUpdateStatus(convertingReport.id, {
+            status: 'resolved',
+            notes: `Converti en correction certifiée : ${corrArticleTitle}`
+          });
+        }
+      } catch (apiErr) {
+        console.warn('Backend corrections API fallback to /api/admin/data', apiErr);
+      }
+
       const res = await fetch('/api/admin/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -161,6 +209,7 @@ export default function AdminSignalementsPage() {
       );
 
       setConvertingReport(null);
+      loadData();
     } catch (err: any) {
       error('Erreur', err.message);
     }

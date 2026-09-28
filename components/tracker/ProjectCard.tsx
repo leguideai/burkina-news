@@ -1,4 +1,4 @@
-import { Project, PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, PROJECT_STATUS_LABELS_EN } from '@/data/types';
+import { Project, PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, PROJECT_STATUS_LABELS_EN, PROJECT_STATUS_COLORS } from '@/data/types';
 import StatusBadge from './StatusBadge';
 import { ArrowRight, MapPin, Building2 } from 'lucide-react';
 import Link from 'next/link';
@@ -84,17 +84,30 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
       {/* 6-step progress rule & footer */}
       <div className="px-5 pb-5 pt-0">
         <div className="pt-2 pb-3 border-t border-[#e6dfd5]">
-          <div className="flex justify-between text-[10px] font-mono text-[#737373] uppercase mb-1">
+          <div className="flex justify-between text-[10px] font-mono text-[#737373] uppercase mb-1.5">
             <span className="shrink-0">{isEn ? `Stage: ${currentIndex + 1}/6` : `Avancement : ${currentIndex + 1}/6`}</span>
-            <span className="text-[#141414] font-semibold truncate pl-2">{statusLabel}</span>
+            <span 
+              className="font-bold truncate pl-2"
+              style={{ color: PROJECT_STATUS_COLORS[project.currentStatus] }}
+            >
+              {statusLabel}
+            </span>
           </div>
           <div className="grid grid-cols-6 gap-1">
-            {PROJECT_STATUS_ORDER.map((s, idx) => (
-              <div 
-                key={s} 
-                className={`h-1 ${idx <= currentIndex ? 'bg-[#0b4627]' : 'bg-neutral-200'}`}
-              />
-            ))}
+            {PROJECT_STATUS_ORDER.map((s, idx) => {
+              const isCompleted = idx <= currentIndex;
+              const stepColor = PROJECT_STATUS_COLORS[s];
+              return (
+                <div 
+                  key={s} 
+                  className="h-1.5 rounded-xs transition-colors"
+                  style={{ 
+                    backgroundColor: isCompleted ? stepColor : '#E5E7EB',
+                  }}
+                  title={`${idx + 1}. ${isEn ? PROJECT_STATUS_LABELS_EN[s] : PROJECT_STATUS_LABELS[s]}`}
+                />
+              );
+            })}
           </div>
         </div>
 

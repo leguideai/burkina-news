@@ -1,14 +1,29 @@
-import { AlertTriangle, Check } from 'lucide-react';
+import { AlertTriangle, Check, ArrowRight, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 import { getAdminStore } from '@/data/admin-store';
+import { correctionsApi } from '@/lib/api/corrections';
+import { mapCorrectionDTOToCorrection } from '@/lib/api/mappers';
+import { Correction } from '@/data/types';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Registre des corrections | Burkina News',
   description: 'Notre registre public listant toutes les corrections apportées à nos articles et données.',
 };
 
-export default function CorrectionsPage() {
+export default async function CorrectionsPage() {
   const store = getAdminStore();
-  const corrections = store.corrections;
+  let corrections: Correction[] = store.corrections || [];
+
+  try {
+    const res = await correctionsApi.listCorrections({ limit: 100 });
+    if (res.corrections && res.corrections.length > 0) {
+      corrections = res.corrections.map(mapCorrectionDTOToCorrection);
+    }
+  } catch {
+    corrections = store.corrections || [];
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 font-serif">
@@ -71,6 +86,18 @@ export default function CorrectionsPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-12 text-center pt-8 border-t border-[#e6dfd5]">
+        <p className="text-xs text-[#737373] mb-3">
+          Vous constatez une inexactitude dans nos données ou une publication ?
+        </p>
+        <Link 
+          href="/fr/contact"
+          className="inline-block px-5 py-2.5 bg-[#0b4627] text-white text-xs font-mono font-bold uppercase tracking-wider hover:bg-[#072e1a] transition-colors"
+        >
+          Transmettre un signalement d'erreur →
+        </Link>
       </div>
 
     </div>

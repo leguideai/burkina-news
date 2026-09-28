@@ -4,8 +4,8 @@
  * et les modèles métier consommés par le site public (FR & EN).
  */
 
-import { ArticleDTO, CategoryDTO, SubCategoryDTO, ProjectDTO, IndicatorDTO } from './types';
-import { Article, Category, SubCategory, CategoryCode, ContentType, Project, Indicator, ProjectStatus } from '@/data/types';
+import { ArticleDTO, CategoryDTO, SubCategoryDTO, ProjectDTO, IndicatorDTO, IssueDTO, CorrectionDTO, SubmissionDTO } from './types';
+import { Article, Category, SubCategory, CategoryCode, ContentType, Project, Indicator, ProjectStatus, Issue, Correction } from '@/data/types';
 
 /**
  * Convertit un ArticleDTO de l'API Go vers le format Article exploité par l'espace visiteur.
@@ -151,6 +151,42 @@ export function mapIndicatorDTOToIndicator(dto: IndicatorDTO): Indicator {
       source: p.source,
     })),
     linkedProjectSlugs: dto.linked_project_slugs || [],
+  };
+}
+
+/**
+ * Convertit un IssueDTO de l'API Go vers le format Issue exploité par l'espace visiteur.
+ */
+export function mapIssueDTOToIssue(dto: IssueDTO): Issue {
+  return {
+    id: dto.id,
+    number: dto.number,
+    title: dto.title,
+    titleEn: dto.title_en || dto.title,
+    slug: dto.slug,
+    coverImage: dto.cover_image || '/images/lead.jpeg',
+    publicationDate: dto.publication_date,
+    summary: dto.summary,
+    summaryEn: dto.summary_en || dto.summary,
+    articleCount: dto.article_count || (dto.article_ids ? dto.article_ids.length : 0),
+    articleIds: dto.article_ids || [],
+    pdfUrl: dto.pdf_url || '',
+  };
+}
+
+/**
+ * Convertit un CorrectionDTO de l'API Go vers le format Correction exploité par le registre public.
+ */
+export function mapCorrectionDTOToCorrection(dto: CorrectionDTO): Correction {
+  return {
+    id: dto.id,
+    date: dto.date,
+    articleTitle: dto.article_title,
+    articleSlug: dto.article_slug || '',
+    previousText: dto.previous_text,
+    correctedText: dto.corrected_text,
+    reason: dto.reason,
+    validatedBy: dto.validated_by || 'Alfred Ouédraogo (Directeur éditorial)',
   };
 }
 

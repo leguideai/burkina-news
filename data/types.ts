@@ -94,13 +94,101 @@ export const PROJECT_STATUS_LABELS_EN: Record<ProjectStatus, string> = {
 }
 
 export const PROJECT_STATUS_COLORS: Record<ProjectStatus, string> = {
-  'annonce': '#9CA3AF',
-  'engage': '#3B82F6',
-  'en-construction': '#F46B18',
-  'inaugure': '#22C55E',
-  'operationnel': '#087443',
-  'impact-mesure': '#D97706',
+  'annonce': '#64748B',         // 01 Slate (Annoncé)
+  'engage': '#2563EB',          // 02 Blue (Engagé)
+  'en-construction': '#EA580C', // 03 Warm Orange (En construction)
+  'inaugure': '#0D9488',        // 04 Teal (Inauguré)
+  'operationnel': '#087443',    // 05 Emerald/Burkina Green (Opérationnel)
+  'impact-mesure': '#7C3AED',   // 06 Violet/Purple (Impact mesuré)
 }
+
+export interface StatusTheme {
+  color: string;
+  dot: string;
+  bgLight: string;
+  textLight: string;
+  borderLight: string;
+  bgActive: string;
+  borderActive: string;
+  textActive: string;
+  activeNumberBg: string;
+  barColor: string;
+}
+
+export const PROJECT_STATUS_THEMES: Record<ProjectStatus, StatusTheme> = {
+  'annonce': {
+    color: '#64748B',
+    dot: 'bg-slate-500',
+    bgLight: 'bg-slate-50',
+    textLight: 'text-slate-700',
+    borderLight: 'border-slate-200',
+    bgActive: 'bg-slate-700',
+    borderActive: 'border-slate-700',
+    textActive: 'text-white',
+    activeNumberBg: 'bg-slate-800 text-slate-200',
+    barColor: '#64748B',
+  },
+  'engage': {
+    color: '#2563EB',
+    dot: 'bg-blue-600',
+    bgLight: 'bg-blue-50',
+    textLight: 'text-blue-700',
+    borderLight: 'border-blue-200',
+    bgActive: 'bg-blue-600',
+    borderActive: 'border-blue-600',
+    textActive: 'text-white',
+    activeNumberBg: 'bg-blue-800 text-blue-100',
+    barColor: '#2563EB',
+  },
+  'en-construction': {
+    color: '#EA580C',
+    dot: 'bg-orange-600',
+    bgLight: 'bg-orange-50',
+    textLight: 'text-orange-800',
+    borderLight: 'border-orange-200',
+    bgActive: 'bg-orange-600',
+    borderActive: 'border-orange-600',
+    textActive: 'text-white',
+    activeNumberBg: 'bg-orange-800 text-orange-100',
+    barColor: '#EA580C',
+  },
+  'inaugure': {
+    color: '#0D9488',
+    dot: 'bg-teal-600',
+    bgLight: 'bg-teal-50',
+    textLight: 'text-teal-800',
+    borderLight: 'border-teal-200',
+    bgActive: 'bg-teal-600',
+    borderActive: 'border-teal-600',
+    textActive: 'text-white',
+    activeNumberBg: 'bg-teal-800 text-teal-100',
+    barColor: '#0D9488',
+  },
+  'operationnel': {
+    color: '#087443',
+    dot: 'bg-[#087443]',
+    bgLight: 'bg-emerald-50',
+    textLight: 'text-emerald-800',
+    borderLight: 'border-emerald-200',
+    bgActive: 'bg-[#087443]',
+    borderActive: 'border-[#087443]',
+    textActive: 'text-white',
+    activeNumberBg: 'bg-[#054025] text-emerald-100',
+    barColor: '#087443',
+  },
+  'impact-mesure': {
+    color: '#7C3AED',
+    dot: 'bg-purple-600',
+    bgLight: 'bg-purple-50',
+    textLight: 'text-purple-800',
+    borderLight: 'border-purple-200',
+    bgActive: 'bg-purple-700',
+    borderActive: 'border-purple-700',
+    textActive: 'text-white',
+    activeNumberBg: 'bg-purple-900 text-purple-100',
+    barColor: '#7C3AED',
+  },
+};
 
 export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
   'annonce', 'engage', 'en-construction', 'inaugure', 'operationnel', 'impact-mesure',

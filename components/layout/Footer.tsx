@@ -16,9 +16,9 @@ export default function Footer({ lang }: { lang?: 'fr' | 'en' }) {
           
           {/* Col 1 : Brand & Mission (Col 4) */}
           <div className="lg:col-span-4 flex flex-col gap-4">
-            <div className="bg-white p-3 inline-block w-fit">
-              <img src="/images/logo.png" alt="Burkina News" className="h-9 w-auto object-contain" />
-            </div>
+            <Link href={isEn ? "/en" : "/fr"} className="bg-white p-3.5 sm:p-4 inline-block w-fit rounded-xs shadow-xs hover:opacity-95 transition-opacity">
+              <img src="/images/logo.png" alt="Burkina News" className="h-12 sm:h-14 lg:h-16 w-auto object-contain" />
+            </Link>
 
             <p className="text-xs text-[#d1e3d9] font-serif leading-relaxed">
               {isEn 

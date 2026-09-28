@@ -63,8 +63,8 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md bg-white border-2 border-[#141414] shadow-xl p-6 sm:p-8 space-y-6">
         {/* Header */}
         <div className="text-center space-y-3 pb-6 border-b border-[#e6dfd5]">
-          <div className="inline-block p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded mb-1">
-            <img src="/images/logo.png" alt="Burkina News" className="h-9 w-auto object-contain mx-auto" />
+          <div className="inline-block p-3 bg-white border border-[#e6dfd5] rounded mb-1 shadow-xs">
+            <img src="/images/logo.png" alt="Burkina News" className="h-14 w-auto object-contain mx-auto" />
           </div>
           <div className="flex items-center justify-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-[#0b4627]">
             <ShieldCheck size={14} />

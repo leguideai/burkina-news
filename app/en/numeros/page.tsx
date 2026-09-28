@@ -1,14 +1,34 @@
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Download } from 'lucide-react';
 import { getIssues } from '@/data/mock/issues';
+import { issuesApi } from '@/lib/api/issues';
+import { mapIssueDTOToIssue } from '@/lib/api/mappers';
+import { Issue } from '@/data/types';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Monthly Issues | Burkina News',
   description: 'A monthly journal. A Deep Dive investigation. Verified facts, figures, and trajectory.',
 };
 
-export default function IssuesPageEn() {
-  const enIssues = getIssues('en');
+export default async function IssuesPageEn() {
+  let enIssues: Issue[] = getIssues('en');
+
+  try {
+    const res = await issuesApi.listIssues({ limit: 50 });
+    const remote = res.issues;
+    if (remote && remote.length > 0) {
+      enIssues = remote.map((dto) => {
+        const mapped = mapIssueDTOToIssue(dto);
+        if (dto.title_en) mapped.title = dto.title_en;
+        if (dto.summary_en) mapped.summary = dto.summary_en;
+        return mapped;
+      });
+    }
+  } catch {
+    enIssues = getIssues('en');
+  }
 
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">

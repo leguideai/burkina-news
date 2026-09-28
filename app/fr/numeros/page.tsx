@@ -1,14 +1,29 @@
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Download } from 'lucide-react';
 import { getIssues } from '@/data/mock/issues';
+import { issuesApi } from '@/lib/api/issues';
+import { mapIssueDTOToIssue } from '@/lib/api/mappers';
+import { Issue } from '@/data/types';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Les Numéros | Burkina News',
   description: 'Une revue mensuelle. Un Grand Décryptage. Les faits, les chiffres, la trajectoire.',
 };
 
-export default function IssuesPage() {
-  const issues = getIssues('fr');
+export default async function IssuesPage() {
+  let issues: Issue[] = getIssues('fr');
+
+  try {
+    const res = await issuesApi.listIssues({ limit: 50 });
+    const remote = res.issues;
+    if (remote && remote.length > 0) {
+      issues = remote.map(mapIssueDTOToIssue);
+    }
+  } catch {
+    issues = getIssues('fr');
+  }
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
       

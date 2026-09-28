@@ -1,12 +1,12 @@
 import { ProjectStatus, PROJECT_STATUS_LABELS, PROJECT_STATUS_LABELS_EN } from '@/data/types';
 
 const STATUS_CONFIG: Record<ProjectStatus, { dot: string; bg: string; text: string; border: string }> = {
-  'annonce': { dot: 'bg-neutral-400', bg: 'bg-neutral-100', text: 'text-neutral-700', border: 'border-neutral-200' },
-  'engage': { dot: 'bg-neutral-800', bg: 'bg-neutral-100', text: 'text-neutral-900', border: 'border-neutral-300' },
-  'en-construction': { dot: 'bg-[#c2410c]', bg: 'bg-[#fff7ed]', text: 'text-[#9a3412]', border: 'border-[#fed7aa]' },
-  'inaugure': { dot: 'bg-[#0b4627]', bg: 'bg-[#f0fdf4]', text: 'text-[#14532d]', border: 'border-[#bbf7d0]' },
-  'operationnel': { dot: 'bg-[#0b4627]', bg: 'bg-[#0b4627]/10', text: 'text-[#0b4627]', border: 'border-[#0b4627]/20' },
-  'impact-mesure': { dot: 'bg-neutral-900', bg: 'bg-neutral-900 text-white', text: 'text-white', border: 'border-neutral-900' },
+  'annonce': { dot: 'bg-slate-500', bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-300' },
+  'engage': { dot: 'bg-blue-600', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  'en-construction': { dot: 'bg-[#ea580c]', bg: 'bg-[#fff7ed]', text: 'text-[#c2410c]', border: 'border-[#fed7aa]' },
+  'inaugure': { dot: 'bg-[#0d9488]', bg: 'bg-[#f0fdfa]', text: 'text-[#0f766e]', border: 'border-[#99f6e4]' },
+  'operationnel': { dot: 'bg-[#087443]', bg: 'bg-[#f0fdf4]', text: 'text-[#087443]', border: 'border-[#86efac]' },
+  'impact-mesure': { dot: 'bg-[#7c3aed]', bg: 'bg-[#faf5ff]', text: 'text-[#6b21a8]', border: 'border-[#d8b4fe]' },
 };
 
 export default function StatusBadge({ status, size = 'sm', lang = 'fr' }: { status: ProjectStatus; size?: 'sm' | 'md'; lang?: 'fr' | 'en' }) {

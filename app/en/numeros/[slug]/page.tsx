@@ -2,9 +2,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Download, BookOpen, ShieldCheck } from 'lucide-react';
 import { issues, getIssueBySlug } from '@/data/mock/issues';
+import { issuesApi } from '@/lib/api/issues';
 import { articlesApi } from '@/lib/api/articles';
-import { mapArticleDTOToArticle } from '@/lib/api/mappers';
-import { Article } from '@/data/types';
+import { mapArticleDTOToArticle, mapIssueDTOToIssue } from '@/lib/api/mappers';
+import { Article, Issue } from '@/data/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,29 +17,57 @@ export function generateStaticParams() {
 
 export default async function IssueDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const issue = getIssueBySlug(slug, 'en');
+  
+  let issue: Issue | null = null;
+  let issueArticles: Article[] = [];
+
+  try {
+    const dto = await issuesApi.getIssueBySlug(slug);
+    if (dto) {
+      const mapped = mapIssueDTOToIssue(dto);
+      if (dto.title_en) mapped.title = dto.title_en;
+      if (dto.summary_en) mapped.summary = dto.summary_en;
+      issue = mapped;
+      if (dto.articles && dto.articles.length > 0) {
+        issueArticles = dto.articles.map(a => {
+          const m = mapArticleDTOToArticle(a);
+          if (a.title_en) m.title = a.title_en;
+          if (a.excerpt_en) m.excerpt = a.excerpt_en;
+          return m;
+        });
+      }
+    }
+  } catch {
+    // fallback
+  }
+
+  if (!issue) {
+    issue = getIssueBySlug(slug, 'en') || null;
+  }
   
   if (!issue) {
     notFound();
   }
 
-  let enArticles: Article[] = [];
-  try {
-    const res = await articlesApi.listArticles({ limit: 100 });
-    if (res.articles) {
-      enArticles = res.articles.map(dto => {
-        const mapped = mapArticleDTOToArticle(dto);
-        if (dto.title_en) mapped.title = dto.title_en;
-        if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
-        return mapped;
-      });
+  if (issueArticles.length === 0) {
+    let enArticles: Article[] = [];
+    try {
+      const res = await articlesApi.listArticles({ limit: 100 });
+      if (res.articles) {
+        enArticles = res.articles.map(dto => {
+          const mapped = mapArticleDTOToArticle(dto);
+          if (dto.title_en) mapped.title = dto.title_en;
+          if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+          return mapped;
+        });
+      }
+    } catch {
+      enArticles = [];
     }
-  } catch {
-    enArticles = [];
+    issueArticles = (issue.articleIds || [])
+      .map(id => enArticles.find(a => a.id === id || a.slug === id))
+      .filter((a): a is NonNullable<typeof a> => a !== undefined);
   }
-  const issueArticles = issue.articleIds
-    .map(id => enArticles.find(a => a.id === id || a.slug === id))
-    .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
   const date = new Date(issue.publicationDate);
   const formattedDate = date.toLocaleDateString('en-US', {
