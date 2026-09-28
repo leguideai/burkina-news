@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { getIndicators } from '@/data/mock/indicators';
 import { barometreApi } from '@/lib/api/barometre';
 import { categoriesApi } from '@/lib/api/categories';
 import { mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import { localizeIndicator } from '@/data/localize';
 import IndicatorCard from '@/components/tracker/IndicatorCard';
+import { Indicator } from '@/data/types';
 import { ArrowLeft, BarChart2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -15,14 +15,14 @@ export const metadata = {
 };
 
 export default async function IndicatorsPageEn() {
-  let enIndicators = getIndicators('en');
+  let enIndicators: Indicator[] = [];
   try {
     const dtos = await barometreApi.listIndicators();
     if (dtos && dtos.length > 0) {
       enIndicators = dtos.map(mapIndicatorDTOToIndicator).map(i => localizeIndicator(i, 'en'));
     }
   } catch {
-    enIndicators = getIndicators('en');
+    enIndicators = [];
   }
 
   const groupedIndicators = enIndicators.reduce((acc, indicator) => {

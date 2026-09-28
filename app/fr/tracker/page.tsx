@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { getProjects, getProjectStats } from '@/data/mock/projects';
-import { getKeyIndicators } from '@/data/mock/indicators';
 import { trackerApi } from '@/lib/api/tracker';
 import { barometreApi } from '@/lib/api/barometre';
 import { mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
@@ -53,9 +51,9 @@ export default function TrackerPage() {
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const [projects, setProjects] = useState<Project[]>(() => getProjects('fr'));
-  const [stats, setStats] = useState(() => getProjectStats());
-  const [keyIndicators, setKeyIndicators] = useState<Indicator[]>(() => getKeyIndicators('fr'));
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [stats, setStats] = useState<{ total: number; byStatus: Record<string, number> }>({ total: 0, byStatus: {} });
+  const [keyIndicators, setKeyIndicators] = useState<Indicator[]>([]);
 
   useEffect(() => {
     let isMounted = true;

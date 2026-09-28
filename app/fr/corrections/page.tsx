@@ -1,6 +1,5 @@
 import { AlertTriangle, Check, ArrowRight, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
-import { getAdminStore } from '@/data/admin-store';
 import { correctionsApi } from '@/lib/api/corrections';
 import { mapCorrectionDTOToCorrection } from '@/lib/api/mappers';
 import { Correction } from '@/data/types';
@@ -13,8 +12,7 @@ export const metadata = {
 };
 
 export default async function CorrectionsPage() {
-  const store = getAdminStore();
-  let corrections: Correction[] = store.corrections || [];
+  let corrections: Correction[] = [];
 
   try {
     const res = await correctionsApi.listCorrections({ limit: 100 });
@@ -22,7 +20,7 @@ export default async function CorrectionsPage() {
       corrections = res.corrections.map(mapCorrectionDTOToCorrection);
     }
   } catch {
-    corrections = store.corrections || [];
+    corrections = [];
   }
 
   return (

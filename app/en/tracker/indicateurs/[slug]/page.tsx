@@ -1,5 +1,3 @@
-import { getIndicatorByCode, indicators } from '@/data/mock/indicators';
-import { getProjects, getProjectsByCategory } from '@/data/mock/projects';
 import { barometreApi } from '@/lib/api/barometre';
 import { trackerApi } from '@/lib/api/tracker';
 import { mapIndicatorDTOToIndicator, mapProjectDTOToProject } from '@/lib/api/mappers';
@@ -14,10 +12,15 @@ import PrintAuditButton from '@/components/tracker/PrintAuditButton';
 
 export const dynamic = 'force-dynamic';
 
-export function generateStaticParams() {
-  return indicators.map((indicator) => ({
-    slug: indicator.code,
-  }));
+export async function generateStaticParams() {
+  try {
+    const dtos = await barometreApi.listIndicators();
+    return (dtos || []).map((indicator) => ({
+      slug: indicator.code,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export default async function IndicatorDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
@@ -30,28 +33,22 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
       indicator = localizeIndicator(mapIndicatorDTOToIndicator(dto), 'en');
     }
   } catch {
-    indicator = getIndicatorByCode(slug, 'en');
-  }
-
-  if (!indicator) {
-    indicator = getIndicatorByCode(slug, 'en');
+    // API error
   }
 
   if (!indicator) {
     notFound();
   }
 
-  // Chantiers concrets du Tracker associés (Live API + Fallback)
+  // Chantiers concrets du Tracker associés (Live API)
   let allProjects: Project[] = [];
   try {
     const projRes = await trackerApi.listProjects({ limit: 100 });
     if (projRes.projects && projRes.projects.length > 0) {
       allProjects = projRes.projects.map(mapProjectDTOToProject).map(p => localizeProject(p, 'en'));
-    } else {
-      allProjects = getProjects('en');
     }
   } catch {
-    allProjects = getProjects('en');
+    allProjects = [];
   }
 
   const directLinkedProjects = allProjects.filter(p => 

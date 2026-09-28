@@ -1,12 +1,7 @@
 import Link from 'next/link';
-import { getLatestIssue } from '@/data/mock/issues';
-import { getLatestBrief } from '@/data/mock/briefs';
-import { getKeyIndicators } from '@/data/mock/indicators';
-import { projects, getProjectStats } from '@/data/mock/projects';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
-import { getAdminStore } from '@/data/admin-store';
 import { articlesApi } from '@/lib/api/articles';
 import { homepageApi } from '@/lib/api/homepage';
 import { issuesApi } from '@/lib/api/issues';
@@ -34,8 +29,19 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const store = getAdminStore();
-  let config = store.homepageConfig;
+  let config = {
+    leadArticleId: 'art-01',
+    secondaryArticleIds: [] as string[],
+    terrainArticleId: '',
+    factCheckArticleId: '',
+    featuredQuote: {
+      quoteFr: 'La mesure rigoureuse est le premier acte de souveraineté.',
+      quoteEn: 'Rigorous measurement is the primary act of sovereignty.',
+      author: 'Alfred Ouédraogo',
+      contextFr: 'Directeur éditorial',
+      contextEn: 'Editorial Director',
+    },
+  };
 
   try {
     const hpRes = await homepageApi.getHomepage();
@@ -43,19 +49,19 @@ export default async function HomePage() {
       config = {
         leadArticleId: hpRes.leadArticleId,
         secondaryArticleIds: hpRes.secondaryArticleIds || [],
-        terrainArticleId: hpRes.terrainArticleId,
-        factCheckArticleId: hpRes.factCheckArticleId,
+        terrainArticleId: hpRes.terrainArticleId || '',
+        factCheckArticleId: hpRes.factCheckArticleId || '',
         featuredQuote: {
           quoteFr: hpRes.featuredQuote?.quoteFr || config.featuredQuote.quoteFr,
           quoteEn: hpRes.featuredQuote?.quoteEn || config.featuredQuote.quoteEn,
           author: hpRes.featuredQuote?.author || config.featuredQuote.author,
           contextFr: hpRes.featuredQuote?.contextFr || config.featuredQuote.contextFr,
           contextEn: hpRes.featuredQuote?.contextEn || config.featuredQuote.contextEn,
-        }
+        },
       };
     }
   } catch {
-    // API error fallback
+    // API error
   }
 
   let liveArticles: Article[] = [];
@@ -68,11 +74,9 @@ export default async function HomePage() {
     // API error
   }
 
-  const articlesList = liveArticles.length > 0 
-    ? liveArticles 
-    : (store.articles || []);
+  const articlesList = liveArticles;
 
-  // 1. Dernier Numéro (API Go avec fallback mock)
+  // 1. Dernier Numéro (API Go)
   let latestIssue: Issue | null = null;
   try {
     const issueRes = await issuesApi.listIssues({ limit: 1 });
@@ -80,13 +84,10 @@ export default async function HomePage() {
       latestIssue = mapIssueDTOToIssue(issueRes.issues[0]);
     }
   } catch {
-    // fallback
-  }
-  if (!latestIssue) {
-    latestIssue = getLatestIssue();
+    // API error
   }
 
-  // 2. Le Fil Hebdo / Dépêches 60s (API Go avec fallback mock)
+  // 2. Le Fil Hebdo / Dépêches 60s (API Go)
   interface HomeBriefFact {
     time: string;
     text: string;
@@ -109,45 +110,38 @@ export default async function HomePage() {
     const briefRes = await filApi.listBriefs({ limit: 1 });
     if (briefRes.briefs && briefRes.briefs.length > 0) {
       const b = briefRes.briefs[0];
+      let facts = b.facts || [];
+      if (facts.length === 0) {
+        try {
+          const detailed = await filApi.getBriefBySlug(b.slug);
+          if (detailed && detailed.facts && detailed.facts.length > 0) {
+            facts = detailed.facts;
+          }
+        } catch {
+          // ignore
+        }
+      }
       latestBrief = {
         id: b.id,
         title: b.title,
         titleEn: b.title_en || b.title,
         slug: b.slug,
         date: b.date,
-        facts: (b.facts || []).map(f => ({
+        facts: facts.map((f) => ({
           time: f.time,
           text: f.text_fr,
           textEn: f.text_en || f.text_fr,
           category: f.category_code,
           source: f.source,
-          image: f.image,
+          image: f.image || '',
         })),
       };
     }
   } catch {
-    // fallback
-  }
-  if (!latestBrief) {
-    const fallbackB = getLatestBrief('fr');
-    latestBrief = fallbackB ? {
-      id: fallbackB.id,
-      title: fallbackB.title,
-      titleEn: fallbackB.titleEn,
-      slug: fallbackB.slug,
-      date: fallbackB.date,
-      facts: (fallbackB.facts || []).map(f => ({
-        time: f.time,
-        text: f.text,
-        textEn: f.textEn,
-        category: typeof f.category === 'string' ? f.category : 'economie',
-        source: f.source,
-        image: f.image,
-      })),
-    } : null;
+    // API error
   }
 
-  // 3. Indicateurs RELANCE (API Go avec fallback mock)
+  // 3. Indicateurs RELANCE (API Go)
   let indicators: Indicator[] = [];
   try {
     const indRes = await barometreApi.listIndicators();
@@ -155,15 +149,16 @@ export default async function HomePage() {
       indicators = indRes.slice(0, 4).map(mapIndicatorDTOToIndicator);
     }
   } catch {
-    // fallback
-  }
-  if (indicators.length === 0) {
-    indicators = getKeyIndicators('fr');
+    // API error
   }
 
-  // 4. Chantiers & Statistiques Tracker (API Go avec fallback mock)
+  // 4. Chantiers & Statistiques Tracker (API Go)
   let featuredProjects: Project[] = [];
-  let projectStats: any = null;
+  let projectStats: any = {
+    total: 0,
+    byStatus: {},
+    byCategory: {},
+  };
   try {
     const [projRes, statsRes] = await Promise.allSettled([
       trackerApi.listProjects({ limit: 3 }),
@@ -176,13 +171,7 @@ export default async function HomePage() {
       projectStats = statsRes.value;
     }
   } catch {
-    // fallback
-  }
-  if (featuredProjects.length === 0) {
-    featuredProjects = projects.slice(0, 3);
-  }
-  if (!projectStats) {
-    projectStats = getProjectStats();
+    // API error
   }
 
   const normalizeId = (id?: string) => (id || '').replace(/^art-0*/, 'art-');

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Download, BookOpen, Clock, ShieldCheck } from 'lucide-react';
-import { issues, getIssueBySlug } from '@/data/mock/issues';
 import { issuesApi } from '@/lib/api/issues';
 import { articlesApi } from '@/lib/api/articles';
 import { mapArticleDTOToArticle, mapIssueDTOToIssue } from '@/lib/api/mappers';
@@ -9,10 +8,15 @@ import { Article, Issue } from '@/data/types';
 
 export const dynamic = 'force-dynamic';
 
-export function generateStaticParams() {
-  return issues.map((issue) => ({
-    slug: issue.slug,
-  }));
+export async function generateStaticParams() {
+  try {
+    const res = await issuesApi.listIssues({ limit: 50 });
+    return (res.issues || []).map((issue) => ({
+      slug: issue.slug,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export default async function IssueDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -30,11 +34,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
       }
     }
   } catch {
-    // fallback
-  }
-
-  if (!issue) {
-    issue = getIssueBySlug(slug, 'fr') || null;
+    // API error
   }
   
   if (!issue) {

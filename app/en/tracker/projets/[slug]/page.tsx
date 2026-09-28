@@ -1,5 +1,3 @@
-import { projects, getProjectBySlug } from '@/data/mock/projects';
-import { getIndicators } from '@/data/mock/indicators';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { PROJECT_STATUS_LABELS_EN, PROJECT_STATUS_ORDER, PROJECT_STATUS_COLORS, Project, Indicator, Article } from '@/data/types';
 import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight } from 'lucide-react';
@@ -15,10 +13,15 @@ import PrintAuditButton from '@/components/tracker/PrintAuditButton';
 
 export const dynamic = 'force-dynamic';
 
-export function generateStaticParams() {
-  return projects.map((project) => ({
-    slug: project.slug,
-  }));
+export async function generateStaticParams() {
+  try {
+    const res = await trackerApi.listProjects({ limit: 100 });
+    return (res.projects || []).map((project) => ({
+      slug: project.slug,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export default async function ProjectDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
@@ -31,11 +34,7 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
       project = localizeProject(mapProjectDTOToProject(dto), 'en');
     }
   } catch {
-    project = getProjectBySlug(slug, 'en');
-  }
-
-  if (!project) {
-    project = getProjectBySlug(slug, 'en');
+    // API error
   }
 
   if (!project) {
@@ -71,9 +70,8 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
     liveIndicators = [];
   }
 
-  const allIndicators = liveIndicators.length > 0 ? liveIndicators : getIndicators('en');
   const linkedIndicators = (project.linkedIndicatorCodes || [])
-    .map(code => allIndicators.find(i => i.code === code))
+    .map(code => liveIndicators.find(i => i.code === code))
     .filter((i): i is NonNullable<typeof i> => i !== undefined);
 
   return (

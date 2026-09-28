@@ -1,12 +1,7 @@
 import Link from 'next/link';
-import { getLatestIssue } from '@/data/mock/issues';
-import { getLatestBrief } from '@/data/mock/briefs';
-import { getKeyIndicators } from '@/data/mock/indicators';
-import { getProjects, getProjectStats } from '@/data/mock/projects';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
-import { getAdminStore } from '@/data/admin-store';
 import { articlesApi } from '@/lib/api/articles';
 import { homepageApi } from '@/lib/api/homepage';
 import { issuesApi } from '@/lib/api/issues';
@@ -30,8 +25,19 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default async function HomePageEn() {
-  const store = getAdminStore();
-  let config = store.homepageConfig;
+  let config = {
+    leadArticleId: 'art-01',
+    secondaryArticleIds: [] as string[],
+    terrainArticleId: '',
+    factCheckArticleId: '',
+    featuredQuote: {
+      quoteFr: 'La mesure rigoureuse est le premier acte de souveraineté.',
+      quoteEn: 'Rigorous measurement is the primary act of sovereignty.',
+      author: 'Alfred Ouédraogo',
+      contextFr: 'Directeur éditorial',
+      contextEn: 'Editorial Director',
+    },
+  };
 
   try {
     const hpRes = await homepageApi.getHomepage();
@@ -39,22 +45,22 @@ export default async function HomePageEn() {
       config = {
         leadArticleId: hpRes.leadArticleId,
         secondaryArticleIds: hpRes.secondaryArticleIds || [],
-        terrainArticleId: hpRes.terrainArticleId,
-        factCheckArticleId: hpRes.factCheckArticleId,
+        terrainArticleId: hpRes.terrainArticleId || '',
+        factCheckArticleId: hpRes.factCheckArticleId || '',
         featuredQuote: {
           quoteFr: hpRes.featuredQuote?.quoteFr || config.featuredQuote.quoteFr,
           quoteEn: hpRes.featuredQuote?.quoteEn || config.featuredQuote.quoteEn,
           author: hpRes.featuredQuote?.author || config.featuredQuote.author,
           contextFr: hpRes.featuredQuote?.contextFr || config.featuredQuote.contextFr,
           contextEn: hpRes.featuredQuote?.contextEn || config.featuredQuote.contextEn,
-        }
+        },
       };
     }
   } catch {
-    // API error fallback
+    // API error
   }
 
-  // 1. Latest Issue (Go API with mock fallback)
+  // 1. Latest Issue (Go API)
   let latestIssue: Issue | null = null;
   try {
     const issueRes = await issuesApi.listIssues({ limit: 1 });
@@ -62,13 +68,10 @@ export default async function HomePageEn() {
       latestIssue = mapIssueDTOToIssue(issueRes.issues[0]);
     }
   } catch {
-    // fallback
-  }
-  if (!latestIssue) {
-    latestIssue = getLatestIssue('en');
+    // API error
   }
 
-  // 2. Latest Brief / 60s Facts (Go API with mock fallback)
+  // 2. Latest Brief / 60s Facts (Go API)
   interface HomeBriefFact {
     time: string;
     text: string;
@@ -91,50 +94,43 @@ export default async function HomePageEn() {
     const briefRes = await filApi.listBriefs({ limit: 1 });
     if (briefRes.briefs && briefRes.briefs.length > 0) {
       const b = briefRes.briefs[0];
+      let facts = b.facts || [];
+      if (facts.length === 0) {
+        try {
+          const detailed = await filApi.getBriefBySlug(b.slug);
+          if (detailed && detailed.facts && detailed.facts.length > 0) {
+            facts = detailed.facts;
+          }
+        } catch {
+          // ignore
+        }
+      }
       latestBrief = {
         id: b.id,
         title: b.title_en || b.title,
         titleEn: b.title_en || b.title,
         slug: b.slug,
         date: b.date,
-        facts: (b.facts || []).map(f => ({
+        facts: facts.map((f) => ({
           time: f.time,
           text: f.text_en || f.text_fr,
           textEn: f.text_en || f.text_fr,
           category: f.category_code,
           source: f.source,
-          image: f.image,
+          image: f.image || '',
         })),
       };
     }
   } catch {
-    // fallback
-  }
-  if (!latestBrief) {
-    const fallbackB = getLatestBrief('en');
-    latestBrief = fallbackB ? {
-      id: fallbackB.id,
-      title: fallbackB.titleEn || fallbackB.title,
-      titleEn: fallbackB.titleEn || fallbackB.title,
-      slug: fallbackB.slug,
-      date: fallbackB.date,
-      facts: (fallbackB.facts || []).map(f => ({
-        time: f.time,
-        text: f.textEn || f.text,
-        textEn: f.textEn || f.text,
-        category: typeof f.category === 'string' ? f.category : 'economie',
-        source: f.source,
-        image: f.image,
-      })),
-    } : null;
+    // API error
   }
 
-  // 3. RELANCE Indicators (Go API with mock fallback)
+  // 3. RELANCE Indicators (Go API)
   let indicators: Indicator[] = [];
   try {
     const indRes = await barometreApi.listIndicators();
     if (indRes && indRes.length > 0) {
-      indicators = indRes.slice(0, 4).map(dto => {
+      indicators = indRes.slice(0, 4).map((dto) => {
         const ind = mapIndicatorDTOToIndicator(dto);
         if (dto.name_en) ind.name = dto.name_en;
         if (dto.definition_en) ind.definition = dto.definition_en;
@@ -142,22 +138,23 @@ export default async function HomePageEn() {
       });
     }
   } catch {
-    // fallback
-  }
-  if (indicators.length === 0) {
-    indicators = getKeyIndicators('en');
+    // API error
   }
 
-  // 4. Tracker Projects & Stats (Go API with mock fallback)
+  // 4. Tracker Projects & Stats (Go API)
   let featuredProjects: Project[] = [];
-  let projectStats: any = null;
+  let projectStats: any = {
+    total: 0,
+    byStatus: {},
+    byCategory: {},
+  };
   try {
     const [projRes, statsRes] = await Promise.allSettled([
       trackerApi.listProjects({ limit: 3 }),
       trackerApi.getStats(),
     ]);
     if (projRes.status === 'fulfilled' && projRes.value?.projects && projRes.value.projects.length > 0) {
-      featuredProjects = projRes.value.projects.map(dto => {
+      featuredProjects = projRes.value.projects.map((dto) => {
         const p = mapProjectDTOToProject(dto);
         if (dto.title_en) p.title = dto.title_en;
         if (dto.description_en) p.description = dto.description_en;
@@ -168,20 +165,14 @@ export default async function HomePageEn() {
       projectStats = statsRes.value;
     }
   } catch {
-    // fallback
-  }
-  if (featuredProjects.length === 0) {
-    featuredProjects = getProjects('en').slice(0, 3);
-  }
-  if (!projectStats) {
-    projectStats = getProjectStats();
+    // API error
   }
 
   let liveArticles: Article[] = [];
   try {
     const res = await articlesApi.listArticles({ limit: 50 });
     if (res.articles && res.articles.length > 0) {
-      liveArticles = res.articles.map(dto => {
+      liveArticles = res.articles.map((dto) => {
         const mapped = mapArticleDTOToArticle(dto);
         if (dto.title_en) mapped.title = dto.title_en;
         if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
@@ -192,9 +183,7 @@ export default async function HomePageEn() {
     // API error
   }
 
-  const enArticles = liveArticles.length > 0 
-    ? liveArticles 
-    : (store.articles || []);
+  const enArticles = liveArticles;
 
   const normalizeId = (id?: string) => (id || '').replace(/^art-0*/, 'art-');
   const matchId = (aId: string, targetId?: string) => 

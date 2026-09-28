@@ -1,5 +1,3 @@
-import { projects, getProjectBySlug } from '@/data/mock/projects';
-import { getIndicatorByCode } from '@/data/mock/indicators';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_ORDER, PROJECT_STATUS_COLORS, Project, Indicator, Article } from '@/data/types';
 import { ArrowLeft, Clock, MapPin, Building2, Coins, Zap, ShieldCheck, ExternalLink, ArrowRight, TrendingUp } from 'lucide-react';
@@ -14,10 +12,15 @@ import PrintAuditButton from '@/components/tracker/PrintAuditButton';
 
 export const dynamic = 'force-dynamic';
 
-export function generateStaticParams() {
-  return projects.map((project) => ({
-    slug: project.slug,
-  }));
+export async function generateStaticParams() {
+  try {
+    const res = await trackerApi.listProjects({ limit: 100 });
+    return (res.projects || []).map((project) => ({
+      slug: project.slug,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -30,11 +33,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       project = mapProjectDTOToProject(dto);
     }
   } catch {
-    project = getProjectBySlug(slug, 'fr');
-  }
-
-  if (!project) {
-    project = getProjectBySlug(slug, 'fr');
+    // API error
   }
 
   if (!project) {
@@ -55,7 +54,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     .map(id => allArticles.find(a => a.id === id || a.slug === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
-  // Indicateurs RELANCE liés (Live API + Fallback)
+  // Indicateurs RELANCE liés (Live API)
   let allIndicators: Indicator[] = [];
   try {
     const indDtos = await barometreApi.listIndicators();
@@ -67,7 +66,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   }
 
   const linkedIndicators = (project.linkedIndicatorCodes || [])
-    .map(code => allIndicators.find(i => i.code === code) || getIndicatorByCode(code, 'fr'))
+    .map(code => allIndicators.find(i => i.code === code))
     .filter((ind): ind is NonNullable<typeof ind> => ind !== undefined);
 
   return (

@@ -2,15 +2,19 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ExternalLink, ShieldCheck, Camera, Calendar, Clock, ChevronRight, Hash } from 'lucide-react';
 import { filApi } from '@/lib/api/fil';
-import { BriefDTO } from '@/lib/api/types';
-import { briefs as staticBriefs, getBriefs, getBriefBySlug } from '@/data/mock/briefs';
-import { categories } from '@/data/mock/categories';
+import { categoriesApi } from '@/lib/api/categories';
+import { BriefDTO, CategoryDTO } from '@/lib/api/types';
 import { getSourceUrl } from '@/data/sources';
 
-export function generateStaticParams() {
-  return staticBriefs.map((brief) => ({
-    slug: brief.slug,
-  }));
+export async function generateStaticParams() {
+  try {
+    const res = await filApi.listBriefs({ limit: 50 });
+    return (res.briefs || []).map((brief) => ({
+      slug: brief.slug,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export const revalidate = 60;
@@ -19,58 +23,27 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
   const { slug } = await params;
   let brief: BriefDTO | null = null;
   let allBriefs: BriefDTO[] = [];
+  let categories: CategoryDTO[] = [];
 
   try {
-    const res = await filApi.listBriefs({ limit: 50 });
-    allBriefs = res.briefs || [];
-    brief = await filApi.getBriefBySlug(slug);
-  } catch {
-    const mock = getBriefBySlug(slug);
-    if (mock) {
-      brief = {
-        id: mock.id,
-        title: mock.title,
-        title_en: mock.titleEn,
-        slug: mock.slug,
-        date: mock.date,
-        week_number: mock.weekNumber,
-        year: new Date(mock.date).getFullYear() || 2026,
-        image: mock.image,
-        summary: mock.summary,
-        summary_en: mock.summaryEn,
-        is_published: true,
-        created_at: mock.date,
-        facts: mock.facts.map((f, i) => ({
-          id: `fact-${mock.id}-${i}`,
-          time: f.time,
-          date: mock.date,
-          text_fr: f.text,
-          text_en: f.textEn,
-          source: f.source,
-          source_url: f.sourceUrl,
-          category_code: (f.category as string) || 'economie',
-          why_watch_fr: f.whyWatch,
-          why_watch_en: f.whyWatchEn,
-          image: f.image,
-          order_num: i + 1,
-          created_at: mock.date,
-        })),
-      };
-      allBriefs = getBriefs('fr').map(b => ({
-        id: b.id,
-        title: b.title,
-        title_en: b.titleEn,
-        slug: b.slug,
-        date: b.date,
-        week_number: b.weekNumber,
-        year: new Date(b.date).getFullYear() || 2026,
-        is_published: true,
-        created_at: b.date,
-        facts: [],
-      }));
+    const [res, b, cats] = await Promise.allSettled([
+      filApi.listBriefs({ limit: 50 }),
+      filApi.getBriefBySlug(slug),
+      categoriesApi.listCategories(),
+    ]);
+    if (res.status === 'fulfilled' && res.value?.briefs) {
+      allBriefs = res.value.briefs;
     }
+    if (b.status === 'fulfilled' && b.value) {
+      brief = b.value;
+    }
+    if (cats.status === 'fulfilled' && cats.value) {
+      categories = cats.value;
+    }
+  } catch {
+    // API error
   }
-  
+
   if (!brief) {
     notFound();
   }
@@ -158,7 +131,8 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
             <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5]">
               {brief.facts?.map((fact, index) => {
                 const catInfo = fact.category_code ? categories.find(c => c.code === fact.category_code) : null;
-                const factImageSrc = fact.image || '/images/lead.jpeg';
+                const factText = fact.text_fr;
+                const factWhyWatch = fact.why_watch_fr;
                 
                 return (
                   <article 
@@ -210,13 +184,15 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                     <div className="flex flex-col sm:flex-row gap-5 items-start">
                       
                       {/* Photographic Evidence Thumbnail */}
-                      <div className="w-full sm:w-32 aspect-[4/3] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
-                        <img 
-                          src={factImageSrc} 
-                          alt={`Preuve visuelle - Fait ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      {fact.image && (
+                        <div className="w-full sm:w-32 aspect-[4/3] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                          <img 
+                            src={fact.image} 
+                            alt={`Preuve visuelle - Fait ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
 
                       <div className="flex-1 min-w-0">
                         <p className="text-base font-serif text-[#141414] leading-relaxed mb-3 font-medium">

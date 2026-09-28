@@ -4,8 +4,8 @@
  * et les modèles métier consommés par le site public (FR & EN).
  */
 
-import { ArticleDTO, CategoryDTO, SubCategoryDTO, ProjectDTO, IndicatorDTO, IssueDTO, CorrectionDTO, SubmissionDTO } from './types';
-import { Article, Category, SubCategory, CategoryCode, ContentType, Project, Indicator, ProjectStatus, Issue, Correction } from '@/data/types';
+import { ArticleDTO, CategoryDTO, SubCategoryDTO, ProjectDTO, IndicatorDTO, IssueDTO, CorrectionDTO, SubmissionDTO, BriefDTO, BriefFactDTO } from './types';
+import { Article, Category, SubCategory, CategoryCode, ContentType, Project, Indicator, ProjectStatus, Issue, Correction, Brief, BriefFact } from '@/data/types';
 
 /**
  * Convertit un ArticleDTO de l'API Go vers le format Article exploité par l'espace visiteur.
@@ -209,4 +209,34 @@ export function mapCorrectionDTOToCorrection(dto: CorrectionDTO): Correction {
     validatedBy: dto.validated_by || 'Alfred Ouédraogo (Directeur éditorial)',
   };
 }
+
+export function mapBriefFactDTOToBriefFact(dto: BriefFactDTO): BriefFact {
+  return {
+    time: dto.time,
+    text: dto.text_fr,
+    textEn: dto.text_en || dto.text_fr,
+    source: dto.source,
+    sourceUrl: dto.source_url,
+    category: (dto.category_code || 'economie') as CategoryCode,
+    whyWatch: dto.why_watch_fr,
+    whyWatchEn: dto.why_watch_en,
+    image: dto.image || '',
+  };
+}
+
+export function mapBriefDTOToBrief(dto: BriefDTO): Brief {
+  return {
+    id: dto.id,
+    title: dto.title,
+    titleEn: dto.title_en || dto.title,
+    slug: dto.slug,
+    date: dto.date,
+    weekNumber: dto.week_number,
+    image: dto.image || '',
+    summary: dto.summary,
+    summaryEn: dto.summary_en,
+    facts: (dto.facts || []).map((f) => mapBriefFactDTOToBriefFact(f)),
+  };
+}
+
 

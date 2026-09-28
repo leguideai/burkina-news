@@ -5,12 +5,9 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Search, FileText, Construction, BarChart3, Radio, ChevronRight, X, Loader2 } from 'lucide-react';
 import { searchApi } from '@/lib/api/search';
-import { articlesApi } from '@/lib/api/articles';
 import { mapArticleDTOToArticle, mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import { Article, Project, Indicator } from '@/data/types';
 import { BriefFactDTO } from '@/lib/api/types';
-import { getProjects } from '@/data/mock/projects';
-import { getIndicators } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
 
@@ -48,42 +45,24 @@ function SearchContentEn() {
     }
   }, [query]);
 
-  // Local fallback / initial cache
-  const [enArticles, setEnArticles] = useState<Article[]>([]);
-  const enProjects = useMemo(() => getProjects('en'), []);
-  const enIndicators = useMemo(() => getIndicators('en'), []);
-
   // Results returned by PostgreSQL API
-  const [apiResults, setApiResults] = useState<{
+  const [results, setResults] = useState<{
     articles: Article[];
     projects: Project[];
     indicators: Indicator[];
     facts: BriefFactDTO[];
-  } | null>(null);
-
-  // Preload articles for resilient local fallback
-  useEffect(() => {
-    let isMounted = true;
-    articlesApi.listArticles({ limit: 100 })
-      .then(res => {
-        if (isMounted && res.articles) {
-          setEnArticles(res.articles.map(dto => {
-            const mapped = mapArticleDTOToArticle(dto);
-            if (dto.title_en) mapped.title = dto.title_en;
-            if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
-            return mapped;
-          }));
-        }
-      })
-      .catch(() => {});
-    return () => { isMounted = false; };
-  }, []);
+  }>({
+    articles: [],
+    projects: [],
+    indicators: [],
+    facts: [],
+  });
 
   // Trigger search with 250ms debouncing
   useEffect(() => {
     const trimmed = query.trim();
     if (!trimmed) {
-      setApiResults(null);
+      setResults({ articles: [], projects: [], indicators: [], facts: [] });
       setLoading(false);
       return;
     }
@@ -98,8 +77,8 @@ function SearchContentEn() {
           lang: 'en',
         });
 
-        if (res && (res.articles?.length || res.projects?.length || res.indicators?.length || res.facts?.length)) {
-          setApiResults({
+        if (res) {
+          setResults({
             articles: (res.articles || []).map(dto => {
               const mapped = mapArticleDTOToArticle(dto);
               if (dto.title_en) mapped.title = dto.title_en;
@@ -111,11 +90,11 @@ function SearchContentEn() {
             facts: res.facts || [],
           });
         } else {
-          setApiResults(null);
+          setResults({ articles: [], projects: [], indicators: [], facts: [] });
         }
       } catch (err) {
-        console.warn('[SearchPageEn] Fallback to local search :', err);
-        setApiResults(null);
+        console.error('[SearchPageEn] Erreur de recherche :', err);
+        setResults({ articles: [], projects: [], indicators: [], facts: [] });
       } finally {
         setLoading(false);
       }
@@ -124,48 +103,13 @@ function SearchContentEn() {
     return () => clearTimeout(timer);
   }, [query, filter]);
 
-  // Compute local fallback results
-  const localResults = useMemo(() => {
-    if (!query.trim()) return { articles: [], projects: [], indicators: [], facts: [] };
-
-    const lowerQuery = query.toLowerCase();
-
-    const filteredArticles = enArticles.filter(a => 
-      a.title.toLowerCase().includes(lowerQuery) || 
-      a.excerpt.toLowerCase().includes(lowerQuery) ||
-      a.category.toLowerCase().includes(lowerQuery)
-    );
-
-    const filteredProjects = enProjects.filter(p => 
-      p.title.toLowerCase().includes(lowerQuery) || 
-      p.description.toLowerCase().includes(lowerQuery) ||
-      p.region.toLowerCase().includes(lowerQuery) ||
-      p.sector.toLowerCase().includes(lowerQuery)
-    );
-
-    const filteredIndicators = enIndicators.filter(i => 
-      i.name.toLowerCase().includes(lowerQuery) || 
-      i.definition.toLowerCase().includes(lowerQuery) ||
-      i.code.toLowerCase().includes(lowerQuery)
-    );
-
-    return {
-      articles: filteredArticles,
-      projects: filteredProjects,
-      indicators: filteredIndicators,
-      facts: [] as BriefFactDTO[],
-    };
-  }, [query, enArticles, enProjects, enIndicators]);
-
-  // Active selection: API results first, fallback to local
-  const effectiveResults = apiResults || localResults;
   const isSearching = query.trim().length > 0;
 
   const totalResults = 
-    effectiveResults.articles.length + 
-    effectiveResults.projects.length + 
-    effectiveResults.indicators.length + 
-    effectiveResults.facts.length;
+    results.articles.length + 
+    results.projects.length + 
+    results.indicators.length + 
+    results.facts.length;
 
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
@@ -237,7 +181,7 @@ function SearchContentEn() {
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
                 }`}
               >
-                Investigations ({effectiveResults.articles.length})
+                Investigations ({results.articles.length})
               </button>
 
               <button
@@ -248,7 +192,7 @@ function SearchContentEn() {
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
                 }`}
               >
-                Tracker Projects ({effectiveResults.projects.length})
+                Tracker Projects ({results.projects.length})
               </button>
 
               <button
@@ -259,10 +203,10 @@ function SearchContentEn() {
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
                 }`}
               >
-                Indicators ({effectiveResults.indicators.length})
+                Indicators ({results.indicators.length})
               </button>
 
-              {effectiveResults.facts.length > 0 && (
+              {results.facts.length > 0 && (
                 <button
                   onClick={() => setFilter('facts')}
                   className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
@@ -271,7 +215,7 @@ function SearchContentEn() {
                       : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
                   }`}
                 >
-                  Live Wire Dispatches ({effectiveResults.facts.length})
+                  Live Wire Dispatches ({results.facts.length})
                 </button>
               )}
             </div>
@@ -326,19 +270,19 @@ function SearchContentEn() {
           <div className="space-y-12">
             
             {/* 1. Investigations Results */}
-            {(filter === 'all' || filter === 'articles') && effectiveResults.articles.length > 0 && (
+            {(filter === 'all' || filter === 'articles') && results.articles.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">
                   <div className="flex items-center gap-2">
                     <FileText size={16} className="text-[#0b4627]" />
                     <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                      Investigative Reports & Analyses ({effectiveResults.articles.length})
+                      Investigative Reports & Analyses ({results.articles.length})
                     </h2>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {effectiveResults.articles.map((article) => (
+                  {results.articles.map((article) => (
                     <ArticleCard key={article.id} article={article} lang="en" />
                   ))}
                 </div>
@@ -346,19 +290,19 @@ function SearchContentEn() {
             )}
 
             {/* 2. Projects Results */}
-            {(filter === 'all' || filter === 'projects') && effectiveResults.projects.length > 0 && (
+            {(filter === 'all' || filter === 'projects') && results.projects.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">
                   <div className="flex items-center gap-2">
                     <Construction size={16} className="text-[#0b4627]" />
                     <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                      Major Infrastructure Projects ({effectiveResults.projects.length})
+                      Major Infrastructure Projects ({results.projects.length})
                     </h2>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {effectiveResults.projects.map((project) => (
+                  {results.projects.map((project) => (
                     <ProjectCard key={project.id} project={project} lang="en" />
                   ))}
                 </div>
@@ -366,19 +310,19 @@ function SearchContentEn() {
             )}
 
             {/* 3. Indicators Results */}
-            {(filter === 'all' || filter === 'indicators') && effectiveResults.indicators.length > 0 && (
+            {(filter === 'all' || filter === 'indicators') && results.indicators.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">
                   <div className="flex items-center gap-2">
                     <BarChart3 size={16} className="text-[#0b4627]" />
                     <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                      National Indicators ({effectiveResults.indicators.length})
+                      National Indicators ({results.indicators.length})
                     </h2>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {effectiveResults.indicators.map((ind) => (
+                  {results.indicators.map((ind) => (
                     <Link
                       key={ind.code}
                       href={`/en/tracker/indicateurs/${ind.code}`}
@@ -405,19 +349,19 @@ function SearchContentEn() {
             )}
 
             {/* 4. Facts Results (Live Wire Dispatches) */}
-            {(filter === 'all' || filter === 'facts') && effectiveResults.facts.length > 0 && (
+            {(filter === 'all' || filter === 'facts') && results.facts.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">
                   <div className="flex items-center gap-2">
                     <Radio size={16} className="text-[#0b4627]" />
                     <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                      Live Wire Dispatches ({effectiveResults.facts.length})
+                      Live Wire Dispatches ({results.facts.length})
                     </h2>
                   </div>
                 </div>
 
                 <div className="bg-white border border-[#e6dfd5] divide-y divide-[#e6dfd5]">
-                  {effectiveResults.facts.map((fact, idx) => (
+                  {results.facts.map((fact, idx) => (
                     <div key={fact.id || idx} className="p-4 hover:bg-[#faf8f5] transition-colors flex items-start justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
