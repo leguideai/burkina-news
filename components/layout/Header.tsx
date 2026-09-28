@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper, ChevronDown, ChevronRight } from 'lucide-react';
 import { NAV_CATEGORIES, UI_STRINGS } from '@/data/mock/translations';
 import { JOURNAL_PRODUCTS } from '@/data/mock/referentiel';
@@ -64,6 +64,76 @@ export default function Header() {
   const indicateursHref = isEn ? '/en/tracker/indicateurs' : '/fr/tracker/indicateurs';
   const methodeHref = isEn ? '/en/methode' : '/fr/methode';
   const rechercheHref = isEn ? '/en/recherche' : '/fr/recherche';
+
+  // State & Handlers anti-tremblement pour le dropdown des sous-rubriques
+  const [hoveredCategoryCode, setHoveredCategoryCode] = useState<string | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleCategoryMouseEnter = (catCode: string) => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setHoveredCategoryCode(catCode);
+  };
+
+  const handleCategoryMouseLeave = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(() => {
+      setHoveredCategoryCode(null);
+    }, 150);
+  };
+
+  const handleDropdownMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const handleDropdownMouseLeave = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(() => {
+      setHoveredCategoryCode(null);
+    }, 150);
+  };
+
+  useEffect(() => {
+    setHoveredCategoryCode(null);
+  }, [pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const activeHoverCategory = useMemo(() => {
+    if (!hoveredCategoryCode) return null;
+    return categories.find(c => c.href.split('/').pop() === hoveredCategoryCode) || null;
+  }, [hoveredCategoryCode, categories]);
+
+  const activeHoverCategoryData = useMemo(() => {
+    if (!hoveredCategoryCode) return null;
+    return activeCategoriesData.find(c => c.code === hoveredCategoryCode) || null;
+  }, [hoveredCategoryCode, activeCategoriesData]);
+
+  // Découpage strict : 2 sous-rubriques par colonne
+  const subCategoryColumns = useMemo(() => {
+    if (!activeHoverCategoryData?.subCategories) return [];
+    const subs = activeHoverCategoryData.subCategories;
+    const cols = [];
+    for (let i = 0; i < subs.length; i += 2) {
+      cols.push(subs.slice(i, i + 2));
+    }
+    return cols;
+  }, [activeHoverCategoryData]);
 
   return (
     <header className="w-full bg-[#faf8f5] border-b border-[#e6dfd5]">
@@ -239,7 +309,7 @@ export default function Header() {
 
       {/* 3. NAVIGATION BAR : Classic double border rules on Desktop */}
       <nav className="hidden md:block border-t-2 border-b border-[#141414] bg-white relative">
-        <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-8 flex justify-between items-center relative">
           
           <div className="flex items-center">
             <Link 
@@ -253,68 +323,34 @@ export default function Header() {
 
             {categories.map((cat) => {
               const active = pathname.startsWith(cat.href);
-              const catCode = cat.href.split('/').pop();
-              const categoryData = activeCategoriesData.find(c => c.code === catCode);
+              const catCode = cat.href.split('/').pop() || '';
+              const isHovered = hoveredCategoryCode === catCode;
 
               return (
-                <div key={cat.href} className="group">
+                <div 
+                  key={cat.href}
+                  onMouseEnter={() => handleCategoryMouseEnter(catCode)}
+                  onMouseLeave={handleCategoryMouseLeave}
+                  className="relative"
+                >
                   <Link
                     href={cat.href}
                     className={`py-2.5 px-3.5 text-xs font-semibold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] flex items-center gap-1.5 ${
-                      active 
+                      isHovered || active 
                         ? 'text-[#0b4627] bg-[#f4eee3] font-bold' 
-                        : 'text-[#333333] hover:text-[#141414] hover:bg-neutral-50 group-hover:bg-[#faf8f5] group-hover:text-[#0b4627]'
+                        : 'text-[#333333] hover:text-[#141414] hover:bg-neutral-50'
                     }`}
                   >
                     <span>{cat.label}</span>
-                    <ChevronDown size={11} className="text-[#888888] group-hover:text-[#0b4627] group-hover:rotate-180 transition-transform duration-200" />
+                    <ChevronDown 
+                      size={11} 
+                      className={`transition-transform duration-200 ${
+                        isHovered 
+                          ? 'text-[#0b4627] rotate-180' 
+                          : 'text-[#888888]'
+                      }`} 
+                    />
                   </Link>
-
-                  {/* Desktop Full-Width Mega Menu Dropdown */}
-                  {categoryData && categoryData.subCategories && categoryData.subCategories.length > 0 && (
-                    <div 
-                      className="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform translate-y-1 group-hover:translate-y-0 absolute top-full left-0 right-0 w-full z-50 bg-white border-b-2 border-[#141414] shadow-2xl before:content-[''] before:absolute before:-top-3 before:left-0 before:right-0 before:h-3"
-                    >
-                      <div className="max-w-7xl mx-auto px-8 py-6">
-                        {/* Header bar */}
-                        <div className="flex items-center justify-between pb-3.5 mb-5 border-b border-[#e6dfd5]">
-                          <div className="flex items-center gap-2.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#0b4627]" />
-                            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                              {isEn ? "Sub-rubrics" : "Sous-rubriques"} · <span className="text-[#0b4627]">{cat.label}</span>
-                            </span>
-                            <span className="text-[#d4cece]">·</span>
-                            <span className="text-[11px] font-mono text-[#888888]">
-                              {categoryData.subCategories.length} {isEn ? "sections" : "volets"}
-                            </span>
-                          </div>
-
-                          <Link
-                            href={cat.href}
-                            className="text-xs font-mono font-bold text-[#0b4627] hover:text-[#072e1a] hover:underline flex items-center gap-1.5 shrink-0"
-                          >
-                            <span>{isEn ? `All ${cat.label} investigations →` : `Toutes les enquêtes ${cat.label} →`}</span>
-                          </Link>
-                        </div>
-
-                        {/* Sub-rubric names in horizontal multi-column layout */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 lg:gap-x-14 gap-y-2.5">
-                          {categoryData.subCategories.map((sub) => (
-                            <Link
-                              key={sub.code}
-                              href={`${cat.href}?sub=${sub.code}`}
-                              className="group/item flex items-center justify-between py-2 text-[14px] font-medium text-[#222222] hover:text-[#0b4627] hover:bg-[#faf8f5] px-3 -mx-3 rounded-md transition-all duration-150"
-                            >
-                              <span className="group-hover/item:translate-x-1 transition-transform duration-150">
-                                {isEn ? sub.nameEn : sub.nameFr}
-                              </span>
-                              <ChevronRight size={14} className="text-[#0b4627] opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all shrink-0 ml-2" />
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -342,6 +378,58 @@ export default function Header() {
               {isEn ? "RELANCE Barometer" : "Baromètre RELANCE"}
             </Link>
           </div>
+
+          {/* Desktop Mega Menu Dropdown : S'arrête aux marges de la page (left-8 right-8) et zéro tremblement */}
+          {hoveredCategoryCode && activeHoverCategoryData && activeHoverCategoryData.subCategories && activeHoverCategoryData.subCategories.length > 0 && (
+            <div 
+              onMouseEnter={handleDropdownMouseEnter}
+              onMouseLeave={handleDropdownMouseLeave}
+              className="absolute top-full left-8 right-8 z-50 bg-white border-x-2 border-b-2 border-[#141414] shadow-2xl before:content-[''] before:absolute before:-top-2.5 before:left-0 before:right-0 before:h-2.5"
+            >
+              <div className="p-6">
+                {/* En-tête contextuel de la rubrique */}
+                <div className="flex items-center justify-between pb-3.5 mb-5 border-b border-[#e6dfd5]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#0b4627]" />
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
+                      {isEn ? "Sub-rubrics" : "Sous-rubriques"} · <span className="text-[#0b4627]">{activeHoverCategory?.label}</span>
+                    </span>
+                    <span className="text-[#d4cece]">·</span>
+                    <span className="text-[11px] font-mono text-[#888888]">
+                      {activeHoverCategoryData.subCategories.length} {isEn ? "sections" : "volets"}
+                    </span>
+                  </div>
+
+                  <Link
+                    href={activeHoverCategory?.href || '#'}
+                    className="text-xs font-mono font-bold text-[#0b4627] hover:text-[#072e1a] hover:underline flex items-center gap-1.5 shrink-0"
+                  >
+                    <span>{isEn ? `All ${activeHoverCategory?.label} investigations →` : `Toutes les enquêtes ${activeHoverCategory?.label} →`}</span>
+                  </Link>
+                </div>
+
+                {/* Deux rubriques par colonne (exactement 2 sous-rubriques par colonne verticale) */}
+                <div className="flex flex-wrap items-start gap-x-12 lg:gap-x-16 gap-y-4">
+                  {subCategoryColumns.map((col, colIdx) => (
+                    <div key={colIdx} className="flex flex-col gap-2 min-w-[180px] sm:min-w-[210px]">
+                      {col.map((sub) => (
+                        <Link
+                          key={sub.code}
+                          href={`${activeHoverCategory?.href}?sub=${sub.code}`}
+                          className="group/item flex items-center justify-between py-2 px-3 rounded-md text-[14px] font-medium text-[#222222] hover:text-[#0b4627] hover:bg-[#faf8f5] transition-all duration-150"
+                        >
+                          <span className="group-hover/item:translate-x-1 transition-transform duration-150">
+                            {isEn ? sub.nameEn : sub.nameFr}
+                          </span>
+                          <ChevronRight size={14} className="text-[#0b4627] opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all shrink-0 ml-2" />
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </nav>
