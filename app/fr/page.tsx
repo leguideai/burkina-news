@@ -434,7 +434,7 @@ export default async function HomePage() {
 
           <div className="flex items-center gap-3">
             <span className="text-xs font-serif text-[#555555] hidden sm:inline">
-              {projects.length} chantiers documentés · Sources vérifiées
+              {projectStats.total || featuredProjects.length} chantiers documentés · Sources vérifiées
             </span>
             <Link 
               href="/fr/tracker"
