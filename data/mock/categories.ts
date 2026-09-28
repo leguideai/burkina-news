@@ -13,16 +13,6 @@ export const categories: Category[] = [
     subCategories: getSubCategoriesByCategory('economie'),
   },
   {
-    code: 'securite',
-    nameFr: 'Sécurité',
-    nameEn: 'Security',
-    descriptionFr: 'Défense nationale, AES, diplomatie, géopolitique et relations internationales.',
-    descriptionEn: 'National defense, AES, diplomacy, geopolitics and international relations.',
-    slug: 'securite',
-    color: '#1E3A5F',
-    subCategories: getSubCategoriesByCategory('securite'),
-  },
-  {
     code: 'chantiers',
     nameFr: 'Chantiers',
     nameEn: 'Infrastructure',
@@ -51,6 +41,16 @@ export const categories: Category[] = [
     slug: 'societe',
     color: '#7C3AED',
     subCategories: getSubCategoriesByCategory('societe'),
+  },
+  {
+    code: 'securite',
+    nameFr: 'Sécurité',
+    nameEn: 'Security',
+    descriptionFr: 'Défense nationale, AES, diplomatie, géopolitique et relations internationales.',
+    descriptionEn: 'National defense, AES, diplomacy, geopolitics and international relations.',
+    slug: 'securite',
+    color: '#1E3A5F',
+    subCategories: getSubCategoriesByCategory('securite'),
   },
   {
     code: 'histoire',

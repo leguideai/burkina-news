@@ -37,8 +37,8 @@ export const briefs: Brief[] = [
       },
       { 
         time: '08:00', 
-        text: 'Le CONASUR enregistre le retour de 12 000 personnes déplacées dans le Centre-Nord.', 
-        textEn: 'CONASUR records the verified voluntary return of 12,000 internally displaced persons to Centre-Nord province.',
+        text: 'Le CONASUR enregistre le retour de 12 000 personnes déplacées dans la région du Kuilsé.', 
+        textEn: 'CONASUR records the verified voluntary return of 12,000 internally displaced persons to Kuilsé region.',
         source: 'CONASUR', 
         category: 'securite', 
         whyWatch: 'Première vague de retour significative dans cette région depuis 18 mois.',
@@ -55,8 +55,8 @@ export const briefs: Brief[] = [
       },
       { 
         time: '07:30', 
-        text: 'Le ministre de la Santé inaugure 3 nouveaux CSPS dans la Boucle du Mouhoun.', 
-        textEn: 'The Minister of Health commissions 3 new primary health centers (CSPS) in the Boucle du Mouhoun region.',
+        text: 'Le ministre de la Santé inaugure 3 nouveaux CSPS dans la région de Bankui.', 
+        textEn: 'The Minister of Health commissions 3 new primary health centers (CSPS) in the Bankui region.',
         source: 'Ministère de la Santé', 
         category: 'societe',
         image: 'https://lefaso.net/local/cache-vignettes/L600xH337/5-2927-c6d0f.jpg?1787057136'
@@ -172,8 +172,8 @@ export const briefs: Brief[] = [
       },
       { 
         time: '06:20', 
-        text: 'Le PNUD lance un programme de formation professionnelle pour 5 000 jeunes déplacés.', 
-        textEn: 'UNDP initiates certified vocational apprenticeship initiative benefiting 5,000 displaced young adults in Centre-Nord.',
+        text: 'Le PNUD lance un programme de formation professionnelle pour 5 000 jeunes déplacés dans la région du Kuilsé.', 
+        textEn: 'UNDP initiates certified vocational apprenticeship initiative benefiting 5,000 displaced young adults in Kuilsé region.',
         source: 'PNUD', 
         category: 'societe', 
         image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQpoIHBvZSwMMdBXWUt3kbDtUkcEkXLBWnQM6TN_BR3A&s=10' 

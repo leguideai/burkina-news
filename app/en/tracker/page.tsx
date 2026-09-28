@@ -1,16 +1,28 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { getProjects, getProjectStats } from '@/data/mock/projects';
 import { getKeyIndicators } from '@/data/mock/indicators';
+import { trackerApi } from '@/lib/api/tracker';
+import { barometreApi } from '@/lib/api/barometre';
+import { mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
+import { localizeProject, localizeIndicator } from '@/data/localize';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import StatusBadge from '@/components/tracker/StatusBadge';
 import { 
   PROJECT_STATUS_LABELS_EN, 
   PROJECT_STATUS_ORDER,
-  ProjectStatus 
+  ProjectStatus,
+  Project,
+  Indicator
 } from '@/data/types';
-import { ALL_PROVINCES, getProvincesByRegion } from '@/data/mock/referentiel';
+import { 
+  BURKINA_REGIONS_17, 
+  BURKINA_PROVINCES_47, 
+  getProvincesByRegion, 
+  getCommunesByCondition,
+  getRegionByProvinceName,
+} from '@/data/mock/referentiel-territoire';
 import { 
   Search, 
   X, 
@@ -33,11 +45,50 @@ export default function TrackerPageEn() {
   const [selectedSector, setSelectedSector] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedProvince, setSelectedProvince] = useState<string>('all');
+  const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const enProjects = useMemo(() => getProjects('en'), []);
-  const stats = getProjectStats();
-  const keyIndicators = useMemo(() => getKeyIndicators('en'), []);
+  const [enProjects, setEnProjects] = useState<Project[]>(() => getProjects('en'));
+  const [stats, setStats] = useState(() => getProjectStats());
+  const [keyIndicators, setKeyIndicators] = useState<Indicator[]>(() => getKeyIndicators('en'));
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const [projRes, statsRes, indRes] = await Promise.allSettled([
+          trackerApi.listProjects({ limit: 100 }),
+          trackerApi.getStats(),
+          barometreApi.listIndicators(),
+        ]);
+
+        if (!isMounted) return;
+
+        if (projRes.status === 'fulfilled' && projRes.value.projects && projRes.value.projects.length > 0) {
+          const mapped = projRes.value.projects.map(mapProjectDTOToProject).map(p => localizeProject(p, 'en'));
+          setEnProjects(mapped);
+        }
+
+        if (statsRes.status === 'fulfilled' && statsRes.value) {
+          setStats({
+            total: statsRes.value.total_projects,
+            byStatus: statsRes.value.by_status as any,
+          });
+        }
+
+        if (indRes.status === 'fulfilled' && indRes.value && indRes.value.length > 0) {
+          const mappedInds = indRes.value.map(mapIndicatorDTOToIndicator).map(i => localizeIndicator(i, 'en'));
+          const filtered = mappedInds.filter(i => ['PIB-CROISSANCE', 'ELEC-CAPACITE', 'OR-PRODUCTION', 'PAUVRETE'].includes(i.code));
+          if (filtered.length > 0) {
+            setKeyIndicators(filtered);
+          }
+        }
+      } catch (e) {
+        console.error('Error synchronizing English Tracker API:', e);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, []);
 
   const sectors = useMemo(() => Array.from(new Set(enProjects.map(p => p.sector))), [enProjects]);
   const regions = useMemo(() => Array.from(new Set(enProjects.map(p => p.region))), [enProjects]);
@@ -46,8 +97,15 @@ export default function TrackerPageEn() {
     if (selectedRegion !== 'all') {
       return getProvincesByRegion(selectedRegion);
     }
-    return ALL_PROVINCES;
+    return BURKINA_PROVINCES_47;
   }, [selectedRegion]);
+
+  const availableCommunes = useMemo(() => {
+    return getCommunesByCondition(
+      selectedProvince !== 'all' ? selectedProvince : undefined,
+      selectedRegion !== 'all' ? selectedRegion : undefined
+    );
+  }, [selectedProvince, selectedRegion]);
 
   const filteredProjects = useMemo(() => {
     return enProjects.filter(p => {
@@ -66,11 +124,18 @@ export default function TrackerPageEn() {
       if (selectedProvince !== 'all' && p.province !== selectedProvince) {
         return false;
       }
+      if (selectedCommune !== 'all') {
+        const pDesc = (p.description || '').toLowerCase();
+        const cLower = selectedCommune.toLowerCase();
+        if (!pDesc.includes(cLower)) {
+          return false;
+        }
+      }
       return true;
     });
-  }, [enProjects, search, selectedStatus, selectedSector, selectedRegion, selectedProvince]);
+  }, [enProjects, search, selectedStatus, selectedSector, selectedRegion, selectedProvince, selectedCommune]);
 
-  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all';
+  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all' || selectedCommune !== 'all';
 
   const resetFilters = () => {
     setSearch('');
@@ -78,6 +143,7 @@ export default function TrackerPageEn() {
     setSelectedSector('all');
     setSelectedRegion('all');
     setSelectedProvince('all');
+    setSelectedCommune('all');
   };
 
   return (
@@ -223,7 +289,7 @@ export default function TrackerPageEn() {
               </div>
 
               {/* Dropdown Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3">
                 {/* Sector */}
                 <div>
                   <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
@@ -249,13 +315,15 @@ export default function TrackerPageEn() {
                   <select
                     value={selectedRegion}
                     onChange={(e) => {
-                      setSelectedRegion(e.target.value);
+                      const val = e.target.value;
+                      setSelectedRegion(val);
                       setSelectedProvince('all');
+                      setSelectedCommune('all');
                     }}
                     className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
                   >
-                    <option value="all">All regions ({regions.length})</option>
-                    {regions.map(reg => (
+                    <option value="all">All 17 regions</option>
+                    {BURKINA_REGIONS_17.map(reg => (
                       <option key={reg} value={reg}>{reg}</option>
                     ))}
                   </select>
@@ -268,12 +336,49 @@ export default function TrackerPageEn() {
                   </label>
                   <select
                     value={selectedProvince}
-                    onChange={(e) => setSelectedProvince(e.target.value)}
-                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSelectedProvince(val);
+                      setSelectedCommune('all');
+                      if (val !== 'all') {
+                        const parent = getRegionByProvinceName(val);
+                        if (parent && selectedRegion === 'all') {
+                          setSelectedRegion(parent);
+                        }
+                      }
+                    }}
+                    className={`w-full p-2 border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
+                      selectedRegion !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
+                    }`}
                   >
-                    <option value="all">All provinces ({availableProvinces.length})</option>
+                    <option value="all">
+                      {selectedRegion !== 'all' ? `Provinces (${availableProvinces.length})` : `All 47 provinces`}
+                    </option>
                     {availableProvinces.map(prov => (
                       <option key={prov} value={prov}>{prov}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Commune / Town */}
+                <div>
+                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
+                    Town / Commune
+                  </label>
+                  <select
+                    value={selectedCommune}
+                    onChange={(e) => setSelectedCommune(e.target.value)}
+                    className={`w-full p-2 border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
+                      selectedProvince !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
+                    }`}
+                  >
+                    <option value="all">
+                      {selectedProvince !== 'all' ? `Towns (${availableCommunes.length})` : `All 351 communes`}
+                    </option>
+                    {availableCommunes.map((c, idx) => (
+                      <option key={`en-commune-${c}-${idx}`} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                 </div>

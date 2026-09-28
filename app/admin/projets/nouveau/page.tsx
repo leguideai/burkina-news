@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Project } from '@/data/types';
+import { trackerApi } from '@/lib/api/tracker';
 import { useToast } from '@/components/admin/Toast';
 import ProjectEditorForm from '@/components/admin/ProjectEditorForm';
 
@@ -16,24 +17,32 @@ export default function NewProjectPage() {
       return;
     }
 
-    const payload: Project = {
-      ...(formData as Project),
-      statusHistory: formData.statusHistory || [],
-      sources: formData.sources || [],
-      linkedArticleIds: formData.linkedArticleIds || [],
-      lastVerifiedAt: new Date().toISOString(),
-    };
-
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create_project', payload })
+      await trackerApi.adminCreateProject({
+        title: formData.title || '',
+        title_en: formData.titleEn,
+        description: formData.description || '',
+        description_en: formData.descriptionEn,
+        category: formData.category || 'chantiers',
+        region: formData.region || 'Centre (Ouagadougou)',
+        province: formData.province,
+        sector: formData.sector || 'Énergie',
+        current_status: (formData.currentStatus || 'annonce') as any,
+        pnd_program: formData.pndProgram,
+        reliability: formData.reliability || 'A',
+        amount: formData.amount,
+        currency: formData.currency || 'FCFA',
+        capacity: formData.capacity,
+        image: formData.image,
+        linked_indicator_codes: formData.linkedIndicatorCodes,
+        linked_article_ids: formData.linkedArticleIds,
+        actors: (formData.actors || []).map((a) => ({ role: a.role, role_en: a.roleEn, name: a.name })),
+        sources: (formData.sources || []).map((s) => ({ title: s.title, url: s.url, date: s.date, institution: s.institution })),
+        initial_source: formData.sources?.[0]?.title || 'Enregistrement initial Desk Tracker',
+        initial_note: 'Création initiale du chantier',
       });
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur inconnue.');
 
-      success('Chantier créé', `"${payload.title}" a été enregistré.`);
+      success('Chantier créé', `"${formData.title}" a été enregistré.`);
       router.push('/admin/projets');
     } catch (err: any) {
       error('Échec de la sauvegarde', err.message);

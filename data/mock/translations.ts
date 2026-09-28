@@ -8,10 +8,10 @@ export interface NavCategory {
 
 export const NAV_CATEGORIES: NavCategory[] = [
   { code: 'economie', labelFr: 'Économie', labelEn: 'Economy', hrefFr: '/fr/economie', hrefEn: '/en/economie' },
-  { code: 'securite', labelFr: 'Sécurité', labelEn: 'Security', hrefFr: '/fr/securite', hrefEn: '/en/securite' },
   { code: 'chantiers', labelFr: 'Chantiers', labelEn: 'Infrastructure', hrefFr: '/fr/chantiers', hrefEn: '/en/chantiers' },
   { code: 'agriculture', labelFr: 'Agriculture', labelEn: 'Agriculture', hrefFr: '/fr/agriculture', hrefEn: '/en/agriculture' },
   { code: 'societe', labelFr: 'Société', labelEn: 'Society', hrefFr: '/fr/societe', hrefEn: '/en/societe' },
+  { code: 'securite', labelFr: 'Sécurité', labelEn: 'Security', hrefFr: '/fr/securite', hrefEn: '/en/securite' },
   { code: 'histoire', labelFr: 'Histoire', labelEn: 'History', hrefFr: '/fr/histoire', hrefEn: '/en/histoire' },
 ];
 

@@ -16,7 +16,11 @@ import {
   Activity,
 } from 'lucide-react';
 import { Project, ProjectStatus, PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, ProjectActor, ProjectSource, ProjectStatusEntry } from '@/data/types';
-import { ALL_PROVINCES, getProvincesByRegion } from '@/data/mock/referentiel';
+import { 
+  BURKINA_REGIONS_17, 
+  BURKINA_PROVINCES_47, 
+  getProvincesByRegion 
+} from '@/data/mock/referentiel-territoire';
 import { indicators } from '@/data/mock/indicators';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
@@ -46,19 +50,7 @@ const SECTORS = [
 ];
 
 const REGIONS = [
-  'Centre (Ouagadougou)',
-  'Hauts-Bassins (Bobo-Dioulasso)',
-  'Boucle du Mouhoun',
-  'Cascades',
-  'Centre-Est',
-  'Centre-Nord',
-  'Centre-Ouest',
-  'Centre-Sud',
-  'Est',
-  'Nord',
-  'Plateau-Central',
-  'Sahel',
-  'Sud-Ouest',
+  ...BURKINA_REGIONS_17,
   'National (Multi-régions)'
 ];
 
@@ -72,7 +64,7 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
       description: '',
       descriptionEn: '',
       sector: 'Énergie',
-      region: 'Centre (Ouagadougou)',
+      region: 'Kadiogo',
       province: 'Kadiogo',
       pndProgram: '',
       reliability: 'A',
@@ -92,12 +84,12 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
     const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
     const [isSaving, setIsSaving] = useState(false);
 
-    const availableProvinces = useMemo(() => {
+    const availableProvinces: string[] = useMemo(() => {
       if (formData.region && formData.region !== 'National (Multi-régions)') {
         const list = getProvincesByRegion(formData.region);
-        return list.length > 0 ? list : ALL_PROVINCES;
+        return list.length > 0 ? list : BURKINA_PROVINCES_47;
       }
-      return ALL_PROVINCES;
+      return BURKINA_PROVINCES_47;
     }, [formData.region]);
 
     const { registerEditor, updateEditorData } = useMicum();

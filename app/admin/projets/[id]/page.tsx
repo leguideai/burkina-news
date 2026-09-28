@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Project } from '@/data/types';
+import { trackerApi } from '@/lib/api/tracker';
+import { mapProjectDTOToProject } from '@/lib/api/mappers';
 import { useToast } from '@/components/admin/Toast';
 import ProjectEditorForm from '@/components/admin/ProjectEditorForm';
 import { Loader2 } from 'lucide-react';
@@ -19,18 +21,37 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/data');
-        if (!res.ok) throw new Error('Impossible de charger les données.');
-        const data = await res.json();
-        const found = (data.projects || []).find((p: Project) => p.id === id);
+        const { projects: dtos } = await trackerApi.listProjects({ limit: 100 });
+        const all = dtos.map(mapProjectDTOToProject);
+        const found = all.find((p: Project) => p.id === id || p.slug === id);
         if (found) {
           setProject(found);
         } else {
-          setNotFound(true);
+          const fallback = await fetch('/api/admin/data');
+          if (fallback.ok) {
+            const data = await fallback.json();
+            const f = (data.projects || []).find((p: Project) => p.id === id || p.slug === id);
+            if (f) setProject(f);
+            else setNotFound(true);
+          } else {
+            setNotFound(true);
+          }
         }
       } catch (err: any) {
-        error('Erreur', err.message);
-        setNotFound(true);
+        try {
+          const fallback = await fetch('/api/admin/data');
+          if (fallback.ok) {
+            const data = await fallback.json();
+            const f = (data.projects || []).find((p: Project) => p.id === id || p.slug === id);
+            if (f) setProject(f);
+            else setNotFound(true);
+          } else {
+            setNotFound(true);
+          }
+        } catch {
+          error('Erreur', err.message);
+          setNotFound(true);
+        }
       } finally {
         setLoading(false);
       }
@@ -43,22 +64,29 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       return;
     }
 
-    const payload: Project = {
-      ...(formData as Project),
-      id,
-      lastVerifiedAt: new Date().toISOString(),
-    };
-
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_project', payload })
+      await trackerApi.adminUpdateProject(id, {
+        title: formData.title,
+        title_en: formData.titleEn,
+        description: formData.description,
+        description_en: formData.descriptionEn,
+        category: formData.category,
+        region: formData.region,
+        province: formData.province,
+        sector: formData.sector,
+        pnd_program: formData.pndProgram,
+        reliability: formData.reliability,
+        amount: formData.amount,
+        currency: formData.currency,
+        capacity: formData.capacity,
+        image: formData.image,
+        linked_indicator_codes: formData.linkedIndicatorCodes,
+        linked_article_ids: formData.linkedArticleIds,
+        actors: (formData.actors || []).map((a) => ({ role: a.role, role_en: a.roleEn, name: a.name })),
+        sources: (formData.sources || []).map((s) => ({ title: s.title, url: s.url, date: s.date, institution: s.institution })),
       });
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur inconnue.');
 
-      success('Chantier mis à jour', `"${payload.title}" a été enregistré.`);
+      success('Chantier mis à jour', `"${formData.title}" a été enregistré.`);
       router.push('/admin/projets');
     } catch (err: any) {
       error('Échec de la sauvegarde', err.message);

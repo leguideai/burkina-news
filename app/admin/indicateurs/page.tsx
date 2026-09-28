@@ -22,6 +22,8 @@ import {
   BarChart2
 } from 'lucide-react';
 import { Indicator, CategoryCode } from '@/data/types';
+import { barometreApi } from '@/lib/api/barometre';
+import { mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
@@ -60,12 +62,26 @@ export default function AdminIndicatorsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger les indicateurs.');
-      const data = await res.json();
-      setIndicators(data.indicators || []);
+      const dtos = await barometreApi.listIndicators();
+      if (dtos && dtos.length > 0) {
+        setIndicators(dtos.map(mapIndicatorDTOToIndicator));
+      } else {
+        const fallback = await fetch('/api/admin/data');
+        if (fallback.ok) {
+          const data = await fallback.json();
+          setIndicators(data.indicators || []);
+        }
+      }
     } catch (err: any) {
-      error('Erreur', err.message);
+      try {
+        const fallback = await fetch('/api/admin/data');
+        if (fallback.ok) {
+          const data = await fallback.json();
+          setIndicators(data.indicators || []);
+        }
+      } catch {
+        error('Erreur', err.message);
+      }
     } finally {
       setTimeout(() => setLoading(false), 300);
     }
@@ -130,13 +146,7 @@ export default function AdminIndicatorsPage() {
   // Delete Indicator
   const handleDeleteIndicator = async (ind: Indicator) => {
     try {
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete_indicator', payload: { id: ind.id, code: ind.code } })
-      });
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur de suppression.');
+      await barometreApi.adminDeleteIndicator(ind.id);
 
       success('Indicateur supprimé', `L'indicateur ${ind.code} a été retiré du Baromètre.`);
       setIsDeletingIndicator(null);
@@ -196,24 +206,58 @@ export default function AdminIndicatorsPage() {
     }
 
     try {
-      const action = isEditing ? 'update_indicator' : 'create_indicator';
-      const payload = {
-        ...formData,
-        code: formData.code?.trim().toUpperCase()
-      };
-
-      const res = await fetch('/api/admin/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, payload })
-      });
-
-      const result = await res.json();
-      if (!res.ok || result.error) throw new Error(result.error || 'Erreur inconnue.');
+      if (isEditing && selectedIndicator) {
+        await barometreApi.adminUpdateIndicator(selectedIndicator.id, {
+          name: formData.name,
+          name_en: formData.nameEn,
+          definition: formData.definition,
+          definition_en: formData.definitionEn,
+          unit: formData.unit,
+          baseline_value: formData.baselineValue,
+          baseline_year: formData.baselineYear,
+          target_2028: formData.target2028,
+          target_2030: formData.target2030,
+          current_value: formData.currentValue,
+          current_year: formData.currentYear || new Date().getFullYear(),
+          trend: formData.trend,
+          source: formData.source,
+          category: formData.category,
+          program: formData.program,
+          program_en: formData.programEn,
+          pillar: formData.pillar,
+          pillar_en: formData.pillarEn,
+          image: formData.image,
+          linked_project_slugs: formData.linkedProjectSlugs,
+        });
+      } else {
+        await barometreApi.adminCreateIndicator({
+          code: formData.code?.trim().toUpperCase() || '',
+          name: formData.name || '',
+          name_en: formData.nameEn,
+          definition: formData.definition || '',
+          definition_en: formData.definitionEn,
+          unit: formData.unit || '%',
+          baseline_value: formData.baselineValue || 0,
+          baseline_year: formData.baselineYear || 2024,
+          target_2028: formData.target2028,
+          target_2030: formData.target2030,
+          current_value: formData.currentValue || 0,
+          current_year: formData.currentYear || new Date().getFullYear(),
+          trend: formData.trend || 'stable',
+          source: formData.source || 'Ministère',
+          category: formData.category || 'economie',
+          program: formData.program,
+          program_en: formData.programEn,
+          pillar: formData.pillar,
+          pillar_en: formData.pillarEn,
+          image: formData.image,
+          linked_project_slugs: formData.linkedProjectSlugs,
+        });
+      }
 
       success(
         isEditing ? 'Indicateur mis à jour' : 'Nouvel indicateur créé',
-        `La métrique "${formData.name}" (${payload.code}) a été enregistrée.`
+        `La métrique "${formData.name}" (${formData.code}) a été enregistrée.`
       );
       setIsModalOpen(false);
       loadData();

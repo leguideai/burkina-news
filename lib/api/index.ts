@@ -12,3 +12,5 @@ export * from './articles';
 export * from './fil';
 export * from './health';
 export * from './mappers';
+export * from './tracker';
+export * from './barometre';

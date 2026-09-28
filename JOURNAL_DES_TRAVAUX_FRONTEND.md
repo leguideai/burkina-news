@@ -436,7 +436,98 @@
 
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F6 à F10 synchronisées avec les semaines backend)*
+### 🏗️ Phase F6 : Intégration Tracker des Chantiers (6 Statuts stricts) & Baromètre RELANCE
+- **Date :** 21 Septembre 2026
+- **Objectif :** Connecter la cartographie des 60 chantiers d'infrastructure (les 6 statuts stricts de la direction, l'historique non-écrasé des PV, les acteurs, les budgets en FCFA) et le Baromètre RELANCE des indicateurs macroéconomiques du PND 2026-2030 aux endpoints réels de l'API Go et à PostgreSQL.
+- **Réalisations clés :**
+  - **Types & Contrats DTOs (`lib/api/types.ts`) :**
+    - Typage strict des 6 statuts officiels : `annonce`, `engage`, `en-construction`, `inaugure`, `operationnel`, `impact-mesure`.
+    - DTOs pour les chantiers : `ProjectDTO`, `ProjectStatsDTO`, `ProjectStatusHistoryDTO`, `ProjectActorDTO`, `ProjectSourceDTO`, `ProjectFilterParams`.
+    - DTOs pour le Baromètre : `IndicatorDTO`, `IndicatorDataPointDTO`, `IndicatorFilterParams`.
+    - DTOs de mutations administratives : `CreateProjectInput`, `UpdateProjectInput`, `ChangeProjectStatusInput`, `CreateIndicatorInput`, `UpdateIndicatorInput`, `CreateDataPointInput`.
+  - **Services Clients API & Adaptateurs (`lib/api/tracker.ts`, `lib/api/barometre.ts`, `lib/api/mappers.ts`, `lib/api/index.ts`) :**
+    - `trackerApi` : implémentation complète des méthodes de consultation (`listProjects`, `getProject`, `getStats`) et de gestion administrative (`adminCreateProject`, `adminUpdateProject`, `adminChangeProjectStatus`, `adminDeleteProject`).
+    - `barometreApi` : implémentation des méthodes publiques (`listIndicators`, `getIndicator`) et administratives (`adminCreateIndicator`, `adminUpdateIndicator`, `adminAddDataPoint`, `adminDeleteIndicator`).
+    - Fonctions d'adaptation universelles `mapProjectDTOToProject` et `mapIndicatorDTOToIndicator` garantissant la compatibilité ascendante et le bilinguisme (FR/EN) sur l'ensemble de l'interface utilisateur.
+  - **Espace d'Administration Back-Office (`/admin/projets` & `/admin/indicateurs`) :**
+    - `app/admin/projets/page.tsx` : affichage des chantiers réels de PostgreSQL avec leurs budgets FCFA et taux d'avancement, modale de changement de statut strict avec archivage obligatoire d'un PV contradictoire, et suppression protégée.
+    - `app/admin/projets/nouveau/page.tsx` : formulaire complet de création de chantier raccordé à `trackerApi.adminCreateProject`.
+    - `app/admin/projets/[id]/page.tsx` : formulaire d'édition de fiche documentaire raccordé à `trackerApi.adminUpdateProject`.
+    - `app/admin/indicateurs/page.tsx` : tableau de bord des indicateurs du Baromètre RELANCE avec création, mise à jour des cibles 2028/2030 et suppression via `barometreApi`.
+  - **Espace Visiteur Public (FR & EN) :**
+    - `app/fr/tracker/page.tsx` & `app/en/tracker/page.tsx` : raccordement dynamique des statistiques globales (`trackerApi.getStats`), des chantiers réels (`trackerApi.listProjects`) et du Baromètre RELANCE (`barometreApi.listIndicators`) avec filtrage interactif.
+    - `app/fr/tracker/projets/[slug]/page.tsx` & `app/en/tracker/projets/[slug]/page.tsx` : fiche détaillée de chantier avec historique des PV et documents officiels (`trackerApi.getProject`).
+    - `app/fr/tracker/indicateurs/page.tsx` & `app/en/tracker/indicateurs/page.tsx` : catalogue complet des indicateurs macroéconomiques (`barometreApi.listIndicators`).
+    - `app/fr/tracker/indicateurs/[slug]/page.tsx` & `app/en/tracker/indicateurs/[slug]/page.tsx` : fiche détaillée d'un indicateur avec historique annuel et projets liés (`barometreApi.getIndicator`).
+- **Vérifications :**
+  - Validation du typage strict TypeScript et des contrats d'interfaces DTO.
+  - Tests unitaires et d'intégration backend : `go test -v ./...` (100% PASS).
+  - Compilation binaire Go : `go build -v -o /dev/null ./cmd/api` et `go build -v -o /dev/null ./cmd/seed` (code 0).
+  - Documentation Swagger OpenAPI 3.0 régénérée avec succès.
+### 🗺️ Phase F6.1 : Découpage Territorial Officiel (17 Régions, 47 Provinces, 351 Communes), Recherche Conditionnelle & Ordre Éditorial Alfred
+- **Date :** 28 Septembre 2026
+- **Objectif :** Aligner l'architecture sur la doctrine éditoriale d'Alfred (Directeur éditorial) et le décret officiel portant réorganisation territoriale du Burkina Faso.
+- **Réalisations clés :**
+  - **Mega-Menu Horizontal Pleine Largeur (`components/layout/Header.tsx`) :**
+    - Menu déroulant pleine largeur (`w-full left-0 right-0`) avec grille responsive (`grid-cols-2 md:grid-cols-3 lg:grid-cols-4`).
+    - Épuration visuelle : affichage exclusif du nom des sous-rubriques (suppression des descriptions verbeuses) avec flèche directionnelle discrète et badge de comptage.
+  - **Ordre Éditorial Officiel des 6 Rubriques :**
+    - Ordre strict : `ÉCONOMIE` (1), `CHANTIERS` (2), `AGRICULTURE` (3), `SOCIÉTÉ` (4), `SÉCURITÉ` (5), `HISTOIRE` (6).
+    - Alignement dans `data/mock/translations.ts`, `data/mock/categories.ts`, et seeding PostgreSQL (`SeedDefaultCategories`).
+    - Justification éditoriale Alfred : affirmation de la ligne "Résultats mesurables et vérifiables en priorité", reléguant la sécurité polémique en 5e position.
+  - **Référentiel Territorial Dynamique & Recherche Conditionnelle en Cascade :**
+    - Intégration complète des données officielles : 17 régions, 47 provinces, 351 communes/départements dans `data/mock/referentiel-territoire.ts`.
+    - Client API typé `lib/api/territories.ts` câblé sur `/api/v1/territories` avec fallback autonome et types `TerritoryDTO` / `TerritoryFilter` dans `lib/api/types.ts`.
+    - Composant de filtrage `components/tracker/FilterBar.tsx` avec triple cascade : sélection Région -> filtre Provinces -> sélection Province -> filtre Communes/Villes, avec réinitialisation automatique cohérente.
+    - Synchronisation des pages Tracker publiques `app/fr/tracker/page.tsx` et `app/en/tracker/page.tsx` avec les 17 régions et la recherche affinée par commune.
+    - Mise à jour du formulaire back-office `components/admin/ProjectEditorForm.tsx` pour l'assignation territoriale officielle des nouveaux chantiers.
+- **Vérifications :**
+  - Typage TypeScript : `pnpm exec tsc --noEmit` -> 0 erreur.
+  - Tests unitaires et intégration Go : `go test -v ./...` -> 100% PASS.
+  - Compilation binaire Go : `go build -v -o /dev/null ./cmd/api` et `./cmd/seed` -> 0 erreur.
+- **État :** Validé et terminé.
+
+---
+
+### 🗺️ Phase F6.2 : Harmonisation Intégrale du Corpus Éditorial (Articles, Chantiers, Dépêches) & Résolution des Clés React Homonymes
+- **Date :** 28 Septembre 2026
+- **Objectif :** Résoudre les avertissements de duplication de clés React causés par les communes homonymes (`Boussouma` et `Namissiguima`) et déployer le découpage officiel (17 régions, 47 provinces, 351 communes) à l'ensemble du corpus éditorial : 10 chantiers majeurs, 40 articles d'investigation et dépêches du fil d'actualités.
+- **Réalisations clés :**
+  - **Résolution Définitive des Clés Dupliquées React :**
+    - Identification des homonymies territoriales réelles du Burkina Faso :
+      - *Boussouma* : commune dans le Boulgou (Région Nakambé) ET dans le Sandbondtenga (Région Kuilsé).
+      - *Namissiguima* : commune dans le Yatenga (Région Yaadga) ET dans le Sandbondtenga (Région Kuilsé).
+    - Déduplication par ensemble `Set` dans `getCommunesByCondition` (`data/mock/referentiel-territoire.ts`).
+    - Sécurisation des clés React avec suffixe d'index unique (`key={...-${c}-${idx}}`) dans `components/tracker/FilterBar.tsx`, `app/fr/tracker/page.tsx` et `app/en/tracker/page.tsx`.
+  - **Harmonisation des 10 Chantiers Majeurs (`data/mock/projects.ts`) :**
+    - Koudougou (`proj-01`) : Région Nando, Province Boulkiemdé.
+    - Kaya (`proj-02`) : Région Kuilsé, Province Sandbondtenga.
+    - Bobo-Dioulasso (`proj-03`) : Région Guiriko, Province Houet.
+    - Bassiéri (`proj-04`) : Région Oubri, Province Kourwéogo.
+    - Dédougou (`proj-05`) : Région Bankui, Province Mouhoun.
+    - Banfora (`proj-07`) : Région Tannounyan, Province Comoé.
+    - Kiéré (`proj-08`) : Région Guiriko, Province Tuy.
+    - Zina (`proj-09`) : Région Sourou, Province Sourou.
+    - Semences certifiées (`proj-10`) : Déploiement étendu aux 17 régions.
+  - **Harmonisation des Articles d'Investigation (`data/mock/articles.ts`) :**
+    - Article 19 (FMDL) : Remplacement de la province du Sanmatenga par Sandbondtenga (FR & EN).
+    - Article 23 (PDI) : Transition de l'ancienne Boucle du Mouhoun vers la région de Bankui (FR & EN, titre, slug et tags).
+    - Article 27 (RN11) : Désenclavement routier entre les régions du Djôrô et du Guiriko (au lieu de Sud-Ouest et Hauts-Bassins).
+    - Article 15 (Samendéni) : Impact agricole sur les régions du Guiriko et de Bankui.
+    - Article 35 (Pastoralisme) : Pistes transhumance dans les régions du Liptako et du Goulmou.
+    - Article 39 / 11 (Santé Dori) : CSPS de Dori rattaché à la région du Liptako (FR & EN).
+  - **Harmonisation des Dépêches (`data/mock/briefs.ts`) :**
+    - Dépêches 60s rattachées aux régions du Kuilsé et de Bankui.
+- **Vérifications :**
+  - Validation TypeScript sans erreur : `pnpm exec tsc --noEmit` (code 0).
+  - Zéro avertissement console React sur les homonymies de communes.
+- **État :** Validé et terminé.
+
+---
+
+*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F7 à F10 synchronisées avec les semaines backend)*
+
+
 
 
 
