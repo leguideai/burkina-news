@@ -33,7 +33,13 @@ import {
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
-import { ALL_PROVINCES, getProvincesByRegion } from '@/data/mock/referentiel';
+import { 
+  BURKINA_REGIONS_17, 
+  BURKINA_PROVINCES_47, 
+  getProvincesByRegion, 
+  getCommunesByCondition,
+  getRegionByProvinceName,
+} from '@/data/mock/referentiel-territoire';
 
 export default function TrackerPage() {
   const [search, setSearch] = useState('');
@@ -41,6 +47,7 @@ export default function TrackerPage() {
   const [selectedSector, setSelectedSector] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedProvince, setSelectedProvince] = useState<string>('all');
+  const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   const [projects, setProjects] = useState<Project[]>(() => getProjects('fr'));
@@ -91,8 +98,15 @@ export default function TrackerPage() {
     if (selectedRegion !== 'all') {
       return getProvincesByRegion(selectedRegion);
     }
-    return ALL_PROVINCES;
+    return BURKINA_PROVINCES_47;
   }, [selectedRegion]);
+
+  const availableCommunes = useMemo(() => {
+    return getCommunesByCondition(
+      selectedProvince !== 'all' ? selectedProvince : undefined,
+      selectedRegion !== 'all' ? selectedRegion : undefined
+    );
+  }, [selectedProvince, selectedRegion]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
@@ -111,11 +125,18 @@ export default function TrackerPage() {
       if (selectedProvince !== 'all' && p.province !== selectedProvince) {
         return false;
       }
+      if (selectedCommune !== 'all') {
+        const pDesc = (p.description || '').toLowerCase();
+        const cLower = selectedCommune.toLowerCase();
+        if (!pDesc.includes(cLower)) {
+          return false;
+        }
+      }
       return true;
     });
-  }, [projects, search, selectedStatus, selectedSector, selectedRegion, selectedProvince]);
+  }, [projects, search, selectedStatus, selectedSector, selectedRegion, selectedProvince, selectedCommune]);
 
-  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all';
+  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all' || selectedCommune !== 'all';
 
   const resetFilters = () => {
     setSearch('');
@@ -123,6 +144,7 @@ export default function TrackerPage() {
     setSelectedSector('all');
     setSelectedRegion('all');
     setSelectedProvince('all');
+    setSelectedCommune('all');
   };
 
   return (
@@ -231,22 +253,55 @@ export default function TrackerPage() {
             <select 
               value={selectedRegion}
               onChange={(e) => {
-                setSelectedRegion(e.target.value);
+                const val = e.target.value;
+                setSelectedRegion(val);
                 setSelectedProvince('all');
+                setSelectedCommune('all');
               }}
               className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
             >
-              <option value="all">Toutes les régions (13)</option>
-              {regions.map(r => <option key={r} value={r}>{r}</option>)}
+              <option value="all">Toutes les 17 régions</option>
+              {BURKINA_REGIONS_17.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
 
             <select 
               value={selectedProvince}
-              onChange={(e) => setSelectedProvince(e.target.value)}
-              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedProvince(val);
+                setSelectedCommune('all');
+                if (val !== 'all') {
+                  const parentRegion = getRegionByProvinceName(val);
+                  if (parentRegion && selectedRegion === 'all') {
+                    setSelectedRegion(parentRegion);
+                  }
+                }
+              }}
+              className={`w-full lg:w-auto px-2.5 py-2 sm:py-1.5 border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
+                selectedRegion !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
+              }`}
             >
-              <option value="all">Toutes les provinces ({availableProvinces.length})</option>
+              <option value="all">
+                {selectedRegion !== 'all' ? `Provinces de ${selectedRegion} (${availableProvinces.length})` : `Toutes les 47 provinces`}
+              </option>
               {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+
+            <select 
+              value={selectedCommune}
+              onChange={(e) => setSelectedCommune(e.target.value)}
+              className={`w-full lg:w-auto px-2.5 py-2 sm:py-1.5 border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
+                selectedProvince !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
+              }`}
+            >
+              <option value="all">
+                {selectedProvince !== 'all' ? `Villes/Communes (${availableCommunes.length})` : `Toutes les 351 communes`}
+              </option>
+              {availableCommunes.map(c => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
 
             <select 

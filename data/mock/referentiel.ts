@@ -228,8 +228,28 @@ export function isSubCategoryActive(
 }
 
 // =====================================================================
-// 2. RÉFÉRENTIEL DES 45 PROVINCES PAR RÉGION (Burkina Faso)
+// 2. RÉFÉRENTIEL TERRITORIAL OFFICIEL (17 Régions, 47 Provinces, 351 Communes)
 // =====================================================================
+
+export {
+  BURKINA_REGIONS_17,
+  BURKINA_PROVINCES_47,
+  BURKINA_COMMUNES_351,
+  REGION_PROVINCES_MAP,
+  PROVINCE_COMMUNES_MAP,
+  getProvincesByRegion,
+  getCommunesByCondition,
+  getRegionByProvinceName,
+  getCommuneDetails,
+} from './referentiel-territoire';
+
+import {
+  BURKINA_REGIONS_17,
+  BURKINA_PROVINCES_47,
+  REGION_PROVINCES_MAP,
+  getProvincesByRegion as getProvincesByRegionOfficial,
+  getRegionByProvinceName as getRegionByProvinceOfficial,
+} from './referentiel-territoire';
 
 export interface RegionReferentiel {
   region: string;
@@ -238,98 +258,24 @@ export interface RegionReferentiel {
   provinces: string[];
 }
 
-export const BURKINA_REGIONS: RegionReferentiel[] = [
-  {
-    region: 'Boucle du Mouhoun',
-    regionEn: 'Boucle du Mouhoun',
-    chefLieu: 'Dédougou',
-    provinces: ['Balé', 'Banwa', 'Kossi', 'Mouhoun', 'Nayala', 'Sourou'],
-  },
-  {
-    region: 'Cascades',
-    regionEn: 'Cascades',
-    chefLieu: 'Banfora',
-    provinces: ['Comoé', 'Léraba'],
-  },
-  {
-    region: 'Centre',
-    regionEn: 'Centre (Ouagadougou)',
-    chefLieu: 'Ouagadougou',
-    provinces: ['Kadiogo'],
-  },
-  {
-    region: 'Centre-Est',
-    regionEn: 'Centre-East',
-    chefLieu: 'Tenkodogo',
-    provinces: ['Boulgou', 'Koulpélogo', 'Kouritenga'],
-  },
-  {
-    region: 'Centre-Nord',
-    regionEn: 'Centre-North',
-    chefLieu: 'Kaya',
-    provinces: ['Bam', 'Namentenga', 'Sanmatenga'],
-  },
-  {
-    region: 'Centre-Ouest',
-    regionEn: 'Centre-West',
-    chefLieu: 'Koudougou',
-    provinces: ['Boulkiemdé', 'Sanguié', 'Sissili', 'Ziro'],
-  },
-  {
-    region: 'Centre-Sud',
-    regionEn: 'Centre-South',
-    chefLieu: 'Manga',
-    provinces: ['Bazèga', 'Nahouri', 'Zoundwéogo'],
-  },
-  {
-    region: 'Est',
-    regionEn: 'East',
-    chefLieu: 'Fada N\'Gourma',
-    provinces: ['Gnagna', 'Gourma', 'Komondjari', 'Kompienga', 'Tapoa'],
-  },
-  {
-    region: 'Hauts-Bassins',
-    regionEn: 'Hauts-Bassins',
-    chefLieu: 'Bobo-Dioulasso',
-    provinces: ['Houet', 'Kénédougou', 'Tuy'],
-  },
-  {
-    region: 'Nord',
-    regionEn: 'North',
-    chefLieu: 'Ouahigouya',
-    provinces: ['Loroum', 'Passoré', 'Yatenga', 'Zondoma'],
-  },
-  {
-    region: 'Plateau-Central',
-    regionEn: 'Plateau-Central',
-    chefLieu: 'Ziniaré',
-    provinces: ['Ganzourgou', 'Kourwéogo', 'Oubritenga'],
-  },
-  {
-    region: 'Sahel',
-    regionEn: 'Sahel',
-    chefLieu: 'Dori',
-    provinces: ['Oudalan', 'Séno', 'Soum', 'Yagha'],
-  },
-  {
-    region: 'Sud-Ouest',
-    regionEn: 'South-West',
-    chefLieu: 'Gaoua',
-    provinces: ['Bougouriba', 'Ioba', 'Noumbiel', 'Poni'],
-  },
-];
+export const BURKINA_REGIONS: RegionReferentiel[] = BURKINA_REGIONS_17.map((r) => ({
+  region: r,
+  regionEn: r,
+  chefLieu: REGION_PROVINCES_MAP[r]?.[0] || r,
+  provinces: REGION_PROVINCES_MAP[r] || [],
+}));
 
-export const ALL_PROVINCES: string[] = BURKINA_REGIONS.flatMap(r => r.provinces).sort((a, b) => a.localeCompare('fr'));
+export const ALL_PROVINCES: string[] = BURKINA_PROVINCES_47;
 
-export function getProvincesByRegion(regionName: string): string[] {
-  const match = BURKINA_REGIONS.find(r => r.region.toLowerCase() === regionName.toLowerCase());
-  return match ? match.provinces : ALL_PROVINCES;
+export function getProvincesByRegionLegacy(regionName: string): string[] {
+  const res = getProvincesByRegionOfficial(regionName);
+  return res.length > 0 ? res : ALL_PROVINCES;
 }
 
 export function getRegionByProvince(provinceName: string): string | undefined {
-  const match = BURKINA_REGIONS.find(r => r.provinces.includes(provinceName));
-  return match?.region;
+  return getRegionByProvinceOfficial(provinceName);
 }
+
 
 // =====================================================================
 // 3. LES 4 PRODUITS DU JOURNAL & LEURS SOUS-MENUS OFFICIELS

@@ -464,7 +464,28 @@
   - Tests unitaires et d'intégration backend : `go test -v ./...` (100% PASS).
   - Compilation binaire Go : `go build -v -o /dev/null ./cmd/api` et `go build -v -o /dev/null ./cmd/seed` (code 0).
   - Documentation Swagger OpenAPI 3.0 régénérée avec succès.
-- **État :** Validé et terminé. Phase F6 100% achevée.
+### 🗺️ Phase F6.1 : Découpage Territorial Officiel (17 Régions, 47 Provinces, 351 Communes), Recherche Conditionnelle & Ordre Éditorial Alfred
+- **Date :** 28 Septembre 2026
+- **Objectif :** Aligner l'architecture sur la doctrine éditoriale d'Alfred (Directeur éditorial) et le décret officiel portant réorganisation territoriale du Burkina Faso.
+- **Réalisations clés :**
+  - **Mega-Menu Horizontal Pleine Largeur (`components/layout/Header.tsx`) :**
+    - Menu déroulant pleine largeur (`w-full left-0 right-0`) avec grille responsive (`grid-cols-2 md:grid-cols-3 lg:grid-cols-4`).
+    - Épuration visuelle : affichage exclusif du nom des sous-rubriques (suppression des descriptions verbeuses) avec flèche directionnelle discrète et badge de comptage.
+  - **Ordre Éditorial Officiel des 6 Rubriques :**
+    - Ordre strict : `ÉCONOMIE` (1), `CHANTIERS` (2), `AGRICULTURE` (3), `SOCIÉTÉ` (4), `SÉCURITÉ` (5), `HISTOIRE` (6).
+    - Alignement dans `data/mock/translations.ts`, `data/mock/categories.ts`, et seeding PostgreSQL (`SeedDefaultCategories`).
+    - Justification éditoriale Alfred : affirmation de la ligne "Résultats mesurables et vérifiables en priorité", reléguant la sécurité polémique en 5e position.
+  - **Référentiel Territorial Dynamique & Recherche Conditionnelle en Cascade :**
+    - Intégration complète des données officielles : 17 régions, 47 provinces, 351 communes/départements dans `data/mock/referentiel-territoire.ts`.
+    - Client API typé `lib/api/territories.ts` câblé sur `/api/v1/territories` avec fallback autonome et types `TerritoryDTO` / `TerritoryFilter` dans `lib/api/types.ts`.
+    - Composant de filtrage `components/tracker/FilterBar.tsx` avec triple cascade : sélection Région -> filtre Provinces -> sélection Province -> filtre Communes/Villes, avec réinitialisation automatique cohérente.
+    - Synchronisation des pages Tracker publiques `app/fr/tracker/page.tsx` et `app/en/tracker/page.tsx` avec les 17 régions et la recherche affinée par commune.
+    - Mise à jour du formulaire back-office `components/admin/ProjectEditorForm.tsx` pour l'assignation territoriale officielle des nouveaux chantiers.
+- **Vérifications :**
+  - Typage TypeScript : `pnpm exec tsc --noEmit` -> 0 erreur.
+  - Tests unitaires et intégration Go : `go test -v ./...` -> 100% PASS.
+  - Compilation binaire Go : `go build -v -o /dev/null ./cmd/api` et `./cmd/seed` -> 0 erreur.
+- **État :** Validé et terminé.
 
 ---
 

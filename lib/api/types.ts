@@ -782,3 +782,24 @@ export interface UpdateIndicatorInput {
   linked_project_slugs?: string[];
 }
 
+// ─── Découpage Territorial & Référentiel Administratif ────────────────────
+export interface TerritoryDTO {
+  id: string;
+  code: string;
+  region: string;
+  province: string;
+  commune: string;
+  type: 'urbaine' | 'rurale' | string;
+  is_chef_lieu_prov: boolean;
+  is_chef_lieu_reg: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TerritoryFilter {
+  region?: string;
+  province?: string;
+  commune?: string;
+  search?: string;
+}
+

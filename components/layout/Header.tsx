@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper, ChevronDown } from 'lucide-react';
+import { Search, Menu, X, Globe, ArrowRight, BookOpen, SlidersHorizontal, Newspaper, ChevronDown, ChevronRight } from 'lucide-react';
 import { NAV_CATEGORIES, UI_STRINGS } from '@/data/mock/translations';
 import { JOURNAL_PRODUCTS } from '@/data/mock/referentiel';
 import { categories as ALL_CATEGORIES } from '@/data/mock/categories';
@@ -238,7 +238,7 @@ export default function Header() {
       </div>
 
       {/* 3. NAVIGATION BAR : Classic double border rules on Desktop */}
-      <nav className="hidden md:block border-t-2 border-b border-[#141414] bg-white">
+      <nav className="hidden md:block border-t-2 border-b border-[#141414] bg-white relative">
         <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
           
           <div className="flex items-center">
@@ -255,40 +255,63 @@ export default function Header() {
               const active = pathname.startsWith(cat.href);
               const catCode = cat.href.split('/').pop();
               const categoryData = activeCategoriesData.find(c => c.code === catCode);
+
               return (
-                <div key={cat.href} className="relative group">
+                <div key={cat.href} className="group">
                   <Link
                     href={cat.href}
                     className={`py-2.5 px-3.5 text-xs font-semibold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] flex items-center gap-1.5 ${
-                      active ? 'text-[#0b4627] bg-[#f4eee3] font-bold' : 'text-[#333333] hover:text-[#141414] hover:bg-neutral-50'
+                      active 
+                        ? 'text-[#0b4627] bg-[#f4eee3] font-bold' 
+                        : 'text-[#333333] hover:text-[#141414] hover:bg-neutral-50 group-hover:bg-[#faf8f5] group-hover:text-[#0b4627]'
                     }`}
                   >
                     <span>{cat.label}</span>
-                    <ChevronDown size={11} className="text-[#888888] group-hover:text-[#141414] group-hover:rotate-180 transition-transform" />
+                    <ChevronDown size={11} className="text-[#888888] group-hover:text-[#0b4627] group-hover:rotate-180 transition-transform duration-200" />
                   </Link>
 
-                  {/* Desktop Dropdown with sub-categories */}
+                  {/* Desktop Full-Width Mega Menu Dropdown */}
                   {categoryData && categoryData.subCategories && categoryData.subCategories.length > 0 && (
-                    <div className="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 absolute top-full left-0 z-50 min-w-[220px] bg-white border-2 border-[#141414] shadow-xl py-2">
-                      <div className="px-3 pb-1.5 mb-1 border-b border-[#e6dfd5] font-mono text-[10px] font-bold uppercase text-[#737373] tracking-wider">
-                        {isEn ? "Sub-rubrics" : "Sous-rubriques"}
-                      </div>
-                      {categoryData.subCategories.map((sub) => (
-                        <Link
-                          key={sub.code}
-                          href={`${cat.href}?sub=${sub.code}`}
-                          className="block px-3 py-1.5 text-xs font-serif text-[#333333] hover:bg-[#f4eee3] hover:text-[#0b4627] hover:font-bold transition-colors"
-                        >
-                          {isEn ? sub.nameEn : sub.nameFr}
-                        </Link>
-                      ))}
-                      <div className="mt-1 pt-1.5 px-3 border-t border-[#e6dfd5]">
-                        <Link
-                          href={cat.href}
-                          className="text-[11px] font-mono font-bold text-[#0b4627] hover:underline block"
-                        >
-                          {isEn ? "All investigations →" : "Toutes les enquêtes →"}
-                        </Link>
+                    <div 
+                      className="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform translate-y-1 group-hover:translate-y-0 absolute top-full left-0 right-0 w-full z-50 bg-white border-b-2 border-[#141414] shadow-2xl before:content-[''] before:absolute before:-top-3 before:left-0 before:right-0 before:h-3"
+                    >
+                      <div className="max-w-7xl mx-auto px-8 py-6">
+                        {/* Header bar */}
+                        <div className="flex items-center justify-between pb-3.5 mb-5 border-b border-[#e6dfd5]">
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#0b4627]" />
+                            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
+                              {isEn ? "Sub-rubrics" : "Sous-rubriques"} · <span className="text-[#0b4627]">{cat.label}</span>
+                            </span>
+                            <span className="text-[#d4cece]">·</span>
+                            <span className="text-[11px] font-mono text-[#888888]">
+                              {categoryData.subCategories.length} {isEn ? "sections" : "volets"}
+                            </span>
+                          </div>
+
+                          <Link
+                            href={cat.href}
+                            className="text-xs font-mono font-bold text-[#0b4627] hover:text-[#072e1a] hover:underline flex items-center gap-1.5 shrink-0"
+                          >
+                            <span>{isEn ? `All ${cat.label} investigations →` : `Toutes les enquêtes ${cat.label} →`}</span>
+                          </Link>
+                        </div>
+
+                        {/* Sub-rubric names in horizontal multi-column layout */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 lg:gap-x-14 gap-y-2.5">
+                          {categoryData.subCategories.map((sub) => (
+                            <Link
+                              key={sub.code}
+                              href={`${cat.href}?sub=${sub.code}`}
+                              className="group/item flex items-center justify-between py-2 text-[14px] font-medium text-[#222222] hover:text-[#0b4627] hover:bg-[#faf8f5] px-3 -mx-3 rounded-md transition-all duration-150"
+                            >
+                              <span className="group-hover/item:translate-x-1 transition-transform duration-150">
+                                {isEn ? sub.nameEn : sub.nameFr}
+                              </span>
+                              <ChevronRight size={14} className="text-[#0b4627] opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all shrink-0 ml-2" />
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
