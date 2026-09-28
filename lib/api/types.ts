@@ -803,3 +803,151 @@ export interface TerritoryFilter {
   search?: string;
 }
 
+// ─── Numéros (Magazines Mensuels / Trimestriels PDF) ────────────────────────
+export interface IssueDTO {
+  id: string;
+  number: number;
+  title: string;
+  title_en?: string;
+  slug: string;
+  cover_image: string;
+  publication_date: string;
+  summary: string;
+  summary_en?: string;
+  article_count: number;
+  article_ids?: string[];
+  pdf_url?: string;
+  is_published: boolean;
+  created_at?: string;
+  updated_at?: string;
+  articles?: ArticleDTO[];
+}
+
+export interface IssueFilterParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  is_published?: boolean;
+}
+
+export interface CreateIssueInput {
+  number: number;
+  title: string;
+  title_en?: string;
+  slug?: string;
+  cover_image: string;
+  publication_date: string;
+  summary: string;
+  summary_en?: string;
+  article_ids?: string[];
+  pdf_url?: string;
+  is_published?: boolean;
+}
+
+export interface UpdateIssueInput {
+  number?: number;
+  title?: string;
+  title_en?: string;
+  slug?: string;
+  cover_image?: string;
+  publication_date?: string;
+  summary?: string;
+  summary_en?: string;
+  article_ids?: string[];
+  pdf_url?: string;
+  is_published?: boolean;
+}
+
+// ─── Corrections Déontologiques ──────────────────────────────────────────
+export interface CorrectionDTO {
+  id: string;
+  date: string;
+  article_title: string;
+  article_title_en?: string;
+  article_slug?: string;
+  previous_text: string;
+  previous_text_en?: string;
+  corrected_text: string;
+  corrected_text_en?: string;
+  reason: string;
+  reason_en?: string;
+  validated_by: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CorrectionFilterParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface CreateCorrectionInput {
+  date?: string;
+  article_title: string;
+  article_title_en?: string;
+  article_slug?: string;
+  previous_text: string;
+  previous_text_en?: string;
+  corrected_text: string;
+  corrected_text_en?: string;
+  reason: string;
+  reason_en?: string;
+  validated_by?: string;
+}
+
+export interface UpdateCorrectionInput {
+  date?: string;
+  article_title?: string;
+  article_title_en?: string;
+  article_slug?: string;
+  previous_text?: string;
+  previous_text_en?: string;
+  corrected_text?: string;
+  corrected_text_en?: string;
+  reason?: string;
+  reason_en?: string;
+  validated_by?: string;
+}
+
+// ─── Signalements & Droits de Réponse (Submissions) ───────────────────────
+export interface SubmissionDTO {
+  id: string;
+  type: 'error_report' | 'general' | 'whistleblow' | 'right_of_reply';
+  email: string;
+  name?: string;
+  category?: string;
+  url?: string;
+  description?: string;
+  source?: string;
+  message?: string;
+  status: 'pending' | 'resolved' | 'archived';
+  admin_notes?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface SubmissionFilterParams {
+  page?: number;
+  limit?: number;
+  type?: string;
+  status?: string;
+  search?: string;
+}
+
+export interface CreateSubmissionInput {
+  type?: 'error_report' | 'general' | 'whistleblow' | 'right_of_reply';
+  email: string;
+  name?: string;
+  category?: string;
+  url?: string;
+  description?: string;
+  source?: string;
+  message?: string;
+}
+
+export interface UpdateSubmissionStatusInput {
+  status: 'pending' | 'resolved' | 'archived';
+  notes?: string;
+}
+

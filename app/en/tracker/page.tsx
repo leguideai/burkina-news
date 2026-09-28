@@ -12,6 +12,8 @@ import StatusBadge from '@/components/tracker/StatusBadge';
 import { 
   PROJECT_STATUS_LABELS_EN, 
   PROJECT_STATUS_ORDER,
+  PROJECT_STATUS_COLORS,
+  PROJECT_STATUS_THEMES,
   ProjectStatus,
   Project,
   Indicator
@@ -26,6 +28,7 @@ import {
 import { 
   Search, 
   X, 
+  Check,
   RotateCcw,
   ArrowRight,
   LayoutGrid,
@@ -197,34 +200,58 @@ export default function TrackerPageEn() {
               <span className="text-[11px] text-[#737373]">From announcement to verified impact</span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              {PROJECT_STATUS_ORDER.map((statusKey) => {
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+              {PROJECT_STATUS_ORDER.map((statusKey, idx) => {
                 const count = stats.byStatus[statusKey] || 0;
                 const isSelected = selectedStatus === statusKey;
                 const label = PROJECT_STATUS_LABELS_EN[statusKey];
+                const theme = PROJECT_STATUS_THEMES[statusKey];
+                const color = PROJECT_STATUS_COLORS[statusKey];
 
                 return (
                   <button
                     key={statusKey}
                     onClick={() => setSelectedStatus(isSelected ? 'all' : statusKey)}
-                    className={`p-3 text-left border transition-all ${
+                    className={`p-3 text-left border transition-all relative flex flex-col justify-between rounded-xs ${
                       isSelected 
-                        ? 'bg-[#0b4627] text-white border-[#0b4627] shadow-sm' 
-                        : 'bg-[#faf8f5] border-[#e6dfd5] hover:border-[#141414] text-[#141414]'
+                        ? `${theme.bgActive} text-white ${theme.borderActive} shadow-sm ring-1 ring-black/10` 
+                        : 'bg-white border-[#e6dfd5] hover:border-[#141414] text-[#141414] hover:shadow-xs'
                     }`}
+                    style={{
+                      borderTopColor: isSelected ? undefined : color,
+                      borderTopWidth: isSelected ? '1px' : '3px',
+                    }}
                   >
-                    <div className="flex justify-between items-center mb-1">
-                      <span className={`text-[10px] font-mono uppercase tracking-wider font-semibold ${isSelected ? 'text-[#ffd8a8]' : 'text-[#737373]'}`}>
-                        {label}
+                    <div className="flex justify-between items-center text-[10px] font-mono mb-2">
+                      <span 
+                        className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-xs text-[10px] ${
+                          isSelected ? 'bg-white/20 text-white' : 'bg-neutral-100'
+                        }`}
+                        style={{ color: isSelected ? '#ffffff' : color }}
+                      >
+                        <span 
+                          className="w-1.5 h-1.5 rounded-full inline-block" 
+                          style={{ backgroundColor: isSelected ? '#ffffff' : color }} 
+                        />
+                        0{idx + 1}
                       </span>
-                      <span className={`text-xs font-mono font-bold px-1.5 py-0.2 rounded-sm ${isSelected ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-800'}`}>
-                        {count}
+                      <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${isSelected ? 'text-white' : 'text-[#737373]'}`}>
+                        {count} {count > 1 ? 'projects' : 'project'}
+                        {isSelected && <Check size={11} className="text-white" />}
                       </span>
                     </div>
-                    <div className={`h-1 w-full rounded-full ${isSelected ? 'bg-white/30' : 'bg-neutral-200'}`}>
+
+                    <div className={`text-[11px] font-mono font-bold uppercase tracking-wider leading-tight mb-2 ${isSelected ? 'text-white' : 'text-[#141414]'}`}>
+                      {label}
+                    </div>
+
+                    <div className={`h-1 w-full rounded-full overflow-hidden ${isSelected ? 'bg-white/30' : 'bg-neutral-100'}`}>
                       <div 
-                        className={`h-full rounded-full ${isSelected ? 'bg-white' : 'bg-[#0b4627]'}`}
-                        style={{ width: `${Math.min(100, (count / (enProjects.length || 1)) * 100 * 3)}%` }}
+                        className="h-full rounded-full transition-all"
+                        style={{ 
+                          backgroundColor: isSelected ? '#ffffff' : color,
+                          width: `${Math.min(100, Math.max(15, (count / (enProjects.length || 1)) * 100 * 2.5))}%` 
+                        }}
                       />
                     </div>
                   </button>

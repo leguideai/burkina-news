@@ -17,6 +17,9 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Issue, Article } from '@/data/types';
+import { issuesApi } from '@/lib/api/issues';
+import { articlesApi } from '@/lib/api/articles';
+import { mapIssueDTOToIssue, mapArticleDTOToArticle } from '@/lib/api/mappers';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonCard, SkeletonStat } from '@/components/admin/Skeleton';
 import ImageUploader from '@/components/admin/ImageUploader';
@@ -39,11 +42,41 @@ export default function AdminNumerosPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger les numéros.');
-      const data = await res.json();
-      setIssues(data.issues || []);
-      setArticles(data.articles || []);
+      const [issuesRes, articlesRes] = await Promise.allSettled([
+        issuesApi.adminListIssues({ limit: 50 }),
+        articlesApi.adminListArticles({ limit: 100 }),
+      ]);
+
+      let loadedIssues: Issue[] = [];
+      if (issuesRes.status === 'fulfilled' && issuesRes.value.issues) {
+        const raw = issuesRes.value.issues;
+        loadedIssues = raw.map(mapIssueDTOToIssue);
+      }
+
+      let loadedArticles: Article[] = [];
+      if (articlesRes.status === 'fulfilled' && articlesRes.value.articles) {
+        const raw = articlesRes.value.articles;
+        loadedArticles = raw.map(mapArticleDTOToArticle);
+      }
+
+      if (loadedIssues.length > 0) {
+        setIssues(loadedIssues);
+        if (loadedArticles.length > 0) {
+          setArticles(loadedArticles);
+        } else {
+          const res = await fetch('/api/admin/data');
+          if (res.ok) {
+            const data = await res.json();
+            setArticles(data.articles || []);
+          }
+        }
+      } else {
+        const res = await fetch('/api/admin/data');
+        if (!res.ok) throw new Error('Impossible de charger les numéros.');
+        const data = await res.json();
+        setIssues(data.issues || []);
+        setArticles(data.articles || []);
+      }
     } catch (err: any) {
       error('Erreur', err.message);
     } finally {
@@ -99,6 +132,31 @@ export default function AdminNumerosPage() {
     }
 
     try {
+      const payloadApi = {
+        number: Number(formData.number) || 1,
+        title: formData.title.trim(),
+        title_en: formData.titleEn?.trim() || '',
+        slug: formData.slug?.trim() || `numero-${formData.number}`,
+        publication_date: formData.publicationDate || new Date().toISOString().split('T')[0],
+        summary: formData.summary || '',
+        summary_en: formData.summaryEn || '',
+        cover_image: formData.coverImage || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+        article_count: formData.articleIds?.length || formData.articleCount || 0,
+        article_ids: formData.articleIds || [],
+        pdf_url: formData.pdfUrl || '',
+        is_published: true,
+      };
+
+      try {
+        if (isEditing && formData.id) {
+          await issuesApi.adminUpdateIssue(formData.id, payloadApi);
+        } else if (!isEditing) {
+          await issuesApi.adminCreateIssue(payloadApi);
+        }
+      } catch (apiErr) {
+        console.warn('Backend issues API fallback to /api/admin/data', apiErr);
+      }
+
       const action = isEditing ? 'update_issue' : 'create_issue';
       const payload = {
         ...formData,
@@ -128,6 +186,12 @@ export default function AdminNumerosPage() {
   // Delete Issue
   const handleDeleteIssue = async (iss: Issue) => {
     try {
+      try {
+        await issuesApi.adminDeleteIssue(iss.id);
+      } catch (apiErr) {
+        console.warn('Backend issues API delete fallback to /api/admin/data', apiErr);
+      }
+
       const res = await fetch('/api/admin/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

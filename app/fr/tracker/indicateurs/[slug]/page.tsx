@@ -9,6 +9,7 @@ import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowRight, ArrowLeft, Ex
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSourceUrl } from '@/data/sources';
+import PrintAuditButton from '@/components/tracker/PrintAuditButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,24 +99,30 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
               {indicator.name}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs font-serif text-[#555555]">
-              <span className="flex items-center gap-1.5 text-[#0b4627] font-semibold font-mono">
-                <ShieldCheck size={14} /> Donnée officielle auditée
-              </span>
-              <span>·</span>
-              <span className="inline-flex items-center gap-1">
-                Source :{' '}
-                <a 
-                  href={getSourceUrl(indicator.source)} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="font-bold text-[#0b4627] hover:underline inline-flex items-center gap-0.5"
-                  title={`Ouvrir le portail officiel de ${indicator.source}`}
-                >
-                  <span>{indicator.source}</span>
-                  <ExternalLink size={10} />
-                </a>
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-4 text-xs font-serif text-[#555555]">
+                <span className="flex items-center gap-1.5 text-[#0b4627] font-semibold font-mono">
+                  <ShieldCheck size={14} /> Donnée officielle auditée
+                </span>
+                <span>·</span>
+                <span className="inline-flex items-center gap-1">
+                  Source :{' '}
+                  <a 
+                    href={getSourceUrl(indicator.source)} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="font-bold text-[#0b4627] hover:underline inline-flex items-center gap-0.5"
+                    title={`Ouvrir le portail officiel de ${indicator.source}`}
+                  >
+                    <span>{indicator.source}</span>
+                    <ExternalLink size={10} />
+                  </a>
+                </span>
+              </div>
+
+              <div className="no-print">
+                <PrintAuditButton lang="fr" variant="solid" title="Fiche Indicateur (PDF)" />
+              </div>
             </div>
           </div>
 

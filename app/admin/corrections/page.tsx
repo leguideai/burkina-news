@@ -17,6 +17,9 @@ import {
   Clock
 } from 'lucide-react';
 import { Correction, Article } from '@/data/types';
+import { correctionsApi } from '@/lib/api/corrections';
+import { articlesApi } from '@/lib/api/articles';
+import { mapCorrectionDTOToCorrection, mapArticleDTOToArticle } from '@/lib/api/mappers';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
@@ -47,11 +50,31 @@ export default function AdminCorrectionsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger le registre des corrections.');
-      const data = await res.json();
-      setCorrections(data.corrections || []);
-      setArticles(data.articles || []);
+      const [corrRes, artRes] = await Promise.allSettled([
+        correctionsApi.adminListCorrections({ limit: 100 }),
+        articlesApi.adminListArticles({ limit: 100 }),
+      ]);
+
+      let loadedCorr: Correction[] = [];
+      if (corrRes.status === 'fulfilled' && corrRes.value.corrections) {
+        loadedCorr = corrRes.value.corrections.map(mapCorrectionDTOToCorrection);
+      }
+
+      let loadedArt: Article[] = [];
+      if (artRes.status === 'fulfilled' && artRes.value.articles) {
+        loadedArt = artRes.value.articles.map(mapArticleDTOToArticle);
+      }
+
+      if (loadedCorr.length > 0) {
+        setCorrections(loadedCorr);
+        if (loadedArt.length > 0) setArticles(loadedArt);
+      } else {
+        const res = await fetch('/api/admin/data');
+        if (!res.ok) throw new Error('Impossible de charger le registre des corrections.');
+        const data = await res.json();
+        setCorrections(data.corrections || []);
+        setArticles(data.articles || []);
+      }
     } catch (err: any) {
       error('Erreur', err.message);
     } finally {
@@ -91,6 +114,20 @@ export default function AdminCorrectionsPage() {
     }
 
     try {
+      try {
+        await correctionsApi.adminCreateCorrection({
+          date: formData.date || new Date().toISOString().split('T')[0],
+          article_title: formData.articleTitle,
+          article_slug: formData.articleSlug,
+          previous_text: formData.previousText,
+          corrected_text: formData.correctedText,
+          reason: formData.reason,
+          validated_by: formData.validatedBy,
+        });
+      } catch (apiErr) {
+        console.warn('Backend corrections API fallback to /api/admin/data', apiErr);
+      }
+
       const res = await fetch('/api/admin/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,6 +154,12 @@ export default function AdminCorrectionsPage() {
 
   const handleDelete = async (id: string) => {
     try {
+      try {
+        await correctionsApi.adminDeleteCorrection(id);
+      } catch (apiErr) {
+        console.warn('Backend corrections API delete fallback to /api/admin/data', apiErr);
+      }
+
       const res = await fetch('/api/admin/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

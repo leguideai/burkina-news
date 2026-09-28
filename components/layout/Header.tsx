@@ -202,7 +202,7 @@ export default function Header() {
           </Tooltip>
           
           <Link href={homeHref} className="block py-1">
-            <img src="/images/logo.png" alt="Burkina News" className="h-8 sm:h-9 w-auto object-contain" />
+            <img src="/images/logo.png" alt="Burkina News" className="h-10 sm:h-12 w-auto object-contain" />
           </Link>
 
           <Tooltip position="bottom" content={searchOpen ? "Fermer la recherche" : "Rechercher sur le site"}>
@@ -255,11 +255,11 @@ export default function Header() {
 
         {/* Desktop Brand */}
         <div className="hidden md:flex items-center gap-6">
-          <Link href={homeHref} className="block">
+          <Link href={homeHref} className="block hover:opacity-95 transition-opacity">
             <img 
               src="/images/logo.png" 
               alt="Burkina News" 
-              className="h-12 lg:h-14 w-auto object-contain" 
+              className="h-16 lg:h-20 w-auto object-contain" 
             />
           </Link>
           <div className="border-l border-[#e6dfd5] pl-4 py-1 text-xs text-[#555555] font-serif">

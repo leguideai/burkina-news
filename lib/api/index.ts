@@ -14,3 +14,6 @@ export * from './health';
 export * from './mappers';
 export * from './tracker';
 export * from './barometre';
+export * from './issues';
+export * from './corrections';
+export * from './signalements';

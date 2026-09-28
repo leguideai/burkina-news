@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { signalementsApi } from '@/lib/api/signalements';
 
 export async function POST(request: Request) {
   try {
@@ -28,6 +29,22 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+    }
+
+    // Forward to Golang API / PostgreSQL database
+    try {
+      await signalementsApi.submitSignalement({
+        type: type || 'general',
+        email: email.trim(),
+        name,
+        category,
+        url,
+        description: desc,
+        source,
+        message,
+      });
+    } catch (apiErr) {
+      console.warn('Backend signalements API forward error (fallback to local)', apiErr);
     }
 
     const submission = {

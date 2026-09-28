@@ -11,6 +11,8 @@ import StatusBadge from '@/components/tracker/StatusBadge';
 import { 
   PROJECT_STATUS_LABELS, 
   PROJECT_STATUS_ORDER,
+  PROJECT_STATUS_COLORS,
+  PROJECT_STATUS_THEMES,
   ProjectStatus,
   Project,
   Indicator
@@ -18,6 +20,7 @@ import {
 import { 
   Search, 
   X, 
+  Check,
   RotateCcw,
   ArrowRight,
   LayoutGrid,
@@ -179,28 +182,59 @@ export default function TrackerPage() {
           </div>
 
           {/* Quick Stats Filter Bar (The 6 Milestones) */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mt-5">
             {PROJECT_STATUS_ORDER.map((status, idx) => {
               const count = stats.byStatus[status] || 0;
               const isSelected = selectedStatus === status;
+              const theme = PROJECT_STATUS_THEMES[status];
+              const color = PROJECT_STATUS_COLORS[status];
+
               return (
                 <button
                   key={status}
                   onClick={() => setSelectedStatus(selectedStatus === status ? 'all' : status)}
-                  className={`p-2.5 border text-left transition-colors flex flex-col justify-between ${
+                  className={`p-3 border text-left transition-all relative flex flex-col justify-between rounded-xs ${
                     isSelected 
-                      ? 'bg-[#0b4627] text-white border-[#0b4627] shadow-xs' 
-                      : 'bg-[#faf8f5] border-[#e6dfd5] hover:border-[#141414] text-[#141414]'
+                      ? `${theme.bgActive} text-white ${theme.borderActive} shadow-sm ring-1 ring-black/10` 
+                      : 'bg-white border-[#e6dfd5] hover:border-[#141414] text-[#141414] hover:shadow-xs'
                   }`}
+                  style={{
+                    borderTopColor: isSelected ? undefined : color,
+                    borderTopWidth: isSelected ? '1px' : '3px',
+                  }}
                 >
-                  <div className="flex justify-between items-center text-[10px] font-mono mb-1">
-                    <span className={isSelected ? 'text-[#ffd8a8]' : 'text-[#737373]'}>
+                  <div className="flex justify-between items-center text-[10px] font-mono mb-2">
+                    <span 
+                      className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-xs text-[10px] ${
+                        isSelected ? 'bg-white/20 text-white' : 'bg-neutral-100'
+                      }`}
+                      style={{ color: isSelected ? '#ffffff' : color }}
+                    >
+                      <span 
+                        className="w-1.5 h-1.5 rounded-full inline-block" 
+                        style={{ backgroundColor: isSelected ? '#ffffff' : color }} 
+                      />
                       0{idx + 1}
                     </span>
-                    <span className="font-bold">{count} projet{count > 1 ? 's' : ''}</span>
+                    <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${isSelected ? 'text-white' : 'text-[#737373]'}`}>
+                      {count} {count > 1 ? 'projets' : 'projet'}
+                      {isSelected && <Check size={11} className="text-white" />}
+                    </span>
                   </div>
-                  <div className="text-[11px] font-mono font-bold uppercase tracking-wider leading-tight">
+
+                  <div className={`text-[11px] font-mono font-bold uppercase tracking-wider leading-tight mb-2 ${isSelected ? 'text-white' : 'text-[#141414]'}`}>
                     {PROJECT_STATUS_LABELS[status]}
+                  </div>
+
+                  {/* Advancement accent bar */}
+                  <div className={`h-1 w-full rounded-full overflow-hidden ${isSelected ? 'bg-white/30' : 'bg-neutral-100'}`}>
+                    <div 
+                      className="h-full rounded-full transition-all"
+                      style={{ 
+                        backgroundColor: isSelected ? '#ffffff' : color,
+                        width: `${Math.min(100, Math.max(15, (count / (projects.length || 1)) * 100 * 2.5))}%` 
+                      }}
+                    />
                   </div>
                 </button>
               );

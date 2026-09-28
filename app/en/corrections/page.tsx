@@ -1,15 +1,36 @@
 import { AlertTriangle, Check } from 'lucide-react';
 import Link from 'next/link';
 import { getAdminStore } from '@/data/admin-store';
+import { correctionsApi } from '@/lib/api/corrections';
+import { mapCorrectionDTOToCorrection } from '@/lib/api/mappers';
+import { Correction } from '@/data/types';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Correction Registry | Burkina News',
   description: 'Our public registry documenting all post-publication corrections and statistical updates.',
 };
 
-export default function CorrectionsPageEn() {
+export default async function CorrectionsPageEn() {
   const store = getAdminStore();
-  const corrections = store.corrections;
+  let corrections: Correction[] = store.corrections || [];
+
+  try {
+    const res = await correctionsApi.listCorrections({ limit: 100 });
+    if (res.corrections && res.corrections.length > 0) {
+      corrections = res.corrections.map((dto) => {
+        const mapped = mapCorrectionDTOToCorrection(dto);
+        if (dto.article_title_en) mapped.articleTitle = dto.article_title_en;
+        if (dto.previous_text_en) mapped.previousText = dto.previous_text_en;
+        if (dto.corrected_text_en) mapped.correctedText = dto.corrected_text_en;
+        if (dto.reason_en) mapped.reason = dto.reason_en;
+        return mapped;
+      });
+    }
+  } catch {
+    corrections = store.corrections || [];
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 font-serif">
