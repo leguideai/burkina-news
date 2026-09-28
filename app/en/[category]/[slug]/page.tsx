@@ -8,6 +8,10 @@ import { articlesApi } from '@/lib/api/articles';
 import { categoriesApi } from '@/lib/api/categories';
 import { mapArticleDTOToArticle } from '@/lib/api/mappers';
 import { Article } from '@/data/types';
+import { ArticleDTO } from '@/lib/api/types';
+import { getAdminStore } from '@/data/admin-store';
+import { getArticleBySlug } from '@/data/mock/articles';
+import SafeImage from '@/components/ui/SafeImage';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,15 +29,47 @@ export default async function ArticleDetailPageEn({
   // 1. Fetch live article by slug from PostgreSQL
   try {
     const apiArticle = await articlesApi.getArticle(slug);
-    if (apiArticle && apiArticle.id) {
-      article = mapArticleDTOToArticle(apiArticle);
+    const raw = (apiArticle as any)?.article || apiArticle;
+    if (raw && raw.id) {
+      article = mapArticleDTOToArticle(raw);
       // Ensure English title/excerpt/body take precedence
-      if (apiArticle.title_en) article.title = apiArticle.title_en;
-      if (apiArticle.excerpt_en) article.excerpt = apiArticle.excerpt_en;
-      if (apiArticle.body_en) article.body = apiArticle.body_en;
+      if (raw.title_en) article.title = raw.title_en;
+      if (raw.excerpt_en) article.excerpt = raw.excerpt_en;
+      if (raw.body_en) article.body = raw.body_en;
+    }
+    if ((apiArticle as any)?.related) {
+      relatedArticles = ((apiArticle as any).related as ArticleDTO[]).map(dto => {
+        const mapped = mapArticleDTOToArticle(dto);
+        if (dto.title_en) mapped.title = dto.title_en;
+        if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+        return mapped;
+      });
+    } else if (apiArticle?.related_articles) {
+      relatedArticles = apiArticle.related_articles.map(dto => {
+        const mapped = mapArticleDTOToArticle(dto);
+        if (dto.title_en) mapped.title = dto.title_en;
+        if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+        return mapped;
+      });
     }
   } catch {
     // API error / Not found
+  }
+
+  // Fallback to local admin store / mock articles if not resolved from API
+  if (!article) {
+    const store = getAdminStore();
+    const fallback = (store.articles || []).find(a => a.slug === slug || a.id === slug)
+      || getArticleBySlug(slug, 'en');
+    if (fallback) {
+      article = { ...fallback };
+      const enVersion = getArticleBySlug(slug, 'en');
+      if (enVersion) {
+        article.title = enVersion.title;
+        article.excerpt = enVersion.excerpt;
+        article.body = enVersion.body;
+      }
+    }
   }
 
   if (!article) {
@@ -57,21 +93,34 @@ export default async function ArticleDetailPageEn({
   }
 
   // 3. Fetch related articles from PostgreSQL
-  try {
-    const relRes = await articlesApi.listArticles({ category: article.category, limit: 10 });
-    if (relRes.articles) {
-      relatedArticles = relRes.articles
-        .filter(a => a.slug !== article?.slug && a.id !== article?.id)
-        .slice(0, 2)
-        .map(dto => {
-          const mapped = mapArticleDTOToArticle(dto);
-          if (dto.title_en) mapped.title = dto.title_en;
-          if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
-          return mapped;
-        });
+  if (relatedArticles.length === 0) {
+    try {
+      const relRes = await articlesApi.listArticles({ category: article.category, limit: 10 });
+      if (relRes.articles && relRes.articles.length > 0) {
+        relatedArticles = relRes.articles
+          .filter(a => a.slug !== article?.slug && a.id !== article?.id)
+          .slice(0, 2)
+          .map(dto => {
+            const mapped = mapArticleDTOToArticle(dto);
+            if (dto.title_en) mapped.title = dto.title_en;
+            if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+            return mapped;
+          });
+      }
+    } catch {
+      relatedArticles = [];
     }
-  } catch {
-    relatedArticles = [];
+  }
+
+  if (relatedArticles.length === 0) {
+    const store = getAdminStore();
+    relatedArticles = (store.articles || [])
+      .filter(a => a.category === article?.category && a.slug !== article?.slug && a.id !== article?.id)
+      .slice(0, 2)
+      .map(a => {
+        const enA = getArticleBySlug(a.slug, 'en');
+        return enA || a;
+      });
   }
 
   const relatedProjects = getProjectsByCategory(article.category, 'en').slice(0, 2);
@@ -173,10 +222,9 @@ export default async function ArticleDetailPageEn({
             {/* Hero Photograph */}
             <div className="bg-white border border-[#e6dfd5] overflow-hidden">
               <div className="aspect-[16/10] w-full bg-neutral-100">
-                <img 
+                <SafeImage 
                   src={article.image || '/images/lead.jpeg'} 
                   alt={article.title}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -288,10 +336,9 @@ export default async function ArticleDetailPageEn({
                   {relatedArticles.map(art => (
                     <div key={art.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] flex gap-3 items-start">
                       <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
-                        <img 
+                        <SafeImage 
                           src={art.image || '/images/lead.jpeg'} 
                           alt={art.title}
-                          onError={(e) => { (e.target as HTMLImageElement).src = '/images/lead.jpeg'; }}
                           className="w-full h-full object-cover"
                         />
                       </div>

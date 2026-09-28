@@ -21,6 +21,7 @@ import { HomepageConfig } from '@/data/admin-store';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonCard, SkeletonStat } from '@/components/admin/Skeleton';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
+import { homepageApi } from '@/lib/api/homepage';
 
 export default function AdminUnePage() {
   const { success, error, warning } = useToast();
@@ -36,11 +37,36 @@ export default function AdminUnePage() {
   const loadData = async () => {
     try {
       setLoading(true);
+
+      // 1. Try Go backend for live curation
+      let loadedConfig: HomepageConfig | null = null;
+      try {
+        const hp = await homepageApi.getAdminHomepage();
+        if (hp && hp.leadArticleId) {
+          loadedConfig = {
+            leadArticleId: hp.leadArticleId,
+            secondaryArticleIds: hp.secondaryArticleIds || [],
+            terrainArticleId: hp.terrainArticleId,
+            factCheckArticleId: hp.factCheckArticleId,
+            featuredQuote: {
+              quoteFr: hp.featuredQuote?.quoteFr || '',
+              quoteEn: hp.featuredQuote?.quoteEn || '',
+              author: hp.featuredQuote?.author || '',
+              contextFr: hp.featuredQuote?.contextFr || '',
+              contextEn: hp.featuredQuote?.contextEn || '',
+            }
+          };
+        }
+      } catch (backendErr) {
+        // Fallback to local store
+      }
+
+      // 2. Fetch local articles / fallback store
       const res = await fetch('/api/admin/data');
       if (!res.ok) throw new Error('Impossible de charger la configuration de la Une.');
       const data = await res.json();
       setArticles(data.articles || []);
-      setHomepageConfig(data.homepageConfig || null);
+      setHomepageConfig(loadedConfig || data.homepageConfig || null);
     } catch (err: any) {
       error('Erreur', err.message);
     } finally {
@@ -57,6 +83,21 @@ export default function AdminUnePage() {
     if (!homepageConfig) return;
 
     try {
+      // 1. Try Go backend
+      try {
+        await homepageApi.updateAdminHomepage({
+          leadArticleId: homepageConfig.leadArticleId,
+          secondaryArticleIds: homepageConfig.secondaryArticleIds,
+          terrainArticleId: homepageConfig.terrainArticleId,
+          factCheckArticleId: homepageConfig.factCheckArticleId,
+          featuredQuote: homepageConfig.featuredQuote,
+          isActive: true,
+        });
+      } catch (apiErr) {
+        console.warn('Backend update failed, persisting to local store:', apiErr);
+      }
+
+      // 2. Keep local fallback store synchronized
       const res = await fetch('/api/admin/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

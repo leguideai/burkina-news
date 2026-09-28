@@ -16,15 +16,20 @@ import {
   Clock,
   Sparkles,
   Copy,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
+import { newsletterApi } from '@/lib/api/newsletter';
 
 interface Subscriber {
+  id?: string;
   email: string;
   subscribedAt: string;
+  isActive?: boolean;
+  source?: string;
 }
 
 export default function AdminNewsletterPage() {
@@ -40,6 +45,25 @@ export default function AdminNewsletterPage() {
   const loadData = async () => {
     try {
       setLoading(true);
+
+      // 1. Try Go backend
+      try {
+        const res = await newsletterApi.adminList({ limit: 100 });
+        if (res.subscribers && res.subscribers.length > 0) {
+          setSubscribers(res.subscribers.map(s => ({
+            id: s.id,
+            email: s.email,
+            subscribedAt: s.subscribed_at,
+            isActive: s.is_active,
+            source: s.source,
+          })));
+          return;
+        }
+      } catch (backendErr) {
+        // Fallback to local store
+      }
+
+      // 2. Fallback to local data store
       const res = await fetch('/api/admin/data');
       if (!res.ok) throw new Error('Impossible de charger les abonnés.');
       const data = await res.json();
@@ -88,10 +112,20 @@ export default function AdminNewsletterPage() {
       setDraftLoading(false);
     }
   };
+
   const handleExportCSV = () => {
     if (subscribers.length === 0) {
       warning('Aucun abonné', 'La liste des abonnés est vide.');
       return;
+    }
+
+    // Try opening direct backend CSV download endpoint
+    try {
+      window.open(newsletterApi.getExportCSVUrl(), '_blank');
+      success('Export CSV généré', `${subscribers.length} adresses téléchargées.`);
+      return;
+    } catch {
+      // Fallback to client CSV generation
     }
 
     const headers = ['Email', 'Date d\'inscription'];
@@ -117,6 +151,20 @@ export default function AdminNewsletterPage() {
     success('Export CSV généré', `${subscribers.length} adresses téléchargées.`);
   };
 
+  // Delete subscriber
+  const handleDeleteSubscriber = async (sub: Subscriber) => {
+    if (!confirm(`Supprimer l'abonné ${sub.email} ?`)) return;
+    try {
+      if (sub.id) {
+        await newsletterApi.adminDelete(sub.id);
+      }
+      setSubscribers(prev => prev.filter(s => s.email !== sub.email));
+      success('Abonné retiré', `L'adresse ${sub.email} a été supprimée.`);
+    } catch (err: any) {
+      error('Erreur', err.message);
+    }
+  };
+
   // Add subscriber
   const handleAddSubscriber = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,6 +174,14 @@ export default function AdminNewsletterPage() {
     }
 
     try {
+      // 1. Try Go backend
+      try {
+        await newsletterApi.subscribe({ email: newEmail.trim() });
+      } catch (backendErr) {
+        // Fallback
+      }
+
+      // 2. Also register in local route for persistence in mock mode
       const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -270,7 +326,7 @@ export default function AdminNewsletterPage() {
                 <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Adresse Email</th>
                 <th className="py-3 px-4">Date d'inscription</th>
-                <th className="py-3 px-4 text-right">Statut</th>
+                <th className="py-3 px-4 text-right">Statut / Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e6dfd5] text-xs font-mono">
@@ -303,9 +359,20 @@ export default function AdminNewsletterPage() {
                   </td>
 
                   <td className="py-3 px-4 text-right whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#087443] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      <Check size={11} /> Actif
-                    </span>
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#087443] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        <Check size={11} /> Actif
+                      </span>
+                      <Tooltip position="left" content="Désinscrire cet abonné">
+                        <button
+                          onClick={() => handleDeleteSubscriber(sub)}
+                          className="p-1 text-[#736c62] hover:text-[#d32f2f] hover:bg-red-50 rounded transition-colors cursor-pointer"
+                          aria-label="Supprimer"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </Tooltip>
+                    </div>
                   </td>
                 </tr>
               ))}

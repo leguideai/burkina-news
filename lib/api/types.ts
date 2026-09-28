@@ -17,6 +17,7 @@ export interface ApiResponse<T> {
   message_fr: string;
   message_en: string;
   meta?: PaginationMeta;
+  stats?: any;
 }
 
 export interface ApiValidationErrorDetail {
@@ -967,5 +968,114 @@ export interface SearchFilterParams {
   limit?: number;
   lang?: 'fr' | 'en';
 }
+
+// ─── Curation de la Une (Homepage Config) ────────────────────────────────
+export interface HomepageFeaturedQuote {
+  quoteFr: string;
+  quoteEn?: string;
+  author: string;
+  contextFr: string;
+  contextEn?: string;
+}
+
+export interface HomepageConfigDTO {
+  id: string;
+  leadArticleId: string;
+  secondaryArticleIds: string[];
+  terrainArticleId: string;
+  factCheckArticleId: string;
+  featuredQuote: HomepageFeaturedQuote;
+  isActive: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UpdateHomepageConfigInput {
+  id?: string;
+  leadArticleId: string;
+  secondaryArticleIds: string[];
+  terrainArticleId: string;
+  factCheckArticleId: string;
+  featuredQuote: HomepageFeaturedQuote;
+  isActive?: boolean;
+}
+
+// ─── Lettre d'information (Newsletter) ────────────────────────────────────
+export interface NewsletterSubscriberDTO {
+  id: string;
+  email: string;
+  subscribed_at: string;
+  is_active: boolean;
+  source: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface NewsletterStatsDTO {
+  total: number;
+  active: number;
+  inactive: number;
+  today: number;
+}
+
+export interface NewsletterListResponse {
+  subscribers: NewsletterSubscriberDTO[];
+  stats?: NewsletterStatsDTO;
+  meta?: PaginationMeta;
+}
+
+export interface SubscribeNewsletterInput {
+  email: string;
+  source?: string;
+}
+
+// ─── Assistant IA Micum (AI Copilot) ──────────────────────────────────────
+export interface AIStatusDTO {
+  provider: string;
+  model_name: string;
+  is_live: boolean;
+}
+
+export interface AIChatMessage {
+  role: 'user' | 'assistant' | 'model';
+  content: string;
+}
+
+export interface AIChatInput {
+  messages: AIChatMessage[];
+  context?: string;
+  system_prompt?: string;
+}
+
+export interface AIChatOutput {
+  text: string;
+  model: string;
+  provider: string;
+}
+
+export interface AIExtractInput {
+  raw_text: string;
+  target_type: 'article' | 'project' | 'indicators' | 'brief';
+}
+
+export interface AIExtractOutput {
+  extracted_data: Record<string, any>;
+  confidence: string;
+  model: string;
+}
+
+export interface AITranslateInput {
+  text: string;
+  source_lang?: 'fr' | 'en';
+  target_lang?: 'fr' | 'en';
+}
+
+export interface AITranslateOutput {
+  translated_text: string;
+  source_lang: string;
+  target_lang: string;
+}
+
+
 
 

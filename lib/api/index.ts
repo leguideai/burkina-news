@@ -18,4 +18,7 @@ export * from './issues';
 export * from './corrections';
 export * from './signalements';
 export * from './search';
+export * from './homepage';
+export * from './newsletter';
+export * from './ai';
 

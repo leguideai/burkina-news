@@ -32,7 +32,19 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check duplicate
+    // 1. Tenter l'enregistrement dans le backend Go
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+    try {
+      await fetch(`${apiUrl}/newsletter/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, source: 'website' }),
+      });
+    } catch (backendErr) {
+      // Ignorer si backend indisponible, conservation du fallback local
+    }
+
+    // 2. Persistance locale JSON
     const exists = subscribers.some(s => s.email === cleanEmail);
     if (!exists) {
       subscribers.push({
