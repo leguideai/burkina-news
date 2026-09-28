@@ -450,7 +450,7 @@ export default function AdminIndicatorsPage() {
 
                     <td className="py-3 px-3 whitespace-nowrap">
                       <div className="font-mono font-bold text-base text-[#141414]">
-                        {ind.currentValue.toLocaleString('fr-FR')} <span className="text-xs font-normal text-[#736c62]">{ind.unit}</span>
+                        {(ind.currentValue !== undefined && ind.currentValue !== null ? Number(ind.currentValue) : 0).toLocaleString('fr-FR')} <span className="text-xs font-normal text-[#736c62]">{ind.unit}</span>
                       </div>
                       <div className="text-[10px] text-[#736c62]">
                         Année : {ind.currentYear || 2026}
@@ -465,10 +465,10 @@ export default function AdminIndicatorsPage() {
                     </td>
 
                     <td className="py-3 px-3 whitespace-nowrap text-[11px] text-[#5a554e]">
-                      <div>Base {ind.baselineYear} : <b>{ind.baselineValue}</b></div>
+                      <div>Base {ind.baselineYear ?? 2020} : <b>{(ind.baselineValue !== undefined && ind.baselineValue !== null ? Number(ind.baselineValue) : 0).toLocaleString('fr-FR')}</b></div>
                       <div className="text-[10px] text-[#087443] flex items-center gap-1 mt-0.5">
                         <Target size={10} />
-                        Cible 2028 : <b>{ind.target2028 ?? '—'}</b> | 2030 : <b>{ind.target2030 ?? '—'}</b>
+                        Cible 2028 : <b>{ind.target2028 !== undefined && ind.target2028 !== null ? Number(ind.target2028).toLocaleString('fr-FR') : '—'}</b> | 2030 : <b>{ind.target2030 !== undefined && ind.target2030 !== null ? Number(ind.target2030).toLocaleString('fr-FR') : '—'}</b>
                       </div>
                     </td>
 

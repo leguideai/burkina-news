@@ -11,6 +11,7 @@ import { categoriesApi } from '@/lib/api/categories';
 import { CategoryDTO } from '@/lib/api/types';
 import { mapCategoryDTOToCategory } from '@/lib/api/mappers';
 import Tooltip from '@/components/ui/Tooltip';
+import HeaderSearch from './HeaderSearch';
 
 export default function Header() {
   const pathname = usePathname() || '/fr';
@@ -20,7 +21,6 @@ export default function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [dynamicCategories, setDynamicCategories] = useState<CategoryDTO[]>([]);
 
   // Load real categories & subcategories from Go API / PostgreSQL
@@ -222,34 +222,12 @@ export default function Header() {
         {/* Mobile quick search drawer when searchOpen is active */}
         {searchOpen && (
           <div className="w-full md:hidden pt-2 pb-1 border-t border-[#e6dfd5]">
-            <div className="relative">
-              <input 
-                type="text" 
-                placeholder={strings.searchPlaceholder} 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && searchQuery) {
-                    window.location.href = `${rechercheHref}?q=${encodeURIComponent(searchQuery)}`;
-                    setSearchOpen(false);
-                  }
-                }}
-                autoFocus
-                className="w-full pl-9 pr-9 py-2.5 bg-white border-2 border-[#141414] text-xs text-[#141414] placeholder:text-[#777] focus:outline-none"
-              />
-              <Search size={16} className="absolute left-3 top-3 text-[#777]" />
-              {searchQuery && (
-                <Tooltip position="left" content="Effacer la recherche">
-                  <button 
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-3 text-[#777] hover:text-[#141414] cursor-pointer"
-                    aria-label="Effacer la recherche"
-                  >
-                    <X size={16} />
-                  </button>
-                </Tooltip>
-              )}
-            </div>
+            <HeaderSearch 
+              lang={lang} 
+              isMobile={true} 
+              autoFocus={true} 
+              onNavigate={() => setSearchOpen(false)} 
+            />
           </div>
         )}
 
@@ -274,21 +252,10 @@ export default function Header() {
 
         {/* Desktop Search & Subscription */}
         <div className="hidden md:flex items-center gap-3">
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder={strings.searchPlaceholder} 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchQuery) {
-                  window.location.href = `${rechercheHref}?q=${encodeURIComponent(searchQuery)}`;
-                }
-              }}
-              className="w-56 lg:w-64 pl-8 pr-3 py-1.5 bg-white border border-[#e6dfd5] text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
-            />
-            <Search size={14} className="absolute left-2.5 top-2 text-[#888888]" />
-          </div>
+          <HeaderSearch 
+            lang={lang} 
+            isMobile={false} 
+          />
 
           <Link 
             href={trackerHref} 
@@ -473,22 +440,11 @@ export default function Header() {
         <div className="md:hidden bg-white border-b-2 border-[#141414] px-4 py-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-150">
           
           {/* Mobile Search inside drawer */}
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder={strings.searchPlaceholder} 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchQuery) {
-                  window.location.href = `${rechercheHref}?q=${encodeURIComponent(searchQuery)}`;
-                  setMobileMenuOpen(false);
-                }
-              }}
-              className="w-full pl-9 pr-3 py-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414]"
-            />
-            <Search size={16} className="absolute left-3 top-3 text-[#888888]" />
-          </div>
+          <HeaderSearch 
+            lang={lang} 
+            isMobile={true} 
+            onNavigate={() => setMobileMenuOpen(false)} 
+          />
 
           {/* Dedicated Language Selector inside mobile menu */}
           <div className="flex items-center justify-between p-2.5 bg-[#faf8f5] border border-[#e6dfd5]">
