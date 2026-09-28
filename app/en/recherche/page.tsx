@@ -2,24 +2,38 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, FileText, Construction, BarChart3, ChevronRight, X } from 'lucide-react';
+import { Search, FileText, Construction, BarChart3, Radio, ChevronRight, X, Loader2 } from 'lucide-react';
+import { searchApi } from '@/lib/api/search';
 import { articlesApi } from '@/lib/api/articles';
-import { mapArticleDTOToArticle } from '@/lib/api/mappers';
-import { Article } from '@/data/types';
+import { mapArticleDTOToArticle, mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
+import { Article, Project, Indicator } from '@/data/types';
+import { BriefFactDTO } from '@/lib/api/types';
 import { getProjects } from '@/data/mock/projects';
 import { getIndicators } from '@/data/mock/indicators';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
-import StatusBadge from '@/components/tracker/StatusBadge';
 
-type FilterType = 'all' | 'articles' | 'projects' | 'indicators';
+type FilterType = 'all' | 'articles' | 'projects' | 'indicators' | 'facts';
 
 export default function SearchPageEn() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
-  const [enArticles, setEnArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Load 48 live articles in real-time from PostgreSQL
+  // Local fallback / initial cache
+  const [enArticles, setEnArticles] = useState<Article[]>([]);
+  const enProjects = useMemo(() => getProjects('en'), []);
+  const enIndicators = useMemo(() => getIndicators('en'), []);
+
+  // Results returned by PostgreSQL API
+  const [apiResults, setApiResults] = useState<{
+    articles: Article[];
+    projects: Project[];
+    indicators: Indicator[];
+    facts: BriefFactDTO[];
+  } | null>(null);
+
+  // Preload articles for resilient local fallback
   useEffect(() => {
     let isMounted = true;
     articlesApi.listArticles({ limit: 100 })
@@ -37,11 +51,54 @@ export default function SearchPageEn() {
     return () => { isMounted = false; };
   }, []);
 
-  const enProjects = useMemo(() => getProjects('en'), []);
-  const enIndicators = useMemo(() => getIndicators('en'), []);
+  // Trigger search with 250ms debouncing
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setApiResults(null);
+      setLoading(false);
+      return;
+    }
 
-  const searchResults = useMemo(() => {
-    if (!query.trim()) return { articles: [], projects: [], indicators: [] };
+    setLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await searchApi.search({
+          q: trimmed,
+          type: filter === 'all' ? undefined : filter,
+          limit: 15,
+          lang: 'en',
+        });
+
+        if (res && (res.articles?.length || res.projects?.length || res.indicators?.length || res.facts?.length)) {
+          setApiResults({
+            articles: (res.articles || []).map(dto => {
+              const mapped = mapArticleDTOToArticle(dto);
+              if (dto.title_en) mapped.title = dto.title_en;
+              if (dto.excerpt_en) mapped.excerpt = dto.excerpt_en;
+              return mapped;
+            }),
+            projects: (res.projects || []).map(mapProjectDTOToProject),
+            indicators: (res.indicators || []).map(mapIndicatorDTOToIndicator),
+            facts: res.facts || [],
+          });
+        } else {
+          setApiResults(null);
+        }
+      } catch (err) {
+        console.warn('[SearchPageEn] Fallback to local search :', err);
+        setApiResults(null);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [query, filter]);
+
+  // Compute local fallback results
+  const localResults = useMemo(() => {
+    if (!query.trim()) return { articles: [], projects: [], indicators: [], facts: [] };
 
     const lowerQuery = query.toLowerCase();
 
@@ -67,12 +124,20 @@ export default function SearchPageEn() {
     return {
       articles: filteredArticles,
       projects: filteredProjects,
-      indicators: filteredIndicators
+      indicators: filteredIndicators,
+      facts: [] as BriefFactDTO[],
     };
   }, [query, enArticles, enProjects, enIndicators]);
 
-  const totalResults = searchResults.articles.length + searchResults.projects.length + searchResults.indicators.length;
+  // Active selection: API results first, fallback to local
+  const effectiveResults = apiResults || localResults;
   const isSearching = query.trim().length > 0;
+
+  const totalResults = 
+    effectiveResults.articles.length + 
+    effectiveResults.projects.length + 
+    effectiveResults.indicators.length + 
+    effectiveResults.facts.length;
 
   return (
     <div className="min-h-screen bg-[#faf8f5] pb-20">
@@ -89,7 +154,7 @@ export default function SearchPageEn() {
 
           <div className="pb-6 border-b border-[#141414]">
             <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] block mb-1">
-              Documentary Engine (PostgreSQL)
+              Public Documentary Engine & Archives (PostgreSQL)
             </span>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#141414] leading-tight mb-6">
               Search Archives & Data
@@ -103,17 +168,20 @@ export default function SearchPageEn() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 autoFocus
-                className="w-full pl-12 pr-10 py-3.5 bg-[#faf8f5] border-2 border-[#141414] text-base font-serif text-[#141414] placeholder:text-[#888888] focus:outline-none focus:bg-white"
+                className="w-full pl-12 pr-12 py-3.5 bg-[#faf8f5] border-2 border-[#141414] text-base font-serif text-[#141414] placeholder:text-[#888888] focus:outline-none focus:bg-white"
               />
               <Search size={20} className="absolute left-4 top-4 text-[#888888]" />
-              {query && (
+              {loading ? (
+                <Loader2 className="absolute right-4 top-4 h-5 w-5 text-[#0b4627] animate-spin" />
+              ) : query ? (
                 <button 
                   onClick={() => setQuery('')}
-                  className="absolute right-4 top-4 text-[#888888] hover:text-[#141414]"
+                  className="absolute right-4 top-4 text-[#888888] hover:text-[#141414] p-0.5"
+                  aria-label="Clear search input"
                 >
                   <X size={18} />
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -141,7 +209,7 @@ export default function SearchPageEn() {
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
                 }`}
               >
-                Investigations ({searchResults.articles.length})
+                Investigations ({effectiveResults.articles.length})
               </button>
 
               <button
@@ -152,7 +220,7 @@ export default function SearchPageEn() {
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
                 }`}
               >
-                Tracker Projects ({searchResults.projects.length})
+                Tracker Projects ({effectiveResults.projects.length})
               </button>
 
               <button
@@ -163,8 +231,21 @@ export default function SearchPageEn() {
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
                 }`}
               >
-                Indicators ({searchResults.indicators.length})
+                Indicators ({effectiveResults.indicators.length})
               </button>
+
+              {effectiveResults.facts.length > 0 && (
+                <button
+                  onClick={() => setFilter('facts')}
+                  className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
+                    filter === 'facts' 
+                      ? 'bg-[#141414] text-white border-[#141414]' 
+                      : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
+                  }`}
+                >
+                  Live Wire Dispatches ({effectiveResults.facts.length})
+                </button>
+              )}
             </div>
           )}
 
@@ -198,7 +279,7 @@ export default function SearchPageEn() {
               </button>
             </div>
           </div>
-        ) : totalResults === 0 ? (
+        ) : !loading && totalResults === 0 ? (
           <div className="text-center py-16 bg-white border border-[#e6dfd5] p-8">
             <h3 className="font-serif font-bold text-lg text-[#141414] mb-2">
               No results found for “{query}”
@@ -216,60 +297,60 @@ export default function SearchPageEn() {
         ) : (
           <div className="space-y-12">
             
-            {/* Investigations Results (Pure PostgreSQL) */}
-            {(filter === 'all' || filter === 'articles') && searchResults.articles.length > 0 && (
+            {/* 1. Investigations Results */}
+            {(filter === 'all' || filter === 'articles') && effectiveResults.articles.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">
                   <div className="flex items-center gap-2">
                     <FileText size={16} className="text-[#0b4627]" />
                     <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                      Investigative Reports & Analyses ({searchResults.articles.length})
+                      Investigative Reports & Analyses ({effectiveResults.articles.length})
                     </h2>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {searchResults.articles.map((article) => (
+                  {effectiveResults.articles.map((article) => (
                     <ArticleCard key={article.id} article={article} lang="en" />
                   ))}
                 </div>
               </section>
             )}
 
-            {/* Projects Results */}
-            {(filter === 'all' || filter === 'projects') && searchResults.projects.length > 0 && (
+            {/* 2. Projects Results */}
+            {(filter === 'all' || filter === 'projects') && effectiveResults.projects.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">
                   <div className="flex items-center gap-2">
                     <Construction size={16} className="text-[#0b4627]" />
                     <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                      Major Infrastructure Projects ({searchResults.projects.length})
+                      Major Infrastructure Projects ({effectiveResults.projects.length})
                     </h2>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {searchResults.projects.map((project) => (
+                  {effectiveResults.projects.map((project) => (
                     <ProjectCard key={project.id} project={project} lang="en" />
                   ))}
                 </div>
               </section>
             )}
 
-            {/* Indicators Results */}
-            {(filter === 'all' || filter === 'indicators') && searchResults.indicators.length > 0 && (
+            {/* 3. Indicators Results */}
+            {(filter === 'all' || filter === 'indicators') && effectiveResults.indicators.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">
                   <div className="flex items-center gap-2">
                     <BarChart3 size={16} className="text-[#0b4627]" />
                     <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
-                      National Indicators ({searchResults.indicators.length})
+                      National Indicators ({effectiveResults.indicators.length})
                     </h2>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {searchResults.indicators.map((ind) => (
+                  {effectiveResults.indicators.map((ind) => (
                     <Link
                       key={ind.code}
                       href={`/en/tracker/indicateurs/${ind.code}`}
@@ -284,12 +365,53 @@ export default function SearchPageEn() {
                         </span>
                       </div>
                       <h3 className="font-serif font-bold text-base text-[#141414] mb-2 leading-snug">
-                        {ind.name}
+                        {ind.nameEn || ind.name}
                       </h3>
                       <p className="text-xs font-serif text-[#555555] line-clamp-2">
-                        {ind.definition}
+                        {ind.definitionEn || ind.definition}
                       </p>
                     </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* 4. Facts Results (Live Wire Dispatches) */}
+            {(filter === 'all' || filter === 'facts') && effectiveResults.facts.length > 0 && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between pb-3 border-b-2 border-[#141414]">
+                  <div className="flex items-center gap-2">
+                    <Radio size={16} className="text-[#0b4627]" />
+                    <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
+                      Live Wire Dispatches ({effectiveResults.facts.length})
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-[#e6dfd5] divide-y divide-[#e6dfd5]">
+                  {effectiveResults.facts.map((fact, idx) => (
+                    <div key={fact.id || idx} className="p-4 hover:bg-[#faf8f5] transition-colors flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="bg-[#0b4627] text-white text-[9px] font-mono uppercase px-1.5 py-0.5 font-bold">
+                            {fact.category_code || 'WIRE'}
+                          </span>
+                          <span className="text-[10px] font-mono text-[#737373]">
+                            {fact.date} · {fact.time}
+                          </span>
+                        </div>
+                        <p className="font-serif text-sm text-[#141414]">{fact.text_en || fact.text_fr}</p>
+                        {fact.source && (
+                          <span className="text-[10px] font-mono text-[#737373] mt-1 block">
+                            Verified source: {fact.source}
+                          </span>
+                        )}
+                      </div>
+                      <Link href="/en/fil" className="shrink-0 font-mono text-xs text-[#0b4627] hover:underline flex items-center gap-1 font-bold">
+                        <span>The Wire</span>
+                        <ChevronRight size={13} />
+                      </Link>
+                    </div>
                   ))}
                 </div>
               </section>

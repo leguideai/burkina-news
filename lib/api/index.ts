@@ -17,3 +17,5 @@ export * from './barometre';
 export * from './issues';
 export * from './corrections';
 export * from './signalements';
+export * from './search';
+

@@ -132,10 +132,20 @@
 
 ---
 
-## 📅 PHASES F7 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 7 À 10)
+## 📅 PHASE F7 (SEMAINE 7) : Numéros PDF, Registre des Corrections & Moteur de Recherche
 
-- **Phase F7 (Semaine 7) :** Intégration Numéros PDF & Registre des Corrections (`/fr/numeros`, `/admin/corrections`).
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F7.1** | `[x]` | Kiosque des Parutions & Numéros PDF (FR & EN). | `lib/api/issues.ts`, `app/fr/numeros/page.tsx`, `app/en/numeros/page.tsx`, `app/fr/numeros/[slug]/page.tsx`, `app/en/numeros/[slug]/page.tsx`, `app/admin/numeros/page.tsx` | `GET /api/v1/numeros`<br>`GET /api/v1/numeros/:slug`<br>`CRUD /api/v1/admin/numeros` | Téléchargement direct des éditions PDF locales et Cloudflare R2, consultation bilingue et écran admin de publication. |
+| **F7.2** | `[x]` | Registre Public Déontologique des Corrections & Signalements Citoyens. | `lib/api/corrections.ts`, `lib/api/signalements.ts`, `app/fr/corrections/page.tsx`, `app/en/corrections/page.tsx`, `app/admin/corrections/page.tsx`, `app/admin/signalements/page.tsx`, `app/api/contact/route.ts` | `GET /api/v1/corrections`<br>`POST /api/v1/signalements`<br>`CRUD /api/v1/admin/corrections`<br>`GET/PUT /api/v1/admin/signalements` | Transparence stricte des rectifications avec motifs, consultation publique, dépôt citoyen et modération interne. |
+| **F7.3** | `[x]` | Raccordement du Moteur de Recherche Global Transversal (FR & EN). | `lib/api/search.ts`, `lib/api/types.ts`, `app/fr/recherche/page.tsx`, `app/en/recherche/page.tsx` | `GET /api/v1/search?q=...` | Recherche unifiée sur 4 types d'entités (articles, chantiers, indicateurs, dépêches), debouncing 250ms et repli résilient sans coupure. |
+
+---
+
+## 📅 PHASES F8 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 8 À 10)
+
 - **Phase F8 (Semaine 8) :** Intégration Curation Une, Formulaires Signalements & Assistant Micum.
 - **Phase F9 (Semaine 9) :** Durcissement, gestion du mode hors-ligne, audit de résilience.
 - **Phase F10 (Semaine 10) :** Recette finale de performance CWV & Mise en production.
+
 

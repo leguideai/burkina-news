@@ -951,3 +951,21 @@ export interface UpdateSubmissionStatusInput {
   notes?: string;
 }
 
+// ─── Recherche Transversale Unifiée (Search) ──────────────────────────────
+export interface SearchResultDTO {
+  query: string;
+  total: number;
+  articles: ArticleDTO[];
+  projects: ProjectDTO[];
+  indicators: IndicatorDTO[];
+  facts: BriefFactDTO[];
+}
+
+export interface SearchFilterParams {
+  q: string;
+  type?: 'all' | 'articles' | 'projects' | 'indicators' | 'facts';
+  limit?: number;
+  lang?: 'fr' | 'en';
+}
+
+

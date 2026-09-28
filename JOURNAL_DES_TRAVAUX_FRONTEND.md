@@ -551,7 +551,43 @@
 
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F7 à F10 synchronisées avec les semaines backend)*
+### Entrée F7.1 — Intégration du Kiosque des Parutions & Numéros PDF
+- **Composants & Pages :** `lib/api/issues.ts`, `app/fr/numeros/page.tsx`, `app/en/numeros/page.tsx`, `app/fr/numeros/[slug]/page.tsx`, `app/en/numeros/[slug]/page.tsx`, `app/admin/numeros/page.tsx`.
+- **Réalisations :**
+  - Raccordement du kiosque public bilingue avec téléchargement direct des PDF de parutions.
+  - Page de lecture et de métadonnées avec articles rattachés au numéro.
+  - Formulaire back-office d'édition et publication des numéros avec contrôle des accès RBAC.
+
+---
+
+### Entrée F7.2 — Registre Public Déontologique des Corrections & Signalements
+- **Composants & Pages :** `lib/api/corrections.ts`, `lib/api/signalements.ts`, `app/fr/corrections/page.tsx`, `app/en/corrections/page.tsx`, `app/admin/corrections/page.tsx`, `app/admin/signalements/page.tsx`, `app/api/contact/route.ts`.
+- **Réalisations :**
+  - Registre public des rectifications déontologiques avec traçabilité intégrale (texte erroné, texte corrigé, motif, signataire).
+  - Raccordement du formulaire de contact public pour l'envoi de signalements et alertes citoyennes en base de données.
+  - Interface d'administration pour la validation des erratums et le traitement des signalements.
+
+---
+
+### Entrée F7.3 — Moteur de Recherche Global Transversal (FR & EN)
+- **Composants & Pages :** `lib/api/search.ts`, `lib/api/types.ts`, `app/fr/recherche/page.tsx`, `app/en/recherche/page.tsx`.
+- **Réalisations :**
+  - Requête transversale unifiée via l'endpoint `GET /api/v1/search?q=...` interrogeant simultanément :
+    - Les enquêtes et décryptages (`articles`).
+    - Les chantiers documentés (`projects`).
+    - Les indicateurs du Baromètre RELANCE (`indicators`).
+    - Les dépêches du Fil en direct (`facts`).
+  - Debouncing de 250ms sur la frappe utilisateur avec indicateur de chargement.
+  - Filtrage par catégorie (Tous, Articles, Chantiers, Indicateurs, Dépêches).
+  - Système de repli automatique et résilient sur la recherche locale en cas de déconnexion réseau.
+- **Vérifications :**
+  - `pnpm tsc --noEmit` : 0 erreur.
+  - `go test ./...` : 0 erreur.
+- **État :** Validé et terminé.
+
+---
+
+*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F8 à F10 synchronisées avec les semaines backend)*
 
 
 
