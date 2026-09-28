@@ -1,11 +1,11 @@
 import { CategoryCode, SubCategory } from '../types';
 
 // =====================================================================
-// 1. RÉFÉRENTIEL DES 24 SOUS-RUBRIQUES FERMÉES (Brief Samba v5)
+// 1. RÉFÉRENTIEL DES 25 SOUS-RUBRIQUES FERMÉES (Document Officiel)
 // =====================================================================
 
 export const SUB_CATEGORIES: SubCategory[] = [
-  // ── ÉCONOMIE (5 sous-rubriques) ──────────────────────────────────
+  // ── 1. ÉCONOMIE (6 sous-rubriques) ──────────────────────────────────
   {
     code: 'conjoncture',
     nameFr: 'Conjoncture',
@@ -46,34 +46,16 @@ export const SUB_CATEGORIES: SubCategory[] = [
     descriptionFr: 'Climat des affaires, partenariats public-privé (PPP), capitaux locaux et IDE.',
     descriptionEn: 'Business climate, public-private partnerships, domestic private equity, and FDI.',
   },
-
-  // ── SÉCURITÉ (3 sous-rubriques) ──────────────────────────────────
   {
-    code: 'situation',
-    nameFr: 'Situation',
-    nameEn: 'Security Situation',
-    categoryCode: 'securite',
-    descriptionFr: 'Évaluation des théâtres d\'opérations, souveraineté territoriale et dynamique sahélienne.',
-    descriptionEn: 'Operational theater assessments, territorial sovereignty, and regional Sahelian dynamics.',
-  },
-  {
-    code: 'humanitaire',
-    nameFr: 'Humanitaire',
-    nameEn: 'Humanitarian',
-    categoryCode: 'securite',
-    descriptionFr: 'Personnes déplacées internes (PDI), réinstallation des populations et aide d\'urgence.',
-    descriptionEn: 'Internally displaced persons (IDPs), resettlement operations, and relief aid.',
-  },
-  {
-    code: 'services',
-    nameFr: 'Services',
-    nameEn: 'Public Services & Resettlement',
-    categoryCode: 'securite',
-    descriptionFr: 'Retour de l\'État, réouverture des écoles, centres de santé et administration civile.',
-    descriptionEn: 'Restoration of state presence, reopening of civil infrastructure, schools, and clinics.',
+    code: 'emplois',
+    nameFr: 'Emplois',
+    nameEn: 'Jobs & Employment',
+    categoryCode: 'economie',
+    descriptionFr: 'Insertion professionnelle, marché du travail, entrepreneuriat et formations qualifiantes.',
+    descriptionEn: 'Youth employment, labor market dynamics, entrepreneurship, and vocational training.',
   },
 
-  // ── CHANTIERS (5 sous-rubriques) ─────────────────────────────────
+  // ── 2. CHANTIERS (5 sous-rubriques) ─────────────────────────────────
   {
     code: 'energie',
     nameFr: 'Énergie',
@@ -115,7 +97,7 @@ export const SUB_CATEGORIES: SubCategory[] = [
     descriptionEn: 'Regional referral hospitals, university campuses, vocational centers, and public facilities.',
   },
 
-  // ── AGRICULTURE (4 sous-rubriques) ───────────────────────────────
+  // ── 3. AGRICULTURE (4 sous-rubriques) ───────────────────────────────
   {
     code: 'souverainete',
     nameFr: 'Souveraineté',
@@ -149,7 +131,7 @@ export const SUB_CATEGORIES: SubCategory[] = [
     descriptionEn: 'Tractor mechanization, solar pump irrigation, bio-fertilizers, and agronomic research.',
   },
 
-  // ── SOCIÉTÉ (4 sous-rubriques) ───────────────────────────────────
+  // ── 4. SOCIÉTÉ (4 sous-rubriques) ───────────────────────────────────
   {
     code: 'education',
     nameFr: 'Éducation',
@@ -183,7 +165,33 @@ export const SUB_CATEGORIES: SubCategory[] = [
     descriptionEn: 'Public integrity oversight, state digital services, anti-corruption audits, and judiciary reforms.',
   },
 
-  // ── HISTOIRE (3 sous-rubriques) ──────────────────────────────────
+  // ── 5. SÉCURITÉ (3 sous-rubriques) ──────────────────────────────────
+  {
+    code: 'situation',
+    nameFr: 'Situation',
+    nameEn: 'Security Situation',
+    categoryCode: 'securite',
+    descriptionFr: 'Évaluation des théâtres d\'opérations, souveraineté territoriale et dynamique sahélienne.',
+    descriptionEn: 'Operational theater assessments, territorial sovereignty, and regional Sahelian dynamics.',
+  },
+  {
+    code: 'humanitaire',
+    nameFr: 'Humanitaire',
+    nameEn: 'Humanitarian',
+    categoryCode: 'securite',
+    descriptionFr: 'Personnes déplacées internes (PDI), réinstallation des populations et aide d\'urgence.',
+    descriptionEn: 'Internally displaced persons (IDPs), resettlement operations, and relief aid.',
+  },
+  {
+    code: 'services',
+    nameFr: 'Services',
+    nameEn: 'Public Services & Resettlement',
+    categoryCode: 'securite',
+    descriptionFr: 'Retour de l\'État, réouverture des écoles, centres de santé et administration civile.',
+    descriptionEn: 'Restoration of state presence, reopening of civil infrastructure, schools, and clinics.',
+  },
+
+  // ── 6. HISTOIRE (3 sous-rubriques) ──────────────────────────────────
   {
     code: 'revolutions',
     nameFr: 'Révolutions',
