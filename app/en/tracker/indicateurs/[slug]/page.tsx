@@ -82,13 +82,13 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
 
           <div className="pb-6 border-b border-[#141414]">
             <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] mb-2">
-              <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">{indicator.code}</span>
+              <span className="bg-[#f4eee3] px-2 py-0.5 rounded-md border border-[#e6dfd5]">{indicator.code}</span>
               <span>·</span>
               <span className="text-[#555555]">Sector: {indicator.category}</span>
               {(indicator.pillarEn || indicator.pillar) && (
                 <>
                   <span>·</span>
-                  <span className="bg-[#0b4627] text-white px-2 py-0.5">
+                  <span className="bg-[#0b4627] text-white px-2 py-0.5 rounded-md">
                     {indicator.pillarEn || indicator.pillar}
                   </span>
                 </>
@@ -140,7 +140,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
             
             {/* Value & Target Strip */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white border border-[#141414] p-6">
+              <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-6">
                 <span className="text-[10px] font-mono text-[#737373] uppercase tracking-wider block mb-1">
                   Current Value ({indicator.currentYear})
                 </span>
@@ -155,7 +155,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
                 </div>
               </div>
 
-              <div className="bg-white border border-[#e6dfd5] p-6">
+              <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6">
                 <span className="text-[10px] font-mono text-[#737373] uppercase tracking-wider block mb-1">
                   Baseline ({indicator.baselineYear})
                 </span>
@@ -168,7 +168,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
                 </span>
               </div>
 
-              <div className="bg-[#f4eee3] border border-[#e6dfd5] p-6">
+              <div className="bg-[#f4eee3] border border-[#e6dfd5] rounded-xl shadow-xs p-6">
                 <span className="text-[10px] font-mono text-[#0b4627] uppercase tracking-wider block mb-1 font-bold">
                   PND Target 2030
                 </span>
@@ -183,7 +183,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
             </div>
 
             {/* Definition & Program */}
-            <section className="bg-white border border-[#e6dfd5] p-6 sm:p-8">
+            <section className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6 sm:p-8">
               <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] pb-2 mb-4 border-b border-[#e6dfd5]">
                 Indicator Definition & Perimeter
               </h2>
@@ -192,7 +192,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
                   {indicator.definition}
                 </p>
                 {indicator.program && (
-                  <p className="text-xs font-mono text-[#737373] mt-3 bg-[#faf8f5] p-2.5 border border-[#e6dfd5]">
+                  <p className="text-xs font-mono text-[#737373] mt-3 bg-[#faf8f5] p-2.5 border border-[#e6dfd5] rounded-lg">
                     <strong>Associated PND Program:</strong> {indicator.program}
                   </p>
                 )}
@@ -200,7 +200,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
             </section>
 
             {/* Historical Series Table */}
-            <section className="bg-white border border-[#e6dfd5] p-6 sm:p-8">
+            <section className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6 sm:p-8">
               <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] pb-2 mb-4 border-b border-[#e6dfd5]">
                 Documented Historical Series
               </h2>
@@ -254,7 +254,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
           <div className="lg:col-span-4 space-y-6">
             
             {/* Related Infrastructure Projects */}
-            <div className="bg-white border border-[#141414] p-6">
+            <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-6">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-4 border-b border-[#141414]">
                 Related Infrastructure Projects
               </h3>
@@ -266,7 +266,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
                       <div className="flex items-center justify-between text-[10px] font-mono text-[#737373] mb-1">
                         <div className="flex items-center gap-1.5">
                           {proj.code && (
-                            <span className="font-bold text-[#0b4627] bg-[#f4eee3] px-1 py-0.2 border border-[#e6dfd5]">
+                            <span className="font-bold text-[#0b4627] bg-[#f4eee3] px-1 py-0.2 rounded-md border border-[#e6dfd5]">
                               {proj.code}
                             </span>
                           )}
@@ -290,7 +290,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
 
               <Link
                 href="/en/tracker"
-                className="mt-6 w-full py-2 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:border-[#141414] transition-colors"
+                className="mt-6 w-full py-2 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs hover:border-[#141414] transition-colors"
               >
                 Browse All Projects →
               </Link>
@@ -299,7 +299,7 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
             {/* Back link */}
             <Link
               href="/en/tracker/indicateurs"
-              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
+              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs hover:bg-[#141414] hover:text-white transition-colors"
             >
               ← Back to RELANCE Barometer
             </Link>

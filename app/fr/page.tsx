@@ -258,7 +258,7 @@ export default async function HomePage() {
 
                   <div className="flex gap-2.5 items-start">
                     {fact.image && (
-                      <div className="w-14 h-11 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                      <div className="w-14 h-11 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                         <img 
                           src={fact.image} 
                           alt="Preuve factuelle" 
@@ -286,7 +286,7 @@ export default async function HomePage() {
           {/* COLUMN 2 (Col 6 / 50%) : LE GRAND DÉCRYPTAGE (THE HERO) (Order 1 on mobile, Order 2 on desktop) */}
           <div className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
             <div className="mb-3">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">
                 Grand Décryptage · Économie
               </span>
             </div>
@@ -297,7 +297,7 @@ export default async function HomePage() {
               </Link>
             </h1>
 
-            <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5]">
+            <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5] rounded-xl shadow-xs">
               <img 
                 src={leadArticle.image} 
                 alt={leadArticle.title}
@@ -343,7 +343,7 @@ export default async function HomePage() {
             </div>
 
             {/* Editorial Quote Frame */}
-            <div className="bg-[#f4eee3] border border-[#e6dfd5] p-5">
+            <div className="bg-[#f4eee3] border border-[#e6dfd5] p-5 rounded-xl">
               <Quote size={20} className="text-[#0b4627] mb-2 opacity-50" />
               <p className="font-serif italic text-xs text-[#141414] leading-relaxed mb-3">
                 {featuredQuote?.quoteFr || "« Ce que nous mesurons, c'est l'écart entre la promesse publique et la réalité vérifiable sur le sol burkinabè. »"}
@@ -472,7 +472,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* Field Report */}
-            <article className="border border-[#e6dfd5] bg-[#faf8f5] flex flex-col justify-between hover:border-[#141414] transition-colors">
+            <article className="border border-[#e6dfd5] bg-[#faf8f5] flex flex-col justify-between hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs">
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                   <img 
@@ -511,7 +511,7 @@ export default async function HomePage() {
             </article>
 
             {/* Fact Check */}
-            <article className="border border-[#e6dfd5] bg-[#faf8f5] flex flex-col justify-between hover:border-[#141414] transition-colors">
+            <article className="border border-[#e6dfd5] bg-[#faf8f5] flex flex-col justify-between hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs">
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                   <img 
@@ -524,7 +524,7 @@ export default async function HomePage() {
                 <div className="p-6">
                   <div className="flex justify-between items-center text-[10px] font-mono uppercase font-bold mb-3 pb-2 border-b border-[#e6dfd5]">
                     <span className="text-[#0b4627]">Vrai ou Faux · Vérification</span>
-                    <span className="text-[#c2410c] bg-white px-2 py-0.5 border border-[#e6dfd5]">Vrai mais incomplet</span>
+                    <span className="text-[#c2410c] bg-white px-2 py-0.5 border border-[#e6dfd5] rounded-md">Vrai mais incomplet</span>
                   </div>
 
                   <h3 className="text-lg sm:text-xl font-bold font-serif text-[#141414] leading-snug mb-3">
@@ -558,7 +558,7 @@ export default async function HomePage() {
           5. NEWSLETTER D'INVESTIGATION (Clean, dignified)
       ────────────────────────────────────────────────────────── */}
       <section id="newsletter" className="max-w-7xl mx-auto w-full px-4 sm:px-8 py-16">
-        <div className="border-2 border-[#141414] bg-white p-8 sm:p-12 text-center max-w-3xl mx-auto">
+        <div className="border-2 border-[#141414] bg-white p-8 sm:p-12 text-center max-w-3xl mx-auto rounded-2xl shadow-sm">
           <span className="text-[10px] font-mono uppercase tracking-widest text-[#0b4627] font-bold block mb-2">
             La lettre hebdomadaire
           </span>

@@ -351,7 +351,7 @@ export default function Header() {
             <div 
               onMouseEnter={handleDropdownMouseEnter}
               onMouseLeave={handleDropdownMouseLeave}
-              className="absolute top-full left-8 right-8 z-50 bg-white border-x-2 border-b-2 border-[#141414] shadow-2xl before:content-[''] before:absolute before:-top-2.5 before:left-0 before:right-0 before:h-2.5"
+              className="absolute top-full left-8 right-8 z-50 bg-white border-x-2 border-b-2 border-[#141414] shadow-2xl rounded-b-2xl overflow-hidden before:content-[''] before:absolute before:-top-2.5 before:left-0 before:right-0 before:h-2.5"
             >
               <div className="p-6">
                 {/* En-tête contextuel de la rubrique */}
@@ -437,7 +437,7 @@ export default function Header() {
 
       {/* 4. MOBILE DRAWER WITH RICH NAVIGATION & LANGUAGE PICKER */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b-2 border-[#141414] px-4 py-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="md:hidden bg-white border-b-2 border-[#141414] px-4 py-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-150 rounded-b-2xl shadow-xl">
           
           {/* Mobile Search inside drawer */}
           <HeaderSearch 

@@ -71,7 +71,7 @@ export default async function IssuesPageEn() {
             return (
               <article 
                 key={issue.id} 
-                className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between group"
+                className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between group rounded-xl overflow-hidden shadow-xs"
               >
                 <div>
                   <Link href={`/en/numeros/${issue.slug}`} className="block relative aspect-[16/10] overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
@@ -80,7 +80,7 @@ export default async function IssuesPageEn() {
                       alt={issue.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-2.5 left-2.5 bg-[#0b4627] text-white text-[10px] font-mono font-bold px-2 py-1 uppercase tracking-wider">
+                    <div className="absolute top-2.5 left-2.5 bg-[#0b4627] text-white text-[10px] font-mono font-bold px-2 py-1 uppercase tracking-wider rounded-md">
                       Issue {issue.number}
                     </div>
                   </Link>

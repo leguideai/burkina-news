@@ -27,7 +27,7 @@ export default function MethodePage() {
         
         {/* Sticky Table of Contents */}
         <div className="w-full md:w-1/4">
-          <div className="sticky top-24 space-y-4 bg-white p-5 border border-[#e6dfd5]">
+          <div className="sticky top-24 space-y-4 bg-white p-5 border border-[#e6dfd5] rounded-xl shadow-xs">
             <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 border-b border-[#e6dfd5]">
               Au sommaire
             </h3>
@@ -47,7 +47,7 @@ export default function MethodePage() {
         <div className="w-full md:w-3/4 space-y-12 text-[#333333] leading-relaxed">
           
           {/* Section 1 */}
-          <section id="positionnement" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="positionnement" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
               <ShieldCheck size={16} />
               <span>Section 01</span>
@@ -64,7 +64,7 @@ export default function MethodePage() {
           </section>
 
           {/* Section 2 */}
-          <section id="sources" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="sources" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
               <FileText size={16} />
               <span>Section 02</span>
@@ -85,7 +85,7 @@ export default function MethodePage() {
           </section>
 
           {/* Section 3 */}
-          <section id="tracker" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="tracker" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
               <Database size={16} />
               <span>Section 03</span>
@@ -97,17 +97,17 @@ export default function MethodePage() {
               Notre registre des grands chantiers classe chaque projet selon une séquence immuable de six statuts vérifiés :
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]"><strong>1. Annoncé :</strong> Simple déclaration ou promesse officielle.</div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]"><strong>2. Engagé :</strong> Financement bouclé ou marché formellement notifié.</div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]"><strong>3. En construction :</strong> Travaux physiquement engagés sur le site.</div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]"><strong>4. Inauguré :</strong> Réception officielle des ouvrages.</div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]"><strong>5. Opérationnel :</strong> Service public ou production effectivement rendus.</div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]"><strong>6. Impact mesuré :</strong> Données quantitatives publiées sur l'efficacité réelle.</div>
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg"><strong>1. Annoncé :</strong> Simple déclaration ou promesse officielle.</div>
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg"><strong>2. Engagé :</strong> Financement bouclé ou marché formellement notifié.</div>
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg"><strong>3. En construction :</strong> Travaux physiquement engagés sur le site.</div>
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg"><strong>4. Inauguré :</strong> Réception officielle des ouvrages.</div>
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg"><strong>5. Opérationnel :</strong> Service public ou production effectivement rendus.</div>
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg"><strong>6. Impact mesuré :</strong> Données quantitatives publiées sur l'efficacité réelle.</div>
             </div>
           </section>
 
           {/* Section 4 */}
-          <section id="verification" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="verification" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
               <CheckCircle size={16} />
               <span>Section 04</span>
@@ -121,7 +121,7 @@ export default function MethodePage() {
           </section>
 
           {/* Section 5 */}
-          <section id="archivage" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="archivage" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
               <Archive size={16} />
               <span>Section 05</span>
@@ -135,7 +135,7 @@ export default function MethodePage() {
           </section>
 
           {/* Section 6 */}
-          <section id="corrections" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="corrections" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
               <Edit3 size={16} />
               <span>Section 06</span>
@@ -149,7 +149,7 @@ export default function MethodePage() {
           </section>
 
           {/* Section 7 */}
-          <section id="traitement-donnees" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="traitement-donnees" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
               <Calculator size={16} />
               <span>Section 07</span>

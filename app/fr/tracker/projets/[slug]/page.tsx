@@ -88,7 +88,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <StatusBadge status={project.currentStatus} size="md" />
               {project.code && (
-                <span className="bg-[#141414] text-white px-2 py-0.5 text-xs font-mono font-bold tracking-wider">
+                <span className="bg-[#141414] text-white px-2 py-0.5 text-xs font-mono font-bold tracking-wider rounded-md">
                   {project.code}
                 </span>
               )}
@@ -127,7 +127,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <div className="lg:col-span-8 space-y-8">
             
             {/* Project Image */}
-            <div className="border border-[#e6dfd5] bg-white overflow-hidden">
+            <div className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs overflow-hidden">
               <div className="aspect-[16/9] w-full bg-neutral-100">
                 <img 
                   src={project.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=85'} 
@@ -142,7 +142,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </div>
 
             {/* Description & Overview */}
-            <section className="bg-white border border-[#e6dfd5] p-6 sm:p-8">
+            <section className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6 sm:p-8">
               <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] pb-2 mb-4 border-b border-[#e6dfd5]">
                 Présentation & Objectifs du Projet
               </h2>
@@ -152,7 +152,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </section>
 
             {/* Historical Status Timeline (Audit Trail) */}
-            <section className="bg-white border border-[#e6dfd5] p-6 sm:p-8">
+            <section className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6 sm:p-8">
               <div className="flex justify-between items-center pb-2 mb-6 border-b border-[#e6dfd5]">
                 <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627]">
                   Chronologie Documentée des 6 Statuts
@@ -172,7 +172,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     return (
                       <div key={s} className="space-y-1">
                         <div 
-                          className="h-2 rounded-xs transition-colors"
+                          className="h-2 rounded-full transition-colors"
                           style={{ backgroundColor: isCompleted ? stepColor : '#E5E7EB' }}
                         />
                         <span 
@@ -187,7 +187,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     );
                   })}
                 </div>
-                <div className="sm:hidden flex justify-between items-center text-[10px] font-mono text-[#555555] bg-[#faf8f5] p-2 border border-[#e6dfd5]">
+                <div className="sm:hidden flex justify-between items-center text-[10px] font-mono text-[#555555] bg-[#faf8f5] rounded-lg p-2 border border-[#e6dfd5]">
                   <span>Statut actuel :</span>
                   <span className="font-bold" style={{ color: PROJECT_STATUS_COLORS[project.currentStatus] }}>
                     {PROJECT_STATUS_LABELS[project.currentStatus]}
@@ -223,7 +223,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                       </span>
                     </div>
                     {entry.note && (
-                      <p className="text-xs font-serif text-[#555555] mt-1 bg-[#faf8f5] p-3 border border-[#e6dfd5]">
+                      <p className="text-xs font-serif text-[#555555] mt-1 bg-[#faf8f5] p-3 border border-[#e6dfd5] rounded-lg">
                         {entry.note}
                       </p>
                     )}
@@ -240,7 +240,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {linkedArticles.map(art => (
-                    <article key={art.id} className="p-4 bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors flex flex-col justify-between">
+                    <article key={art.id} className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs hover:border-[#141414] transition-colors flex flex-col justify-between">
                       <div>
                         <span className="text-[10px] font-mono font-bold uppercase text-[#0b4627] block mb-1">
                           {art.category}
@@ -277,11 +277,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     <Link
                       key={ind.code}
                       href={`/fr/tracker/indicateurs/${ind.code}`}
-                      className="p-4 bg-white border border-[#e6dfd5] hover:border-[#0b4627] transition-all flex flex-col justify-between group shadow-xs"
+                      className="p-4 bg-white border border-[#e6dfd5] rounded-xl hover:border-[#0b4627] transition-all flex flex-col justify-between group shadow-xs"
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <span className="text-[10px] font-mono font-bold uppercase bg-[#f4eee3] px-2 py-0.5 text-[#0b4627] border border-[#e6dfd5]">
+                          <span className="text-[10px] font-mono font-bold uppercase bg-[#f4eee3] px-2 py-0.5 rounded-md text-[#0b4627] border border-[#e6dfd5]">
                             {ind.code}
                           </span>
                           <span className="text-[10px] font-mono text-[#737373]">
@@ -291,7 +291,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                         <h4 className="font-serif font-bold text-sm text-[#141414] group-hover:text-[#0b4627] transition-colors mb-2 leading-snug">
                           {ind.name}
                         </h4>
-                        <div className="flex items-baseline justify-between text-xs font-mono bg-[#faf8f5] p-2 border border-[#e6dfd5] mb-2">
+                        <div className="flex items-baseline justify-between text-xs font-mono bg-[#faf8f5] p-2 border border-[#e6dfd5] rounded-lg mb-2">
                           <span className="text-[#555555]">Valeur constatée :</span>
                           <span className="font-bold text-[#0b4627] text-sm">{ind.currentValue} {ind.unit}</span>
                         </div>
@@ -317,7 +317,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <div className="lg:col-span-4 space-y-6">
             
             {/* Technical Specifications Card */}
-            <div className="bg-white border border-[#141414] p-6">
+            <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-6">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-3 mb-4 border-b border-[#141414]">
                 Fiche Technique
               </h3>
@@ -355,7 +355,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </div>
 
             {/* Project Actors Table */}
-            <div className="bg-white border border-[#e6dfd5] p-6">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-3 mb-4 border-b border-[#e6dfd5]">
                 Parties Prenantes
               </h3>
@@ -371,7 +371,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </div>
 
             {/* Official Primary Sources */}
-            <div className="bg-[#faf8f5] border border-[#e6dfd5] p-6">
+            <div className="bg-[#faf8f5] border border-[#e6dfd5] rounded-xl shadow-xs p-6">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] pb-3 mb-3 border-b border-[#e6dfd5]">
                 Sources Primaires Référencées
               </h3>
@@ -400,7 +400,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             {/* Back Button */}
             <Link 
               href="/fr/tracker"
-              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
+              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs hover:bg-[#141414] hover:text-white transition-colors"
             >
               ← Retour à l'annuaire du Tracker
             </Link>

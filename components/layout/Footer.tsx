@@ -48,7 +48,7 @@ export default function Footer({ lang }: { lang?: 'fr' | 'en' }) {
           
           {/* Col 1 : Brand & Mission (Col 4) */}
           <div className="lg:col-span-4 flex flex-col gap-4">
-            <Link href={isEn ? "/en" : "/fr"} className="bg-white p-3.5 sm:p-4 inline-block w-fit rounded-xs shadow-xs hover:opacity-95 transition-opacity">
+            <Link href={isEn ? "/en" : "/fr"} className="bg-white p-3.5 sm:p-4 inline-block w-fit rounded-lg shadow-xs hover:opacity-95 transition-opacity">
               <img src="/images/logo.png" alt="Burkina News" className="h-12 sm:h-14 lg:h-16 w-auto object-contain" />
             </Link>
 
@@ -59,7 +59,7 @@ export default function Footer({ lang }: { lang?: 'fr' | 'en' }) {
               }
             </p>
 
-            <div className="border border-[#1b4d32] p-3 text-xs font-serif text-[#a7c5b6]">
+            <div className="border border-[#1b4d32] rounded-lg p-3 text-xs font-serif text-[#a7c5b6]">
               <p className="font-semibold text-white mb-1">
                 {isEn ? "Editorial Standard:" : "Règle déontologique :"}
               </p>

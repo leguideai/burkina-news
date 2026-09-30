@@ -142,14 +142,14 @@ export default async function ArticleDetailPageEn({
           <div className="flex flex-wrap items-center gap-2.5 text-[11px] font-mono uppercase tracking-wider mb-3">
             <Link 
               href={`/en/${article.category}`}
-              className="bg-[#0b4627] text-white px-2.5 py-0.5 font-bold hover:bg-[#072e1a] transition-colors"
+              className="bg-[#0b4627] text-white px-2.5 py-0.5 rounded-md font-bold hover:bg-[#072e1a] transition-colors"
             >
               {categoryNameEn}
             </Link>
             {subCategoryNameEn && (
               <Link 
                 href={`/en/${article.category}?sub=${article.subCategory}`}
-                className="bg-[#f4eee3] text-[#0b4627] border border-[#0b4627]/30 px-2 py-0.5 font-bold hover:bg-[#0b4627] hover:text-white transition-colors"
+                className="bg-[#f4eee3] text-[#0b4627] border border-[#0b4627]/30 px-2 py-0.5 rounded-md font-bold hover:bg-[#0b4627] hover:text-white transition-colors"
               >
                 {subCategoryNameEn}
               </Link>
@@ -200,7 +200,7 @@ export default async function ArticleDetailPageEn({
           <div className="lg:col-span-8 space-y-8">
             
             {/* Hero Photograph */}
-            <div className="bg-white border border-[#e6dfd5] overflow-hidden">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden">
               <div className="aspect-[16/10] w-full bg-neutral-100">
                 <SafeImage 
                   src={article.image || '/images/lead.jpeg'} 
@@ -215,11 +215,11 @@ export default async function ArticleDetailPageEn({
             </div>
 
             {/* Article Body Content */}
-            <div className="bg-white border border-[#e6dfd5] p-5 sm:p-10">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-5 sm:p-10">
               <ArticleBodyRenderer content={article.body} lang="en" />
 
               {/* Red Team & Methodology Stamp */}
-              <div className="mt-10 pt-6 border-t-2 border-[#141414] bg-[#faf8f5] p-5 text-xs font-serif">
+              <div className="mt-10 pt-6 border-t-2 border-[#141414] bg-[#faf8f5] rounded-lg p-5 text-xs font-serif">
                 <div className="flex items-center gap-2 font-mono uppercase text-[10px] font-bold text-[#0b4627] mb-2">
                   <ShieldCheck size={14} />
                   <span>Investigation Closure Protocol</span>
@@ -235,7 +235,7 @@ export default async function ArticleDetailPageEn({
               <div className="flex flex-wrap items-center gap-2 pt-2">
                 <span className="font-mono text-[10px] uppercase text-[#737373]">Keywords:</span>
                 {article.tags.map((tag: string) => (
-                  <span key={tag} className="px-2.5 py-1 bg-white border border-[#e6dfd5] text-[11px] font-mono text-[#141414]">
+                  <span key={tag} className="px-2.5 py-1 bg-white border border-[#e6dfd5] rounded-md text-[11px] font-mono text-[#141414]">
                     #{tag}
                   </span>
                 ))}
@@ -248,7 +248,7 @@ export default async function ArticleDetailPageEn({
           <aside className="lg:col-span-4 space-y-6">
             
             {/* Dossier Meta Box */}
-            <div className="bg-white border border-[#141414] p-5">
+            <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-5">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#141414]">
                 Traceability Sheet
               </h3>
@@ -275,14 +275,14 @@ export default async function ArticleDetailPageEn({
 
             {/* Related Projects in Tracker */}
             {relatedProjects.length > 0 && (
-              <div className="bg-white border border-[#e6dfd5] p-5">
+              <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-5">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] pb-2 mb-3 border-b border-[#e6dfd5]">
                   Related Tracker Projects
                 </h3>
                 <div className="space-y-3">
                   {relatedProjects.map(p => (
-                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] flex gap-3 items-start">
-                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg flex gap-3 items-start">
+                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                         <img 
                           src={p.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
                           alt={p.title}
@@ -308,14 +308,14 @@ export default async function ArticleDetailPageEn({
 
             {/* Related Investigations (Pure PostgreSQL) */}
             {relatedArticles.length > 0 && (
-              <div className="bg-white border border-[#e6dfd5] p-5">
+              <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-5">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#141414]">
                   Related Investigations
                 </h3>
                 <div className="space-y-3">
                   {relatedArticles.map(art => (
-                    <div key={art.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] flex gap-3 items-start">
-                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                    <div key={art.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg flex gap-3 items-start">
+                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                         <SafeImage 
                           src={art.image || '/images/lead.jpeg'} 
                           alt={art.title}
@@ -339,7 +339,7 @@ export default async function ArticleDetailPageEn({
             {/* Back Button */}
             <Link 
               href={`/en/${article.category}`}
-              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
+              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs hover:bg-[#141414] hover:text-white transition-colors"
             >
               ← Back to {categoryNameEn}
             </Link>

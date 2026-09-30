@@ -81,13 +81,13 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
 
           <div className="pb-6 border-b border-[#141414]">
             <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] mb-2">
-              <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">{indicator.code}</span>
+              <span className="bg-[#f4eee3] px-2 py-0.5 rounded-md border border-[#e6dfd5]">{indicator.code}</span>
               <span>·</span>
               <span className="text-[#555555]">Secteur : {indicator.category}</span>
               {indicator.pillar && (
                 <>
                   <span>·</span>
-                  <span className="bg-[#0b4627] text-white px-2 py-0.5">{indicator.pillar}</span>
+                  <span className="bg-[#0b4627] text-white px-2 py-0.5 rounded-md">{indicator.pillar}</span>
                 </>
               )}
             </div>
@@ -135,7 +135,7 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
             
             {/* Photographic Sector Evidence */}
             {indicator.image && (
-              <div className="bg-white border border-[#e6dfd5] overflow-hidden">
+              <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden">
                 <div className="aspect-[16/9] w-full bg-neutral-100">
                   <img 
                     src={indicator.image} 
@@ -151,7 +151,7 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
             )}
 
             {/* Value Display Box */}
-            <div className="bg-white border border-[#141414] p-6 sm:p-8">
+            <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 mb-6 border-b border-[#e6dfd5]">
                 <div>
                   <span className="text-xs font-mono text-[#737373] uppercase block mb-1">
@@ -167,17 +167,17 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
 
                 <div className="font-mono text-xs">
                   {indicator.trend === 'up' && (
-                    <span className="bg-[#f0fdf4] text-[#0b4627] border border-green-200 px-3 py-1.5 font-bold">
+                    <span className="bg-[#f0fdf4] text-[#0b4627] border border-green-200 px-3 py-1.5 rounded-md font-bold">
                       ↗ Tendance à la hausse
                     </span>
                   )}
                   {indicator.trend === 'down' && (
-                    <span className="bg-neutral-100 text-neutral-800 border border-neutral-300 px-3 py-1.5 font-bold">
+                    <span className="bg-neutral-100 text-neutral-800 border border-neutral-300 px-3 py-1.5 rounded-md font-bold">
                       ↘ Tendance à la baisse
                     </span>
                   )}
                   {indicator.trend === 'stable' && (
-                    <span className="bg-neutral-100 text-[#737373] border border-neutral-300 px-3 py-1.5 font-bold">
+                    <span className="bg-neutral-100 text-[#737373] border border-neutral-300 px-3 py-1.5 rounded-md font-bold">
                       → Tendance stable
                     </span>
                   )}
@@ -186,15 +186,15 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
 
               {/* Progress toward 2030 target */}
               {indicator.target2030 && (
-                <div className="bg-[#faf8f5] border border-[#e6dfd5] p-5 mb-6">
+                <div className="bg-[#faf8f5] border border-[#e6dfd5] rounded-xl p-5 mb-6">
                   <div className="flex justify-between items-center text-xs font-mono mb-2">
                     <span className="text-[#737373] uppercase">Trajectoire PND 2026–2030</span>
                     <span className="font-bold text-[#0b4627]">{Math.round(progressPercent)}% de l'objectif</span>
                   </div>
 
-                  <div className="w-full bg-neutral-200 h-2 mb-2">
+                  <div className="w-full bg-neutral-200 h-2 rounded-full overflow-hidden mb-2">
                     <div 
-                      className="h-2 bg-[#0b4627]"
+                      className="h-2 bg-[#0b4627] rounded-full transition-all"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
@@ -215,7 +215,7 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
                   {indicator.definition}
                 </p>
                 {indicator.program && (
-                  <p className="text-xs font-mono text-[#737373] mt-3 bg-[#faf8f5] p-2.5 border border-[#e6dfd5]">
+                  <p className="text-xs font-mono text-[#737373] mt-3 bg-[#faf8f5] p-2.5 border border-[#e6dfd5] rounded-lg">
                     <strong>Programme PND associé :</strong> {indicator.program}
                   </p>
                 )}
@@ -223,7 +223,7 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
             </div>
 
             {/* Historical Series Table */}
-            <div className="bg-white border border-[#e6dfd5] p-6 sm:p-8">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6 sm:p-8">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] mb-4 pb-2 border-b border-[#141414]">
                 Série Historique des Données Vérifiées
               </h3>
@@ -267,7 +267,7 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
           <div className="lg:col-span-4 space-y-6">
             
             {/* Primary Source Meta */}
-            <div className="bg-white border border-[#e6dfd5] p-5">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-5">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#e6dfd5]">
                 Source Primaire Certifiée
               </h3>
@@ -290,14 +290,14 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
 
             {/* Related Projects */}
             {relatedProjects.length > 0 && (
-              <div className="bg-white border border-[#e6dfd5] p-5">
+              <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-5">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#e6dfd5]">
                   Chantiers Liés dans le Tracker
                 </h3>
                 <div className="space-y-3">
                   {relatedProjects.map(p => (
-                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] flex gap-3 items-start">
-                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg flex gap-3 items-start">
+                      <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                         <img 
                           src={p.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
                           alt={p.title}
@@ -323,7 +323,7 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
 
             <Link 
               href="/fr/tracker/indicateurs"
-              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
+              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs hover:bg-[#141414] hover:text-white transition-colors"
             >
               ← Tous les indicateurs
             </Link>

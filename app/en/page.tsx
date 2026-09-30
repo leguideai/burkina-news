@@ -269,7 +269,7 @@ export default async function HomePageEn() {
 
                   <div className="flex gap-2.5 items-start">
                     {fact.image && (
-                      <div className="w-14 h-11 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                      <div className="w-14 h-11 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                         <img 
                           src={fact.image} 
                           alt="Evidence thumbnail" 
@@ -297,7 +297,7 @@ export default async function HomePageEn() {
           {/* COLUMN 2 (Col 6 / 50%) : THE DEEP DIVE (THE HERO) (Order 1 on mobile, Order 2 on desktop) */}
           <div className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
             <div className="mb-3">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">
                 The Deep Dive · Economy
               </span>
             </div>
@@ -308,7 +308,7 @@ export default async function HomePageEn() {
               </Link>
             </h1>
 
-            <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5]">
+            <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5] rounded-xl shadow-xs">
               <img 
                 src={leadArticle.image || leadArticle.imageUrl} 
                 alt={leadArticle.title} 
@@ -328,7 +328,7 @@ export default async function HomePageEn() {
 
             <Link 
               href={`/en/${leadArticle.category}/${leadArticle.slug}`}
-              className="font-mono text-xs font-bold uppercase tracking-wider text-white bg-[#0b4627] hover:bg-[#072e1a] px-5 py-3 self-start transition-colors"
+              className="font-mono text-xs font-bold uppercase tracking-wider text-white bg-[#0b4627] hover:bg-[#072e1a] px-5 py-3 self-start transition-colors rounded-lg"
             >
               Read full investigation →
             </Link>
@@ -345,7 +345,7 @@ export default async function HomePageEn() {
             <div className="space-y-6">
               {secondaryArticles.slice(0, 2).map((art) => (
                 <article key={art.id} className="group pb-6 border-b border-[#e6dfd5] last:border-0 last:pb-0">
-                  <div className="w-full aspect-[16/10] overflow-hidden bg-neutral-100 mb-2.5 border border-[#e6dfd5]">
+                  <div className="w-full aspect-[16/10] overflow-hidden bg-neutral-100 mb-2.5 border border-[#e6dfd5] rounded-lg">
                     <img 
                       src={art.image || art.imageUrl} 
                       alt={art.title} 
@@ -378,7 +378,7 @@ export default async function HomePageEn() {
             </div>
 
             {/* Editorial Quote Box */}
-            <div className="bg-[#f4eee3] border border-[#e6dfd5] p-5">
+            <div className="bg-[#f4eee3] border border-[#e6dfd5] p-5 rounded-xl">
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#0b4627] font-bold block mb-2">
                 Editorial Note
               </span>
@@ -497,7 +497,7 @@ export default async function HomePageEn() {
               <span className="text-[11px] font-serif text-[#737373] italic">Bobo-Dioulasso Desk</span>
             </div>
 
-            <article className="bg-white border border-[#e6dfd5] flex flex-col justify-between group h-[calc(100%-3rem)]">
+            <article className="bg-white border border-[#e6dfd5] flex flex-col justify-between group h-[calc(100%-3rem)] rounded-xl overflow-hidden shadow-xs">
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                   <img 
@@ -544,7 +544,7 @@ export default async function HomePageEn() {
               </h2>
             </div>
 
-            <article className="bg-white border border-[#e6dfd5] flex flex-col justify-between group h-[calc(100%-3rem)]">
+            <article className="bg-white border border-[#e6dfd5] flex flex-col justify-between group h-[calc(100%-3rem)] rounded-xl overflow-hidden shadow-xs">
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                   <img 
@@ -590,7 +590,7 @@ export default async function HomePageEn() {
           5. NEWSLETTER SUBSCRIPTION
       ────────────────────────────────────────────────────────── */}
       <section id="newsletter" className="max-w-7xl mx-auto w-full px-4 sm:px-8 py-16">
-        <div className="border-2 border-[#141414] bg-white p-8 sm:p-12 text-center max-w-3xl mx-auto">
+        <div className="border-2 border-[#141414] bg-white p-8 sm:p-12 text-center max-w-3xl mx-auto rounded-2xl shadow-sm">
           <span className="text-[10px] font-mono uppercase tracking-widest text-[#0b4627] font-bold block mb-2">
             The Weekly Newsletter
           </span>

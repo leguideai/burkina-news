@@ -21,7 +21,7 @@ export default function NewsletterSignup() {
   };
 
   return (
-    <div className="bg-[var(--ink)] rounded-lg overflow-hidden flex flex-col md:flex-row shadow-lg my-8">
+    <div className="bg-[var(--ink)] rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-lg my-8">
       <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
         <span className="text-[var(--orange)] font-bold text-xs uppercase tracking-wider mb-2">
           La lettre Burkina News
@@ -54,13 +54,13 @@ export default function NewsletterSignup() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Votre adresse email"
                 required
-                className="w-full px-4 py-3 rounded bg-white text-[var(--ink)] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--orange)]"
+                className="w-full px-4 py-3 rounded-lg bg-white text-[var(--ink)] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--orange)]"
               />
             </div>
             <button 
               type="submit" 
               disabled={status === 'loading'}
-              className="w-full bg-[var(--orange)] hover:bg-[var(--orange-light)] text-white font-bold py-3 px-4 rounded transition-colors disabled:opacity-70 flex justify-center items-center"
+              className="w-full bg-[var(--orange)] hover:bg-[var(--orange-light)] text-white font-bold py-3 px-4 rounded-lg shadow-xs transition-colors disabled:opacity-70 flex justify-center items-center"
             >
               {status === 'loading' ? 'Inscription...' : 'S\'inscrire'}
             </button>

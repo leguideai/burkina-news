@@ -74,6 +74,34 @@ a svg {
   pointer-events: none;
 }
 
+/* Rounded corners on all interactive elements (directive Alfred Dah 2026-09-29) */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  border-radius: 0.5rem; /* rounded-lg equivalent = 8px */
+}
+
+select,
+input[type="text"],
+input[type="email"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
+input[type="password"],
+textarea {
+  border-radius: 0.5rem;
+}
+
+[role="menu"],
+[role="listbox"],
+.dropdown-menu,
+details[open] > summary + * {
+  border-radius: 0.75rem;
+}
+
 /* Classic Newspaper Rules */
 .double-border-b {
   border-bottom: 3px double #141414;

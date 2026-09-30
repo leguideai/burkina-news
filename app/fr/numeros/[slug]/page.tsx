@@ -81,7 +81,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
 
           <div className="pb-6 border-b border-[#141414]">
             <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] mb-2">
-              <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">Édition Mensuelle</span>
+              <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">Édition Mensuelle</span>
               <span>·</span>
               <span className="text-[#555555]">{formattedDate}</span>
             </div>
@@ -99,7 +99,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
                 <a 
                   href={issue.pdfUrl}
                   download={`Burkina-News-Numero-0${issue.number}.pdf`}
-                  className="w-full py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 transition-colors"
+                  className="w-full py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 rounded-lg shadow-xs transition-colors"
                 >
                   <Download size={15} />
                   <span>Télécharger le Numéro 0{issue.number} (PDF)</span>
@@ -124,14 +124,14 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
               <span className="font-mono text-xs text-[#737373]">{issue.articleCount} contenus audités</span>
             </div>
 
-            <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5]">
+            <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden">
               {issueArticles.map((art, idx) => (
                 <article key={art.id} className="p-4 sm:p-6 hover:bg-[#faf8f5] transition-colors group flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
                   <div className="flex sm:flex-col items-center sm:items-start gap-3 w-full sm:w-36 shrink-0">
                     <span className="font-mono text-lg sm:text-xl font-bold text-[#0b4627] block sm:mb-2">
                       0{idx + 1}
                     </span>
-                    <div className="w-full sm:w-36 aspect-[16/10] overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                    <div className="w-full sm:w-36 aspect-[16/10] overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                       <img 
                         src={art.image || '/images/lead.jpeg'} 
                         alt={art.title}
@@ -173,8 +173,8 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
           <div className="lg:col-span-4 space-y-6">
             
             {/* Cover Card */}
-            <div className="border border-[#e6dfd5] bg-white p-5">
-              <div className="aspect-[4/3] w-full overflow-hidden bg-neutral-100 border border-[#e6dfd5] mb-4">
+            <div className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs p-5">
+              <div className="aspect-[4/3] w-full overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-lg mb-4">
                 <img 
                   src={issue.coverImage} 
                   alt={issue.title}
@@ -199,7 +199,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
             </div>
 
             {/* PDF Card */}
-            <div className="border border-[#141414] bg-white p-5">
+            <div className="border border-[#141414] bg-white rounded-xl shadow-xs p-5">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] mb-2 pb-2 border-b border-[#141414]">
                 Édition d'Archive
               </h3>
@@ -210,12 +210,12 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
                 <a 
                   href={issue.pdfUrl}
                   download={`Burkina-News-Numero-0${issue.number}.pdf`}
-                  className="w-full py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center block transition-colors"
+                  className="w-full py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs transition-colors"
                 >
                   Télécharger le PDF
                 </a>
               ) : (
-                <span className="w-full py-2 bg-[#faf8f5] border border-[#e6dfd5] text-[#737373] text-xs font-mono text-center block">
+                <span className="w-full py-2 bg-[#faf8f5] border border-[#e6dfd5] text-[#737373] text-xs font-mono text-center block rounded-lg">
                   Format numérique en ligne
                 </span>
               )}
@@ -224,7 +224,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
             {/* Back link */}
             <Link 
               href="/fr/numeros"
-              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
+              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs hover:bg-[#141414] hover:text-white transition-colors"
             >
               ← Tous les numéros
             </Link>

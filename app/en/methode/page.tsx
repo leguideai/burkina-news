@@ -27,7 +27,7 @@ export default function MethodePageEn() {
         
         {/* Sticky Table of Contents */}
         <div className="w-full md:w-1/4">
-          <div className="sticky top-24 space-y-4 bg-white p-5 border border-[#e6dfd5]">
+          <div className="sticky top-24 space-y-4 bg-white p-5 border border-[#e6dfd5] rounded-xl shadow-xs">
             <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 border-b border-[#e6dfd5]">
               Contents
             </h3>
@@ -47,7 +47,7 @@ export default function MethodePageEn() {
         <div className="w-full md:w-3/4 space-y-12 text-[#333333] leading-relaxed">
           
           {/* Section 1 */}
-          <section id="positioning" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="positioning" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-8 rounded-full bg-[#f4eee3] text-[#0b4627] font-mono font-bold flex items-center justify-center text-sm">01</span>
               <h2 className="text-xl sm:text-2xl font-bold text-[#141414]">1. Our Editorial Positioning</h2>
@@ -61,7 +61,7 @@ export default function MethodePageEn() {
           </section>
 
           {/* Section 2 */}
-          <section id="sources" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="sources" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-8 rounded-full bg-[#f4eee3] text-[#0b4627] font-mono font-bold flex items-center justify-center text-sm">02</span>
               <h2 className="text-xl sm:text-2xl font-bold text-[#141414]">2. Strict Hierarchy of Sources</h2>
@@ -69,7 +69,7 @@ export default function MethodePageEn() {
             <p className="mb-4">
               Every data point published on Burkina News is classified according to a 5-tier evidential hierarchy:
             </p>
-            <ol className="space-y-3 list-decimal list-inside text-sm bg-[#faf8f5] p-5 border border-[#e6dfd5]">
+            <ol className="space-y-3 list-decimal list-inside text-sm bg-[#faf8f5] p-5 border border-[#e6dfd5] rounded-lg">
               <li><strong>Institutional Primary Sources:</strong> Reports by DGMG, INSD, BCEAO, ministerial decrees, and certified administrative budgets.</li>
               <li><strong>Verifiable Multilateral Bodies:</strong> IMF, World Bank, African Development Bank, UN agencies, WHO, FAO.</li>
               <li><strong>Direct Field Verification:</strong> Visual observation, photographic capture, and on-site reporting by our correspondents.</li>
@@ -79,7 +79,7 @@ export default function MethodePageEn() {
           </section>
 
           {/* Section 3 */}
-          <section id="tracker" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="tracker" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-8 rounded-full bg-[#f4eee3] text-[#0b4627] font-mono font-bold flex items-center justify-center text-sm">03</span>
               <h2 className="text-xl sm:text-2xl font-bold text-[#141414]">3. The Project Tracker Lifecycle</h2>
@@ -88,27 +88,27 @@ export default function MethodePageEn() {
               The Tracker monitors major structural projects across Burkina Faso through 6 sequential statuses. No project advances to a subsequent status without a validated primary proof document:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg">
                 <strong className="text-[#141414] block mb-1">1. Announced</strong>
                 <span>Official communication in Council of Ministers or public presidential speech.</span>
               </div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg">
                 <strong className="text-[#141414] block mb-1">2. Committed</strong>
                 <span>Secured financing, signed decree, or finalized procurement contract.</span>
               </div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg">
                 <strong className="text-[#141414] block mb-1">3. Under Construction</strong>
                 <span>Physical works underway, verified on the ground with date-stamped photographic evidence.</span>
               </div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg">
                 <strong className="text-[#141414] block mb-1">4. Inaugurated</strong>
                 <span>Official commissioning or formal state ceremony.</span>
               </div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg">
                 <strong className="text-[#141414] block mb-1">5. Operational</strong>
                 <span>Effective service delivery (megawatts on the grid, traffic open, water flowing).</span>
               </div>
-              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
+              <div className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg">
                 <strong className="text-[#141414] block mb-1">6. Impact Measured</strong>
                 <span>Independent evaluation of actual output compared to original pledge.</span>
               </div>
@@ -116,7 +116,7 @@ export default function MethodePageEn() {
           </section>
 
           {/* Section 4 */}
-          <section id="verification" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="verification" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-8 rounded-full bg-[#f4eee3] text-[#0b4627] font-mono font-bold flex items-center justify-center text-sm">04</span>
               <h2 className="text-xl sm:text-2xl font-bold text-[#141414]">4. Adversarial Verification (Red Team Test)</h2>
@@ -130,7 +130,7 @@ export default function MethodePageEn() {
           </section>
 
           {/* Section 5 */}
-          <section id="archiving" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="archiving" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-8 rounded-full bg-[#f4eee3] text-[#0b4627] font-mono font-bold flex items-center justify-center text-sm">05</span>
               <h2 className="text-xl sm:text-2xl font-bold text-[#141414]">5. Evidence Archival</h2>
@@ -146,7 +146,7 @@ export default function MethodePageEn() {
           </section>
 
           {/* Section 6 */}
-          <section id="corrections" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="corrections" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-8 rounded-full bg-[#f4eee3] text-[#0b4627] font-mono font-bold flex items-center justify-center text-sm">06</span>
               <h2 className="text-xl sm:text-2xl font-bold text-[#141414]">6. Public Correction Registry</h2>
@@ -160,7 +160,7 @@ export default function MethodePageEn() {
           </section>
 
           {/* Section 7 */}
-          <section id="data-audit" className="bg-white p-6 sm:p-8 border border-[#e6dfd5]">
+          <section id="data-audit" className="bg-white p-6 sm:p-8 border border-[#e6dfd5] rounded-xl shadow-xs">
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-8 rounded-full bg-[#f4eee3] text-[#0b4627] font-mono font-bold flex items-center justify-center text-sm">07</span>
               <h2 className="text-xl sm:text-2xl font-bold text-[#141414]">7. Quantitative Data Auditing</h2>

@@ -27,7 +27,7 @@ export default function FilLiveStream({ locale = 'fr' }: FilLiveStreamProps) {
   const isFr = locale === 'fr';
 
   return (
-    <div className="bg-white border border-[#e6dfd5] p-4 sm:p-5 mb-8 shadow-xs">
+    <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-4 sm:p-5 mb-8">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#e6dfd5]">
         <div className="flex items-center gap-2.5">
           <span className="relative flex h-2.5 w-2.5">
@@ -47,12 +47,12 @@ export default function FilLiveStream({ locale = 'fr' }: FilLiveStreamProps) {
 
         <div className="flex items-center gap-2">
           {isConnected ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-medium text-[#087443] bg-[#087443]/10 px-2 py-0.5 rounded">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-medium text-[#087443] bg-[#087443]/10 px-2 py-0.5 rounded-md">
               <Wifi size={12} className="animate-pulse" />
               <span>{isFr ? 'Diffusion SSE active' : 'Live SSE active'}</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-medium text-[#736c62] bg-neutral-100 px-2 py-0.5 rounded">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-medium text-[#736c62] bg-neutral-100 px-2 py-0.5 rounded-md">
               <WifiOff size={12} />
               <span>{isFr ? 'Connexion en attente' : 'Reconnecting...'}</span>
             </span>
@@ -66,11 +66,11 @@ export default function FilLiveStream({ locale = 'fr' }: FilLiveStreamProps) {
             <Sparkles size={12} />
             <span>{isFr ? 'Dernières dépêches reçues en direct :' : 'Latest breaking dispatches:'}</span>
           </div>
-          <div className="divide-y divide-[#f4eee3] bg-[#faf8f5] border border-[#e6dfd5] p-3 rounded">
+          <div className="divide-y divide-[#f4eee3] bg-[#faf8f5] border border-[#e6dfd5] p-3 rounded-lg">
             {liveFacts.map((fact) => (
               <div key={fact.id} className="py-2.5 first:pt-1 last:pb-1 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                 <div className="flex items-start gap-2.5">
-                  <span className="font-mono text-[11px] font-bold px-1.5 py-0.5 bg-[#141414] text-[#ffd8a8] rounded shrink-0">
+                  <span className="font-mono text-[11px] font-bold px-1.5 py-0.5 bg-[#141414] text-[#ffd8a8] rounded-sm shrink-0">
                     {fact.time}
                   </span>
                   <div>

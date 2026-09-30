@@ -43,7 +43,7 @@ export default function ArticleBodyRenderer({
 
   if (!content || !content.trim()) {
     return (
-      <div className="p-8 text-center text-[#737373] font-serif italic bg-[#faf8f5] border border-[#e6dfd5] rounded">
+      <div className="p-8 text-center text-[#737373] font-serif italic bg-[#faf8f5] border border-[#e6dfd5] rounded-xl shadow-xs">
         {lang === 'en' 
           ? 'Full investigation content is being digitized and archived.' 
           : "Contenu documentaire complet en cours d'archivage."}
@@ -175,11 +175,11 @@ export default function ArticleBodyRenderer({
                 </div>
                 <div className="shrink-0 flex items-center gap-2">
                   {source ? (
-                    <span className="font-mono text-[10px] text-[#777] uppercase tracking-wider bg-white px-2 py-0.5 rounded border border-[#e6dfd5]">
+                    <span className="font-mono text-[10px] text-[#777] uppercase tracking-wider bg-white px-2 py-0.5 rounded-md border border-[#e6dfd5]">
                       Source : {source}
                     </span>
                   ) : (
-                    <span className="font-mono text-[10px] text-[#087443] font-bold uppercase tracking-wider bg-[#087443]/10 px-2 py-0.5 rounded">
+                    <span className="font-mono text-[10px] text-[#087443] font-bold uppercase tracking-wider bg-[#087443]/10 px-2 py-0.5 rounded-md">
                       Archive Rédaction
                     </span>
                   )}
@@ -215,7 +215,7 @@ export default function ArticleBodyRenderer({
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="inline-block px-2 py-0.5 bg-[#141414] text-white font-mono text-[9px] font-bold uppercase tracking-wider rounded">
+                      <span className="inline-block px-2 py-0.5 bg-[#141414] text-white font-mono text-[9px] font-bold uppercase tracking-wider rounded-md">
                         {lang === 'en' ? 'PRIMARY EVIDENCE' : 'PIÈCE DU DOSSIER'}
                       </span>
                       <span className="font-mono text-[10px] text-[#737373] uppercase">
@@ -324,7 +324,7 @@ export default function ArticleBodyRenderer({
                 const itemContent = match ? match[2] : l.trim();
                 return (
                   <li key={lIdx} className="flex items-start gap-3 text-base sm:text-lg">
-                    <span className="font-mono text-xs font-bold text-[#087443] bg-[#087443]/10 px-2 py-0.5 rounded shrink-0 mt-1">
+                    <span className="font-mono text-xs font-bold text-[#087443] bg-[#087443]/10 px-2 py-0.5 rounded-md shrink-0 mt-1">
                       {num}.
                     </span>
                     <span className="flex-1">{renderInline(itemContent)}</span>
@@ -380,7 +380,7 @@ export default function ArticleBodyRenderer({
             </div>
 
             {/* Main Image */}
-            <div className="relative rounded-lg overflow-hidden border border-neutral-700 bg-neutral-950 flex items-center justify-center max-h-[75vh]">
+            <div className="relative rounded-xl overflow-hidden border border-neutral-700 bg-neutral-950 flex items-center justify-center max-h-[75vh]">
               <img
                 src={lightbox.url}
                 alt={lightbox.caption}
@@ -389,7 +389,7 @@ export default function ArticleBodyRenderer({
             </div>
 
             {/* Bottom Caption & Source */}
-            <div className="w-full mt-3 p-3 bg-neutral-900/90 border border-neutral-800 rounded-lg text-white text-xs font-serif flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="w-full mt-3 p-3 bg-neutral-900/90 border border-neutral-800 rounded-xl text-white text-xs font-serif flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Camera size={14} className="text-emerald-400 shrink-0" />
                 <span className="italic">{lightbox.caption || 'Photographie documentaire'}</span>

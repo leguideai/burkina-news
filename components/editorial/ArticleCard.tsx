@@ -24,8 +24,8 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
   // 1. LEAD VARIANT (Main centerpiece story)
   if (variant === 'lead') {
     return (
-      <article className="group flex flex-col bg-white border border-[#e6dfd5] p-6 sm:p-8">
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100 mb-6">
+      <article className="group flex flex-col bg-white border border-[#e6dfd5] p-6 sm:p-8 rounded-2xl overflow-hidden shadow-xs">
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100 mb-6 rounded-xl">
           <SafeImage 
             src={imageSrc} 
             alt={title}
@@ -38,7 +38,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           {subCategoryName && (
             <>
               <span className="text-[#a3a3a3]">/</span>
-              <span className="bg-[#f4eee3] text-[#0b4627] font-semibold px-2 py-0.5 border border-[#e6dfd5]">
+              <span className="bg-[#f4eee3] text-[#0b4627] font-semibold px-2 py-0.5 border border-[#e6dfd5] rounded-md">
                 {subCategoryName}
               </span>
             </>
@@ -76,8 +76,8 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
   // 2. HORIZONTAL VARIANT (Classic two-column)
   if (variant === 'horizontal') {
     return (
-      <article className="group flex flex-col sm:flex-row gap-5 p-4 bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors">
-        <div className="sm:w-1/3 aspect-[4/3] overflow-hidden bg-neutral-100 shrink-0">
+      <article className="group flex flex-col sm:flex-row gap-5 p-4 bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs">
+        <div className="sm:w-1/3 aspect-[4/3] overflow-hidden bg-neutral-100 shrink-0 rounded-lg">
           <SafeImage 
             src={imageSrc} 
             alt={title}
@@ -121,7 +121,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
   if (variant === 'compact') {
     return (
       <article className="group flex gap-3 pb-4 mb-4 border-b border-[#e6dfd5] last:border-0 last:pb-0 last:mb-0 items-start">
-        <div className="w-20 h-16 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+        <div className="w-20 h-16 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-lg">
           <SafeImage 
             src={imageSrc} 
             alt={title}
@@ -134,7 +134,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
             {subCategoryName && (
               <>
                 <span className="text-[#a3a3a3]">/</span>
-                <span className="bg-[#f4eee3] text-[#0b4627] px-1 py-0.2 border border-[#e6dfd5]">
+                <span className="bg-[#f4eee3] text-[#0b4627] px-1 py-0.2 border border-[#e6dfd5] rounded">
                   {subCategoryName}
                 </span>
               </>
@@ -153,8 +153,8 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
 
   // 4. DEFAULT CARD (Grid)
   return (
-    <article className="group flex flex-col bg-white border border-[#e6dfd5] p-5 hover:border-[#141414] transition-colors h-full">
-      <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4">
+    <article className="group flex flex-col bg-white border border-[#e6dfd5] p-5 hover:border-[#141414] transition-colors h-full rounded-xl overflow-hidden shadow-xs">
+      <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 rounded-lg">
         <SafeImage 
           src={imageSrc} 
           alt={title}

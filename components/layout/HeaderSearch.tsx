@@ -261,7 +261,7 @@ export default function HeaderSearch({
       {/* Floating Suggestions Dropdown */}
       {isOpen && (
         <div 
-          className={`absolute left-0 mt-1 z-50 bg-white border-2 border-[#141414] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 ${
+          className={`absolute left-0 mt-1 z-50 bg-white border-2 border-[#141414] shadow-2xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 ${
             isMobile 
               ? 'w-full' 
               : 'w-[380px] lg:w-[440px] right-0 left-auto'

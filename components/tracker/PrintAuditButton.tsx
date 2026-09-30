@@ -30,7 +30,7 @@ export default function PrintAuditButton({
       <button
         onClick={handlePrint}
         type="button"
-        className={`inline-flex items-center gap-2 px-4 py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors shadow-xs cursor-pointer ${className}`}
+        className={`inline-flex items-center gap-2 px-4 py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors shadow-xs rounded-lg cursor-pointer ${className}`}
         aria-label={label}
       >
         <Download size={14} />
@@ -43,7 +43,7 @@ export default function PrintAuditButton({
     <button
       onClick={handlePrint}
       type="button"
-      className={`inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[#141414] hover:bg-[#141414] hover:text-white text-[#141414] text-xs font-mono font-bold uppercase tracking-wider transition-colors shadow-xs cursor-pointer ${className}`}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[#141414] hover:bg-[#141414] hover:text-white text-[#141414] text-xs font-mono font-bold uppercase tracking-wider transition-colors shadow-xs rounded-lg cursor-pointer ${className}`}
       aria-label={label}
     >
       <Printer size={13} />
