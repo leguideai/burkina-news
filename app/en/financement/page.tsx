@@ -23,7 +23,7 @@ export default function FinancementPageEn() {
       </div>
 
       {/* Intro Box */}
-      <div className="bg-white border border-[#141414] p-6 mb-12">
+      <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-6 mb-12">
         <p className="text-base text-[#141414] leading-relaxed">
           Our economic framework is designed to guarantee uncompromised freedom of investigation. We accept no direct governmental subsidies, no disguised native advertising, and no commercial partnerships capable of creating conflicts of interest with our reporting.
         </p>
@@ -38,7 +38,7 @@ export default function FinancementPageEn() {
           </h2>
 
           <div className="space-y-4 text-xs font-serif">
-            <div className="bg-white border border-[#e6dfd5] p-4 flex justify-between items-center">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-4 flex justify-between items-center">
               <div>
                 <h3 className="font-bold text-sm text-[#141414]">Founding Newsroom Equity</h3>
                 <p className="text-[#737373] mt-0.5">Initial capital committed to ensure total autonomy</p>
@@ -46,7 +46,7 @@ export default function FinancementPageEn() {
               <span className="text-2xl font-bold font-mono text-[#0b4627]">60%</span>
             </div>
 
-            <div className="bg-white border border-[#e6dfd5] p-4 flex justify-between items-center">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-4 flex justify-between items-center">
               <div>
                 <h3 className="font-bold text-sm text-[#141414]">Independent Press Foundations</h3>
                 <p className="text-[#737373] mt-0.5">Non-binding grants for data journalism and fact-checking</p>
@@ -54,7 +54,7 @@ export default function FinancementPageEn() {
               <span className="text-2xl font-bold font-mono text-[#0b4627]">30%</span>
             </div>
 
-            <div className="bg-[#faf8f5] border border-dashed border-[#e6dfd5] p-4 flex justify-between items-center">
+            <div className="bg-[#faf8f5] border border-dashed border-[#e6dfd5] rounded-xl shadow-xs p-4 flex justify-between items-center">
               <div>
                 <h3 className="font-bold text-sm text-[#737373]">Reader Memberships (Phase 2)</h3>
                 <p className="text-[#737373] mt-0.5">Direct reader support and premium documentary briefs</p>
@@ -71,21 +71,21 @@ export default function FinancementPageEn() {
           </h2>
 
           <div className="space-y-4 text-xs font-serif text-[#333333] leading-relaxed">
-            <div className="p-4 bg-white border border-[#e6dfd5]">
+            <div className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <h4 className="font-bold text-sm text-[#141414] mb-1">1. Zero Editorial Interference</h4>
               <p className="text-[#555555]">
                 No contributor, funder, or donor has prior knowledge of investigations or the ability to influence coverage.
               </p>
             </div>
 
-            <div className="p-4 bg-white border border-[#e6dfd5]">
+            <div className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <h4 className="font-bold text-sm text-[#141414] mb-1">2. Absolute Firewall on Advertising</h4>
               <p className="text-[#555555]">
                 We publish no commercial advertorials or institutional promotional content. All published material reflects purely editorial judgment.
               </p>
             </div>
 
-            <div className="p-4 bg-white border border-[#e6dfd5]">
+            <div className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <h4 className="font-bold text-sm text-[#141414] mb-1">3. Public Disclosure</h4>
               <p className="text-[#555555]">
                 Any philanthropic or institutional support exceeding 5% of our annual budget is listed openly in our annual transparency report.

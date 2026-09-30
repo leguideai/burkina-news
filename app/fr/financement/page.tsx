@@ -23,7 +23,7 @@ export default function FinancementPage() {
       </div>
 
       {/* Intro Box */}
-      <div className="bg-white border border-[#141414] p-6 mb-12">
+      <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-6 mb-12">
         <p className="text-base text-[#141414] leading-relaxed">
           Notre modèle économique est pensé pour garantir notre totale liberté d'investigation. Nous refusons les subventions étatiques directes, les publi-reportages déguisés et toute publicité susceptible de créer un conflit d'intérêts avec nos enquêtes.
         </p>
@@ -38,7 +38,7 @@ export default function FinancementPage() {
           </h2>
 
           <div className="space-y-4 text-xs font-serif">
-            <div className="bg-white border border-[#e6dfd5] p-4 flex justify-between items-center">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-4 flex justify-between items-center">
               <div>
                 <h3 className="font-bold text-sm text-[#141414]">Fonds propres de la rédaction</h3>
                 <p className="text-[#737373] mt-0.5">Apport initial pour garantir le lancement et l'autonomie</p>
@@ -46,7 +46,7 @@ export default function FinancementPage() {
               <span className="text-2xl font-bold font-mono text-[#0b4627]">60%</span>
             </div>
 
-            <div className="bg-white border border-[#e6dfd5] p-4 flex justify-between items-center">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-4 flex justify-between items-center">
               <div>
                 <h3 className="font-bold text-sm text-[#141414]">Subventions fondations presse</h3>
                 <p className="text-[#737373] mt-0.5">Bourses d'investigation et journalisme de données</p>
@@ -54,7 +54,7 @@ export default function FinancementPage() {
               <span className="text-2xl font-bold font-mono text-[#0b4627]">30%</span>
             </div>
 
-            <div className="bg-[#faf8f5] border border-dashed border-[#e6dfd5] p-4 flex justify-between items-center">
+            <div className="bg-[#faf8f5] border border-dashed border-[#e6dfd5] rounded-xl shadow-xs p-4 flex justify-between items-center">
               <div>
                 <h3 className="font-bold text-sm text-[#737373]">Abonnements & Lettre premium</h3>
                 <p className="text-[#737373] mt-0.5">Soutien direct des lecteurs (en cours de déploiement)</p>
@@ -71,7 +71,7 @@ export default function FinancementPage() {
           </h2>
 
           <ul className="space-y-4 text-xs font-serif text-[#444444]">
-            <li className="p-4 bg-white border border-[#e6dfd5]">
+            <li className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <span className="font-mono font-bold text-[#0b4627] uppercase block mb-1">
                 1. Étanchéité Absolue
               </span>
@@ -80,7 +80,7 @@ export default function FinancementPage() {
               </p>
             </li>
 
-            <li className="p-4 bg-white border border-[#e6dfd5]">
+            <li className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <span className="font-mono font-bold text-[#0b4627] uppercase block mb-1">
                 2. Déclaration Publique
               </span>
@@ -89,7 +89,7 @@ export default function FinancementPage() {
               </p>
             </li>
 
-            <li className="p-4 bg-white border border-[#e6dfd5]">
+            <li className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <span className="font-mono font-bold text-[#0b4627] uppercase block mb-1">
                 3. Souveraineté du Comité Éditorial
               </span>
