@@ -79,7 +79,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#141414]">
             <div>
               <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] mb-2">
-                <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">Édition Hebdomadaire</span>
+                <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">Édition Hebdomadaire</span>
                 <span>·</span>
                 <span className="text-[#555555]">{formattedDate}</span>
               </div>
@@ -88,7 +88,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
               </h1>
             </div>
 
-            <div className="bg-[#faf8f5] border border-[#e6dfd5] p-3 text-right shrink-0">
+            <div className="bg-[#faf8f5] border border-[#e6dfd5] rounded-lg shadow-xs p-3 text-right shrink-0">
               <span className="font-mono text-xs font-bold text-[#0b4627] block">
                 {brief.facts?.length || 10} Faits Sourcés & Vérifiés
               </span>
@@ -107,14 +107,14 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
           <div className="lg:col-span-8 space-y-6">
             
             {/* Weekly Hero Evidence Photo */}
-            <div className="bg-white border border-[#e6dfd5] overflow-hidden">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden">
               <div className="aspect-[16/9] w-full bg-neutral-100 relative">
                 <img 
                   src={heroImageSrc} 
                   alt={brief.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-3 left-3 bg-[#141414]/90 text-white px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-sm">
+                <div className="absolute top-3 left-3 bg-[#141414]/90 text-white px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-sm rounded-md">
                   <Camera size={12} />
                   <span>Documentaire de la Semaine {brief.week_number}</span>
                 </div>
@@ -128,7 +128,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
             </div>
 
             {/* Facts Chronological List */}
-            <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5]">
+            <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden">
               {brief.facts?.map((fact, index) => {
                 const catInfo = fact.category_code ? categories.find(c => c.code === fact.category_code) : null;
                 const factText = fact.text_fr;
@@ -146,7 +146,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                       <div className="flex items-center gap-2">
                         <a 
                           href={`#fait-${index + 1}`}
-                          className="font-mono text-xs font-bold text-[#0b4627] bg-[#f4eee3] hover:bg-[#e9efe8] px-2 py-0.5 border border-[#e6dfd5] inline-flex items-center gap-1 transition-colors"
+                          className="font-mono text-xs font-bold text-[#0b4627] bg-[#f4eee3] hover:bg-[#e9efe8] px-2 py-0.5 border border-[#e6dfd5] rounded-md inline-flex items-center gap-1 transition-colors"
                           title="Lien permanent vers ce fait"
                         >
                           <Hash size={11} className="opacity-60" />
@@ -185,7 +185,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                       
                       {/* Photographic Evidence Thumbnail */}
                       {fact.image && (
-                        <div className="w-full sm:w-32 aspect-[4/3] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <div className="w-full sm:w-32 aspect-[4/3] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                           <img 
                             src={fact.image} 
                             alt={`Preuve visuelle - Fait ${index + 1}`}
@@ -200,7 +200,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                         </p>
 
                         {fact.why_watch_fr && (
-                          <div className="bg-[#faf8f5] border-l-2 border-[#0b4627] p-3 text-xs font-serif text-[#444444] mb-3">
+                          <div className="bg-[#faf8f5] border-l-2 border-[#0b4627] rounded-r-lg p-3 text-xs font-serif text-[#444444] mb-3">
                             <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0b4627] block mb-1">
                               Pourquoi surveiller ce fait :
                             </span>
@@ -240,11 +240,11 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
             </div>
 
             {/* Bottom Week Navigation Bar */}
-            <div className="flex justify-between items-center bg-white border border-[#e6dfd5] p-4 text-xs font-mono">
+            <div className="flex justify-between items-center bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-4 text-xs font-mono">
               {prevBrief ? (
                 <Link 
                   href={`/fr/fil/${prevBrief.slug}`}
-                  className="px-3 py-2 border border-[#e6dfd5] hover:border-[#141414] text-[#141414] font-bold uppercase inline-flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-2 border border-[#e6dfd5] hover:border-[#141414] text-[#141414] font-bold uppercase inline-flex items-center gap-1.5 rounded-lg transition-colors"
                 >
                   <ArrowLeft size={13} />
                   <span>Semaine {prevBrief.week_number} précédente</span>
@@ -256,7 +256,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
               {nextBrief && (
                 <Link 
                   href={`/fr/fil/${nextBrief.slug}`}
-                  className="px-3 py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white font-bold uppercase inline-flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white font-bold uppercase inline-flex items-center gap-1.5 rounded-lg transition-colors"
                 >
                   <span>Semaine {nextBrief.week_number} suivante</span>
                   <ArrowRight size={13} />
@@ -270,7 +270,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
           <aside className="lg:col-span-4 space-y-6">
             
             {/* Direct Access to Other Weekly Editions */}
-            <div className="bg-white border border-[#141414] p-5">
+            <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-5">
               <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#141414]">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414]">
                   Éditions du Fil Hebdo
@@ -297,14 +297,14 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                     <Link 
                       key={b.id} 
                       href={`/fr/fil/${b.slug}`}
-                      className={`block p-3 border transition-all ${
+                      className={`block p-3 border rounded-lg transition-all ${
                         isCurrent 
                           ? 'bg-[#f4eee3] border-[#0b4627] ring-1 ring-[#0b4627]' 
                           : 'bg-white border-[#e6dfd5] hover:border-[#141414] hover:bg-[#faf8f5]'
                       }`}
                     >
                       <div className="flex gap-3 items-center">
-                        <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                           <img 
                             src={b.image || '/images/lead.jpeg'} 
                             alt={b.title}
@@ -318,7 +318,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                               Semaine {b.week_number}
                             </span>
                             {isCurrent && (
-                              <span className="text-[9px] font-mono font-bold bg-[#0b4627] text-white px-1.5 py-0.2 uppercase">
+                              <span className="text-[9px] font-mono font-bold bg-[#0b4627] text-white px-1.5 py-0.5 rounded-sm uppercase">
                                 En cours
                               </span>
                             )}
@@ -345,7 +345,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
             </div>
 
             {/* Editorial Protocol Box */}
-            <div className="bg-[#faf8f5] border border-[#e6dfd5] p-5">
+            <div className="bg-[#faf8f5] border border-[#e6dfd5] rounded-xl shadow-xs p-5">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] pb-2 mb-3 border-b border-[#e6dfd5]">
                 Protocole de Traçabilité
               </h3>
@@ -360,7 +360,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
             {/* Return Link */}
             <Link 
               href="/fr"
-              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
+              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs hover:bg-[#141414] hover:text-white transition-colors"
             >
               ← Retour à l'accueil
             </Link>

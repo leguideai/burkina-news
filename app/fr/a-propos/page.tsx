@@ -32,19 +32,19 @@ export default function AProposPage() {
             Nos Trois Formats Majeurs
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
-            <div className="bg-white p-5 border border-[#e6dfd5]">
+            <div className="bg-white p-5 border border-[#e6dfd5] rounded-xl shadow-xs">
               <h3 className="font-serif font-bold text-base text-[#141414] mb-2">Le Numéro</h3>
               <p className="text-xs text-[#555555] font-serif leading-relaxed">
                 Nos grands décryptages mensuels et dossiers sectoriels d'enquête, publiés avec leur registre exhaustif de sources primaires.
               </p>
             </div>
-            <div className="bg-white p-5 border border-[#e6dfd5]">
+            <div className="bg-white p-5 border border-[#e6dfd5] rounded-xl shadow-xs">
               <h3 className="font-serif font-bold text-base text-[#141414] mb-2">Le Fil</h3>
               <p className="text-xs text-[#555555] font-serif leading-relaxed">
                 Le condensé hebdomadaire des dix faits majeurs de la semaine, sourcés à la minute près, sans opinion ni conjecture.
               </p>
             </div>
-            <div className="bg-white p-5 border border-[#e6dfd5]">
+            <div className="bg-white p-5 border border-[#e6dfd5] rounded-xl shadow-xs">
               <h3 className="font-serif font-bold text-base text-[#141414] mb-2">Le Tracker</h3>
               <p className="text-xs text-[#555555] font-serif leading-relaxed">
                 Notre registre public des grands chantiers nationaux, suivis physiquement et documentairement selon 6 statuts vérifiés.
@@ -63,7 +63,7 @@ export default function AProposPage() {
           </p>
 
           <div className="space-y-4 font-sans text-xs">
-            <div className="p-4 bg-white border border-[#e6dfd5]">
+            <div className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <div className="font-mono font-bold text-[#0b4627] uppercase text-[11px] mb-1">
                 Le Desk Éditorial & Investigation
               </div>
@@ -72,7 +72,7 @@ export default function AProposPage() {
               </p>
             </div>
 
-            <div className="p-4 bg-white border border-[#e6dfd5]">
+            <div className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <div className="font-mono font-bold text-[#0b4627] uppercase text-[11px] mb-1">
                 Le Desk Données & Tracker
               </div>
@@ -81,7 +81,7 @@ export default function AProposPage() {
               </p>
             </div>
 
-            <div className="p-4 bg-white border border-[#e6dfd5]">
+            <div className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs">
               <div className="font-mono font-bold text-[#0b4627] uppercase text-[11px] mb-1">
                 Le Desk Veille & Archivage Documentaire
               </div>
@@ -103,7 +103,7 @@ export default function AProposPage() {
         </section>
 
         {/* Notre Promesse */}
-        <div className="bg-[#072e1a] text-white p-8 sm:p-10 border border-[#0b4627] space-y-4">
+        <div className="bg-[#072e1a] text-white p-8 sm:p-10 border border-[#0b4627] rounded-2xl shadow-xs space-y-4">
           <h3 className="font-serif font-bold text-xl text-white mb-2">
             Notre Pacte de Transparence
           </h3>

@@ -76,10 +76,10 @@ export default async function FilPage() {
                 });
 
                 return (
-                  <article key={brief.id} className="bg-white border border-[#e6dfd5] p-6 hover:border-[#141414] transition-colors">
+                  <article key={brief.id} className="bg-white border border-[#e6dfd5] p-6 hover:border-[#141414] transition-colors rounded-xl shadow-xs">
                     <div className="flex flex-wrap justify-between items-center gap-2 pb-3 mb-4 border-b border-[#e6dfd5]">
                       <div className="flex items-center gap-2">
-                        <span className="bg-[#0b4627] text-white px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider">
+                        <span className="bg-[#0b4627] text-white px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-md">
                           Semaine {brief.week_number}
                         </span>
                         <span className="font-mono text-xs text-[#737373]">{formattedDate}</span>
@@ -91,7 +91,7 @@ export default async function FilPage() {
 
                     <div className="flex flex-col sm:flex-row gap-5 mb-4">
                       {brief.image && (
-                        <div className="sm:w-1/3 aspect-[16/10] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <div className="sm:w-1/3 aspect-[16/10] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-lg">
                           <img 
                             src={brief.image} 
                             alt={brief.title}
@@ -135,7 +135,7 @@ export default async function FilPage() {
 
           {/* Sidebar (Col 4) */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white border border-[#141414] p-5">
+            <div className="bg-white border border-[#141414] p-5 rounded-xl shadow-xs">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-3 border-b border-[#141414]">
                 Principes du Fil
               </h3>
@@ -147,7 +147,7 @@ export default async function FilPage() {
               </Link>
             </div>
 
-            <div className="bg-[#072e1a] text-white p-5 border border-[#0b4627]">
+            <div className="bg-[#072e1a] text-white p-5 border border-[#0b4627] rounded-xl shadow-xs">
               <h4 className="font-serif font-bold text-sm text-white mb-2">
                 Recevoir Le Fil par Courriel
               </h4>
@@ -158,11 +158,11 @@ export default async function FilPage() {
                 <input 
                   type="email" 
                   placeholder="votre.email@domaine.com"
-                  className="w-full bg-[#0b4627] border border-[#1b4d32] px-3 py-2 text-xs text-white placeholder:text-[#a7c5b6] focus:outline-none focus:border-white"
+                  className="w-full bg-[#0b4627] border border-[#1b4d32] px-3 py-2 text-xs text-white placeholder:text-[#a7c5b6] focus:outline-none focus:border-white rounded-lg"
                 />
                 <button 
                   type="submit"
-                  className="w-full py-2 bg-white text-[#072e1a] hover:bg-[#faf8f5] text-xs font-mono font-bold uppercase tracking-wider transition-colors"
+                  className="w-full py-2 bg-white text-[#072e1a] hover:bg-[#faf8f5] text-xs font-mono font-bold uppercase tracking-wider transition-colors rounded-lg"
                 >
                   S'abonner au Fil
                 </button>

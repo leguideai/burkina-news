@@ -131,7 +131,7 @@ function SearchContent() {
             <div className="relative max-w-2xl">
               <input
                 type="text"
-                className="w-full pl-10 pr-10 py-3 bg-[#faf8f5] border-2 border-[#141414] text-sm text-[#141414] placeholder:text-[#888888] focus:outline-none"
+                className="w-full pl-10 pr-10 py-3 bg-[#faf8f5] border-2 border-[#141414] rounded-lg text-sm text-[#141414] placeholder:text-[#888888] focus:outline-none"
                 placeholder="Rechercher par mot-clé, chantier, indicateur, région..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -156,7 +156,7 @@ function SearchContent() {
           <div className="flex flex-wrap gap-2 mt-4 text-xs font-mono">
             <button
               onClick={() => setFilter('all')}
-              className={`px-3 py-1.5 border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full border transition-colors ${
                 filter === 'all' 
                   ? 'bg-[#0b4627] text-white border-[#0b4627]' 
                   : 'bg-white text-[#555555] border-[#e6dfd5] hover:border-[#0b4627]'
@@ -166,7 +166,7 @@ function SearchContent() {
             </button>
             <button
               onClick={() => setFilter('articles')}
-              className={`px-3 py-1.5 border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full border transition-colors ${
                 filter === 'articles' 
                   ? 'bg-[#0b4627] text-white border-[#0b4627]' 
                   : 'bg-white text-[#555555] border-[#e6dfd5] hover:border-[#0b4627]'
@@ -176,7 +176,7 @@ function SearchContent() {
             </button>
             <button
               onClick={() => setFilter('projects')}
-              className={`px-3 py-1.5 border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full border transition-colors ${
                 filter === 'projects' 
                   ? 'bg-[#0b4627] text-white border-[#0b4627]' 
                   : 'bg-white text-[#555555] border-[#e6dfd5] hover:border-[#0b4627]'
@@ -186,7 +186,7 @@ function SearchContent() {
             </button>
             <button
               onClick={() => setFilter('indicators')}
-              className={`px-3 py-1.5 border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full border transition-colors ${
                 filter === 'indicators' 
                   ? 'bg-[#0b4627] text-white border-[#0b4627]' 
                   : 'bg-white text-[#555555] border-[#e6dfd5] hover:border-[#0b4627]'
@@ -197,7 +197,7 @@ function SearchContent() {
             {results.facts.length > 0 && (
               <button
                 onClick={() => setFilter('facts')}
-                className={`px-3 py-1.5 border transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full border transition-colors ${
                   filter === 'facts' 
                     ? 'bg-[#0b4627] text-white border-[#0b4627]' 
                     : 'bg-white text-[#555555] border-[#e6dfd5] hover:border-[#0b4627]'
@@ -215,7 +215,7 @@ function SearchContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
         
         {!isSearching && (
-          <div className="text-center py-16 bg-white border border-[#e6dfd5] p-8">
+          <div className="text-center py-16 bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-8">
             <Search className="w-10 h-10 text-[#888888] mx-auto mb-3" />
             <h3 className="text-base font-bold font-serif text-[#141414] mb-1">Explorez les archives de Burkina News</h3>
             <p className="text-xs font-serif text-[#555555] max-w-sm mx-auto">
@@ -225,7 +225,7 @@ function SearchContent() {
         )}
 
         {isSearching && !loading && totalResults === 0 && (
-          <div className="text-center py-16 bg-white border border-[#e6dfd5] p-8">
+          <div className="text-center py-16 bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-8">
             <h3 className="text-base font-bold font-serif text-[#141414] mb-1">Aucun document ne correspond à « {query} »</h3>
             <p className="text-xs font-serif text-[#555555] max-w-sm mx-auto">
               Vérifiez l'orthographe ou essayez avec un mot-clé plus général (ex : or, solaire, coton, bobo, route).
@@ -276,7 +276,7 @@ function SearchContent() {
                 <span>Indicateurs Baromètre RELANCE ({results.indicators.length})</span>
               </h2>
             </div>
-            <div className="bg-white border border-[#e6dfd5] divide-y divide-[#e6dfd5]">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden divide-y divide-[#e6dfd5]">
               {results.indicators.map(ind => (
                 <Link 
                   key={ind.id} 
@@ -309,12 +309,12 @@ function SearchContent() {
                 <span>Dépêches du Fil en Direct ({results.facts.length})</span>
               </h2>
             </div>
-            <div className="bg-white border border-[#e6dfd5] divide-y divide-[#e6dfd5]">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden divide-y divide-[#e6dfd5]">
               {results.facts.map((fact, idx) => (
                 <div key={fact.id || idx} className="p-4 hover:bg-[#faf8f5] transition-colors flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="bg-[#0b4627] text-white text-[9px] font-mono uppercase px-1.5 py-0.5 font-bold">
+                      <span className="bg-[#0b4627] text-white text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-md font-bold">
                         {fact.category_code || 'FIL'}
                       </span>
                       <span className="text-[10px] font-mono text-[#737373]">

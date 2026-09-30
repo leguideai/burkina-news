@@ -18,7 +18,7 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
   const statusLabel = isEn ? PROJECT_STATUS_LABELS_EN[project.currentStatus] : PROJECT_STATUS_LABELS[project.currentStatus];
 
   return (
-    <div className="group bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between h-full">
+    <div className="group bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between h-full rounded-xl overflow-hidden shadow-xs">
       <div>
         {/* Miniature Image Header */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
@@ -30,12 +30,12 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
             <StatusBadge status={project.currentStatus} size="sm" lang={lang} />
             {project.code && (
-              <span className="bg-[#141414]/90 text-white px-1.5 py-0.5 text-[9px] font-mono font-bold tracking-wider rounded-xs">
+              <span className="bg-[#141414]/90 text-white px-1.5 py-0.5 text-[9px] font-mono font-bold tracking-wider rounded-md">
                 {project.code}
               </span>
             )}
           </div>
-          <div className="absolute bottom-2.5 right-2.5 bg-[#141414]/90 text-white px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider">
+          <div className="absolute bottom-2.5 right-2.5 bg-[#141414]/90 text-white px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider rounded-md">
             {project.province ? `${project.province} · ${project.region}` : project.region}
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
               return (
                 <div 
                   key={s} 
-                  className="h-1.5 rounded-xs transition-colors"
+                  className="h-1.5 rounded-full transition-colors"
                   style={{ 
                     backgroundColor: isCompleted ? stepColor : '#E5E7EB',
                   }}

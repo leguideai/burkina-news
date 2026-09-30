@@ -100,7 +100,7 @@ export default function ContactPage() {
           <div className="lg:col-span-8 space-y-10">
             
             {/* Form 1: Error Reporting (Top priority) */}
-            <section className="bg-white border-2 border-[#141414] p-6 sm:p-8">
+            <section className="bg-white border-2 border-[#141414] rounded-xl shadow-xs p-6 sm:p-8">
               <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-2">
                 <AlertCircle size={14} />
                 <span>Canal Prioritaire</span>
@@ -113,7 +113,7 @@ export default function ContactPage() {
               </p>
 
               {errorStatus === 'success' ? (
-                <div className="bg-[#f0fdf4] border border-green-300 p-4 text-xs font-serif text-[#0b4627] flex items-center gap-2">
+                <div className="bg-[#f0fdf4] border border-green-300 rounded-lg p-4 text-xs font-serif text-[#0b4627] flex items-center gap-2">
                   <CheckCircle size={16} />
                   <span>Votre signalement a été transmis au comité éditorial. Il sera instruit dans les 48 heures.</span>
                 </div>
@@ -121,12 +121,12 @@ export default function ContactPage() {
                 <form onSubmit={handleErrorSubmit} className="space-y-4 text-xs font-serif">
                   <div>
                     <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">
-                      URL ou titre de l'article / de la fiche chantier *
+                       URL ou titre de l'article / de la fiche chantier *
                     </label>
                     <input 
                       required 
                       type="text" 
-                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" 
+                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-[#141414] focus:outline-none focus:border-[#141414]" 
                       value={errorForm.url} 
                       onChange={e => setErrorForm({...errorForm, url: e.target.value})} 
                     />
@@ -139,7 +139,7 @@ export default function ContactPage() {
                     <textarea 
                       required 
                       rows={3} 
-                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" 
+                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-[#141414] focus:outline-none focus:border-[#141414]" 
                       value={errorForm.desc} 
                       onChange={e => setErrorForm({...errorForm, desc: e.target.value})} 
                     />
@@ -153,7 +153,7 @@ export default function ContactPage() {
                       required 
                       type="text" 
                       placeholder="Lien vers le document officiel, rapport, compte-rendu du Conseil des ministres..." 
-                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]" 
+                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]" 
                       value={errorForm.source} 
                       onChange={e => setErrorForm({...errorForm, source: e.target.value})} 
                     />
@@ -165,14 +165,14 @@ export default function ContactPage() {
                     </label>
                     <input 
                       type="email" 
-                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" 
+                      className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-[#141414] focus:outline-none focus:border-[#141414]" 
                       value={errorForm.email} 
                       onChange={e => setErrorForm({...errorForm, email: e.target.value})} 
                     />
                   </div>
 
                   {errorStatus === 'error' && (
-                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs">
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs">
                       {errorMessage}
                     </div>
                   )}
@@ -180,7 +180,7 @@ export default function ContactPage() {
                   <button 
                     type="submit" 
                     disabled={errorStatus === 'submitting'} 
-                    className="px-6 py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+                    className="px-6 py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-xs transition-colors inline-flex items-center gap-2"
                   >
                     <Send size={12} />
                     {errorStatus === 'submitting' ? 'Transmission...' : 'Envoyer le signalement'}
@@ -190,13 +190,13 @@ export default function ContactPage() {
             </section>
 
             {/* Form 2: General Contact */}
-            <section className="bg-white border border-[#e6dfd5] p-6 sm:p-8">
+            <section className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6 sm:p-8">
               <h2 className="text-xl font-bold font-serif text-[#141414] mb-4 pb-2 border-b border-[#e6dfd5]">
                 Courrier Général & Partenariats
               </h2>
 
               {genStatus === 'success' ? (
-                <div className="bg-[#f0fdf4] border border-green-300 p-4 text-xs font-serif text-[#0b4627] flex items-center gap-2">
+                <div className="bg-[#f0fdf4] border border-green-300 rounded-lg p-4 text-xs font-serif text-[#0b4627] flex items-center gap-2">
                   <CheckCircle size={16} />
                   <span>Votre message a bien été envoyé.</span>
                 </div>
@@ -205,17 +205,17 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Nom / Organisation *</label>
-                      <input required type="text" className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.name} onChange={e => setGenForm({...genForm, name: e.target.value})} />
+                      <input required type="text" className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.name} onChange={e => setGenForm({...genForm, name: e.target.value})} />
                     </div>
                     <div>
                       <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Email *</label>
-                      <input required type="email" className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.email} onChange={e => setGenForm({...genForm, email: e.target.value})} />
+                      <input required type="email" className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.email} onChange={e => setGenForm({...genForm, email: e.target.value})} />
                     </div>
                   </div>
 
                   <div>
                     <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Objet de la demande *</label>
-                    <select required className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.category} onChange={e => setGenForm({...genForm, category: e.target.value})}>
+                    <select required className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.category} onChange={e => setGenForm({...genForm, category: e.target.value})}>
                       <option value="question">Question à la rédaction</option>
                       <option value="partenariat">Proposition de partenariat académique ou institutionnel</option>
                       <option value="presse">Demande presse / médias</option>
@@ -225,16 +225,16 @@ export default function ContactPage() {
 
                   <div>
                     <label className="block font-mono uppercase text-[10px] text-[#737373] mb-1">Message *</label>
-                    <textarea required rows={4} className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.message} onChange={e => setGenForm({...genForm, message: e.target.value})} />
+                    <textarea required rows={4} className="w-full p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-[#141414] focus:outline-none focus:border-[#141414]" value={genForm.message} onChange={e => setGenForm({...genForm, message: e.target.value})} />
                   </div>
 
                   {genStatus === 'error' && (
-                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs">
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs">
                       {genMessage}
                     </div>
                   )}
 
-                  <button type="submit" disabled={genStatus === 'submitting'} className="px-6 py-2.5 bg-[#141414] hover:bg-[#0b4627] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2">
+                  <button type="submit" disabled={genStatus === 'submitting'} className="px-6 py-2.5 bg-[#141414] hover:bg-[#0b4627] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2 rounded-lg shadow-xs">
                     <Send size={12} />
                     {genStatus === 'submitting' ? 'Envoi...' : 'Transmettre le message'}
                   </button>
@@ -247,7 +247,7 @@ export default function ContactPage() {
           {/* Sidebar (Col 4) */}
           <div className="lg:col-span-4 space-y-6">
             
-            <div className="bg-white border border-[#141414] p-6">
+            <div className="bg-white border border-[#141414] rounded-xl shadow-xs p-6">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] pb-2 mb-4 border-b border-[#141414]">
                 Correspondance & Bureaux
               </h3>

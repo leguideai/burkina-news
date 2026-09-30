@@ -47,7 +47,7 @@ export default async function CorrectionsPageEn() {
       </div>
 
       {/* Policy Note */}
-      <div className="bg-white border border-[#e6dfd5] p-6 mb-10">
+      <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6 mb-10">
         <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] mb-2 pb-2 border-b border-[#e6dfd5]">
           Correction Protocol
         </h3>
@@ -59,7 +59,7 @@ export default async function CorrectionsPageEn() {
       {/* Corrections List */}
       <div className="space-y-6">
         {corrections.map((correction, i) => (
-          <div key={i} className="border border-[#e6dfd5] bg-white p-6">
+          <div key={i} className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs p-6 overflow-hidden">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 border-b border-[#e6dfd5] pb-3">
               <div>
                 <span className="font-mono text-xs text-[#737373]">
@@ -69,13 +69,13 @@ export default async function CorrectionsPageEn() {
                   {correction.articleTitle}
                 </h2>
               </div>
-              <span className="font-mono text-[10px] uppercase font-bold bg-[#f4eee3] text-[#0b4627] px-2.5 py-1 border border-[#e6dfd5]">
+              <span className="font-mono text-[10px] uppercase font-bold bg-[#f4eee3] text-[#0b4627] px-2.5 py-1 rounded-md border border-[#e6dfd5]">
                 Verified Correction
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-xs">
-              <div className="bg-[#fef2f2] border border-red-200 p-3">
+              <div className="bg-[#fef2f2] border border-red-200 rounded-lg p-3">
                 <span className="font-mono uppercase font-bold text-red-700 text-[10px] block mb-1">
                   Previous Wording (Pre-audit):
                 </span>
@@ -84,7 +84,7 @@ export default async function CorrectionsPageEn() {
                 </p>
               </div>
 
-              <div className="bg-[#f0fdf4] border border-green-200 p-3">
+              <div className="bg-[#f0fdf4] border border-green-200 rounded-lg p-3">
                 <span className="font-mono uppercase font-bold text-green-700 text-[10px] block mb-1">
                   Rectified Factual Text:
                 </span>
@@ -94,7 +94,7 @@ export default async function CorrectionsPageEn() {
               </div>
             </div>
 
-            <div className="text-xs text-[#555555] bg-[#faf8f5] p-3 border border-[#e6dfd5] flex flex-col sm:flex-row justify-between gap-2">
+            <div className="text-xs text-[#555555] bg-[#faf8f5] p-3 border border-[#e6dfd5] rounded-lg flex flex-col sm:flex-row justify-between gap-2">
               <p>
                 <strong>Justification:</strong> {correction.reason}
               </p>
@@ -112,7 +112,7 @@ export default async function CorrectionsPageEn() {
         </p>
         <Link 
           href="/en/contact"
-          className="inline-block px-5 py-2.5 bg-[#0b4627] text-white text-xs font-mono font-bold uppercase tracking-wider hover:bg-[#072e1a] transition-colors"
+          className="inline-block px-5 py-2.5 bg-[#0b4627] text-white text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-xs hover:bg-[#072e1a] transition-colors"
         >
           Submit an Error Report →
         </Link>

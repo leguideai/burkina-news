@@ -44,6 +44,7 @@ export default function TrackerPageEn() {
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedSector, setSelectedSector] = useState<string>('all');
+  const [selectedBailleur, setSelectedBailleur] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedProvince, setSelectedProvince] = useState<string>('all');
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
@@ -110,13 +111,22 @@ export default function TrackerPageEn() {
 
   const filteredProjects = useMemo(() => {
     return enProjects.filter(p => {
-      if (search && !p.title.toLowerCase().includes(search.toLowerCase()) && !p.description.toLowerCase().includes(search.toLowerCase())) {
-        return false;
+      if (search) {
+        const q = search.toLowerCase();
+        const match = p.title.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          p.region.toLowerCase().includes(q) ||
+          (p.province && p.province.toLowerCase().includes(q)) ||
+          (p.bailleur && p.bailleur.toLowerCase().includes(q));
+        if (!match) return false;
       }
       if (selectedStatus !== 'all' && p.currentStatus !== selectedStatus) {
         return false;
       }
       if (selectedSector !== 'all' && p.sector !== selectedSector) {
+        return false;
+      }
+      if (selectedBailleur !== 'all' && p.bailleur !== selectedBailleur) {
         return false;
       }
       if (selectedRegion !== 'all' && p.region !== selectedRegion) {
@@ -134,14 +144,15 @@ export default function TrackerPageEn() {
       }
       return true;
     });
-  }, [enProjects, search, selectedStatus, selectedSector, selectedRegion, selectedProvince, selectedCommune]);
+  }, [enProjects, search, selectedStatus, selectedSector, selectedBailleur, selectedRegion, selectedProvince, selectedCommune]);
 
-  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all' || selectedCommune !== 'all';
+  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedBailleur !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all' || selectedCommune !== 'all';
 
   const resetFilters = () => {
     setSearch('');
     setSelectedStatus('all');
     setSelectedSector('all');
+    setSelectedBailleur('all');
     setSelectedRegion('all');
     setSelectedProvince('all');
     setSelectedCommune('all');
@@ -210,7 +221,7 @@ export default function TrackerPageEn() {
                   <button
                     key={statusKey}
                     onClick={() => setSelectedStatus(isSelected ? 'all' : statusKey)}
-                    className={`p-3 text-left border transition-all relative flex flex-col justify-between rounded-xs ${
+                    className={`p-3 text-left border transition-all relative flex flex-col justify-between rounded-lg ${
                       isSelected 
                         ? `${theme.bgActive} text-white ${theme.borderActive} shadow-sm ring-1 ring-black/10` 
                         : 'bg-white border-[#e6dfd5] hover:border-[#141414] text-[#141414] hover:shadow-xs'
@@ -222,7 +233,7 @@ export default function TrackerPageEn() {
                   >
                     <div className="flex justify-between items-center text-[10px] font-mono mb-2">
                       <span 
-                        className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-xs text-[10px] ${
+                        className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-md text-[10px] ${
                           isSelected ? 'bg-white/20 text-white' : 'bg-neutral-100'
                         }`}
                         style={{ color: isSelected ? '#ffffff' : color }}
@@ -271,7 +282,7 @@ export default function TrackerPageEn() {
           <div className="lg:col-span-8 space-y-6">
             
             {/* Filter Bar */}
-            <div className="bg-white border border-[#e6dfd5] p-4 sm:p-5">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-4 sm:p-5">
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between pb-4 border-b border-[#e6dfd5]">
                 
                 {/* Search */}
@@ -281,7 +292,7 @@ export default function TrackerPageEn() {
                     placeholder="Search by project name, description or keywords..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
+                    className="w-full pl-9 pr-4 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
                   />
                   <Search size={14} className="absolute left-3 top-2.5 text-[#888888]" />
                   {search && (
@@ -295,17 +306,17 @@ export default function TrackerPageEn() {
                 </div>
 
                 {/* View Switcher */}
-                <div className="flex items-center gap-1 border border-[#e6dfd5] p-0.5 bg-[#faf8f5] shrink-0 self-end sm:self-auto">
+                <div className="flex items-center gap-1 border border-[#e6dfd5] p-0.5 bg-[#faf8f5] rounded-lg shrink-0 self-end sm:self-auto">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-1.5 transition-colors ${viewMode === 'grid' ? 'bg-white shadow-xs text-[#0b4627]' : 'text-[#737373] hover:text-[#141414]'}`}
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-xs text-[#0b4627]' : 'text-[#737373] hover:text-[#141414]'}`}
                     title="Grid view"
                   >
                     <LayoutGrid size={15} />
                   </button>
                   <button
                     onClick={() => setViewMode('table')}
-                    className={`p-1.5 transition-colors ${viewMode === 'table' ? 'bg-white shadow-xs text-[#0b4627]' : 'text-[#737373] hover:text-[#141414]'}`}
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white shadow-xs text-[#0b4627]' : 'text-[#737373] hover:text-[#141414]'}`}
                     title="Table view"
                   >
                     <List size={15} />
@@ -323,12 +334,33 @@ export default function TrackerPageEn() {
                   <select
                     value={selectedSector}
                     onChange={(e) => setSelectedSector(e.target.value)}
-                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
                   >
                     <option value="all">All sectors</option>
                     {sectors.map(sec => (
                       <option key={sec} value={sec}>{sec}</option>
                     ))}
+                  </select>
+                </div>
+
+                {/* Bailleur */}
+                <div>
+                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
+                    Donor
+                  </label>
+                  <select
+                    value={selectedBailleur}
+                    onChange={(e) => setSelectedBailleur(e.target.value)}
+                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+                  >
+                    <option value="all">All donors</option>
+                    <option value="État du Burkina Faso">État du Burkina Faso</option>
+                    <option value="Banque mondiale">Banque mondiale</option>
+                    <option value="BAD">BAD</option>
+                    <option value="CEDEAO">CEDEAO</option>
+                    <option value="Union Européenne">Union Européenne</option>
+                    <option value="Coopération bilatérale">Coopération bilatérale</option>
+                    <option value="Secteur privé">Secteur privé</option>
                   </select>
                 </div>
 
@@ -345,7 +377,7 @@ export default function TrackerPageEn() {
                       setSelectedProvince('all');
                       setSelectedCommune('all');
                     }}
-                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
                   >
                     <option value="all">All 17 regions</option>
                     {BURKINA_REGIONS_17.map(reg => (
@@ -372,7 +404,7 @@ export default function TrackerPageEn() {
                         }
                       }
                     }}
-                    className={`w-full p-2 border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
+                    className={`w-full p-2 border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
                       selectedRegion !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
                     }`}
                   >
@@ -393,7 +425,7 @@ export default function TrackerPageEn() {
                   <select
                     value={selectedCommune}
                     onChange={(e) => setSelectedCommune(e.target.value)}
-                    className={`w-full p-2 border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
+                    className={`w-full p-2 border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
                       selectedProvince !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
                     }`}
                   >
@@ -416,7 +448,7 @@ export default function TrackerPageEn() {
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
                   >
                     <option value="all">All statuses</option>
                     {PROJECT_STATUS_ORDER.map(s => (
@@ -432,27 +464,32 @@ export default function TrackerPageEn() {
                   <div className="flex items-center gap-2">
                     <span className="text-[#737373]">Active filters:</span>
                     {selectedSector !== 'all' && (
-                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 border border-[#e6dfd5]">
+                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 rounded-md border border-[#e6dfd5]">
                         Sector: {selectedSector}
                       </span>
                     )}
+                    {selectedBailleur !== 'all' && (
+                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 rounded-md border border-[#e6dfd5]">
+                        Donor: {selectedBailleur}
+                      </span>
+                    )}
                     {selectedRegion !== 'all' && (
-                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 border border-[#e6dfd5]">
+                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 rounded-md border border-[#e6dfd5]">
                         Region: {selectedRegion}
                       </span>
                     )}
                     {selectedProvince !== 'all' && (
-                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 border border-[#e6dfd5]">
+                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 rounded-md border border-[#e6dfd5]">
                         Province: {selectedProvince}
                       </span>
                     )}
                     {selectedStatus !== 'all' && (
-                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 border border-[#e6dfd5]">
+                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 rounded-md border border-[#e6dfd5]">
                         Status: {PROJECT_STATUS_LABELS_EN[selectedStatus as ProjectStatus]}
                       </span>
                     )}
                     {search && (
-                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 border border-[#e6dfd5]">
+                      <span className="bg-[#f4eee3] text-[#0b4627] font-mono text-[10px] px-2 py-0.5 rounded-md border border-[#e6dfd5]">
                         “{search}”
                       </span>
                     )}
@@ -481,7 +518,7 @@ export default function TrackerPageEn() {
 
             {/* Projects Presentation: Grid or Table */}
             {filteredProjects.length === 0 ? (
-              <div className="bg-white border border-[#e6dfd5] p-12 text-center">
+              <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-12 text-center">
                 <Compass className="mx-auto text-[#737373] mb-3" size={36} />
                 <h3 className="font-serif font-bold text-lg text-[#141414] mb-2">
                   No projects match your criteria
@@ -491,7 +528,7 @@ export default function TrackerPageEn() {
                 </p>
                 <button
                   onClick={resetFilters}
-                  className="px-4 py-2 bg-[#0b4627] text-white text-xs font-mono uppercase font-bold tracking-wider hover:bg-[#072e1a] transition-colors"
+                  className="px-4 py-2 bg-[#0b4627] text-white text-xs font-mono uppercase font-bold tracking-wider rounded-lg shadow-xs hover:bg-[#072e1a] transition-colors"
                 >
                   Clear all filters
                 </button>
@@ -508,7 +545,7 @@ export default function TrackerPageEn() {
                 <div className="sm:hidden text-[10px] font-mono text-[#737373] text-right mb-1">
                   ↔ Swipe table horizontally to see all columns
                 </div>
-                <div className="bg-white border border-[#e6dfd5] overflow-x-auto">
+                <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-x-auto">
                   <table className="w-full min-w-[700px] text-left text-xs font-serif">
                   <thead>
                     <tr className="bg-[#faf8f5] border-b border-[#141414] font-mono text-[10px] uppercase text-[#737373]">
@@ -527,7 +564,7 @@ export default function TrackerPageEn() {
                         <tr key={project.id} className="hover:bg-[#fcfaf7] transition-colors">
                           <td className="py-3 px-4 font-bold text-[#141414]">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-8 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                              <div className="w-10 h-8 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                                 <img src={imageSrc} alt="" className="w-full h-full object-cover" />
                               </div>
                               <Link 
@@ -564,7 +601,7 @@ export default function TrackerPageEn() {
           <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
             
             {/* RELANCE Barometer Card */}
-            <div className="bg-white border-2 border-[#141414] p-6">
+            <div className="bg-white border-2 border-[#141414] rounded-xl shadow-xs p-6">
               <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#141414]">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-[#0b4627]"></span>
@@ -583,7 +620,7 @@ export default function TrackerPageEn() {
 
               <div className="space-y-4">
                 {keyIndicators.slice(0, 4).map((ind) => (
-                  <div key={ind.code} className="p-3 bg-[#faf8f5] border border-[#e6dfd5]">
+                  <div key={ind.code} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg">
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-[10px] font-mono uppercase text-[#737373]">
                         {ind.category}
@@ -614,14 +651,14 @@ export default function TrackerPageEn() {
 
               <Link
                 href="/en/tracker/indicateurs"
-                className="mt-6 w-full py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center block transition-colors"
+                className="mt-6 w-full py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs transition-colors"
               >
                 All 8 National Indicators →
               </Link>
             </div>
 
             {/* Verification Protocol Box */}
-            <div className="bg-[#f4eee3] border border-[#e6dfd5] p-6">
+            <div className="bg-[#f4eee3] border border-[#e6dfd5] rounded-xl shadow-xs p-6">
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#0b4627] font-bold block mb-2">
                 Documentary Standards
               </span>

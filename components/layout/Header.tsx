@@ -162,7 +162,7 @@ export default function Header() {
               <Tooltip position="bottom" content="Passer l'interface en français">
                 <Link 
                   href={frUrl} 
-                  className={`py-0.5 px-1 rounded transition-colors ${!isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+                  className={`py-0.5 px-1 rounded-md transition-colors ${!isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
                   aria-label="Passer en français"
                 >
                   FR
@@ -172,7 +172,7 @@ export default function Header() {
               <Tooltip position="bottom" content="Switch interface to English">
                 <Link 
                   href={enUrl} 
-                  className={`py-0.5 px-1 rounded transition-colors ${isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+                  className={`py-0.5 px-1 rounded-md transition-colors ${isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
                   aria-label="Switch to English"
                 >
                   EN
@@ -194,7 +194,7 @@ export default function Header() {
                 setMobileMenuOpen(!mobileMenuOpen);
                 if (!mobileMenuOpen) setSearchOpen(false);
               }}
-              className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded cursor-pointer"
+              className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded-lg cursor-pointer"
               aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -211,7 +211,7 @@ export default function Header() {
                 setSearchOpen(!searchOpen);
                 if (!searchOpen) setMobileMenuOpen(false);
               }}
-              className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded cursor-pointer"
+              className="w-11 h-11 flex items-center justify-center text-[#141414] hover:bg-[#f4eee3] active:bg-[#e6dfd5] transition-colors rounded-lg cursor-pointer"
               aria-label={searchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
             >
               {searchOpen ? <X size={22} /> : <Search size={22} />}
@@ -259,14 +259,14 @@ export default function Header() {
 
           <Link 
             href={trackerHref} 
-            className="bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider px-3 py-1.5 transition-colors"
+            className="bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider px-3.5 py-2 rounded-lg shadow-xs transition-colors"
           >
             {strings.trackerBtn}
           </Link>
 
           <Link 
             href="#newsletter"
-            className="border border-[#141414] hover:bg-[#141414] hover:text-white text-[#141414] text-xs font-semibold px-3 py-1.5 transition-colors"
+            className="border border-[#141414] hover:bg-[#141414] hover:text-white text-[#141414] text-xs font-semibold px-3.5 py-2 rounded-lg shadow-xs transition-colors"
           >
             {strings.subscribeBtn}
           </Link>
@@ -351,7 +351,7 @@ export default function Header() {
             <div 
               onMouseEnter={handleDropdownMouseEnter}
               onMouseLeave={handleDropdownMouseLeave}
-              className="absolute top-full left-8 right-8 z-50 bg-white border-x-2 border-b-2 border-[#141414] shadow-2xl before:content-[''] before:absolute before:-top-2.5 before:left-0 before:right-0 before:h-2.5"
+              className="absolute top-full left-8 right-8 z-50 bg-white border-x-2 border-b-2 border-[#141414] shadow-2xl rounded-b-2xl overflow-hidden before:content-[''] before:absolute before:-top-2.5 before:left-0 before:right-0 before:h-2.5"
             >
               <div className="p-6">
                 {/* En-tête contextuel de la rubrique */}
@@ -437,7 +437,7 @@ export default function Header() {
 
       {/* 4. MOBILE DRAWER WITH RICH NAVIGATION & LANGUAGE PICKER */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b-2 border-[#141414] px-4 py-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="md:hidden bg-white border-b-2 border-[#141414] px-4 py-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-150 rounded-b-2xl shadow-xl">
           
           {/* Mobile Search inside drawer */}
           <HeaderSearch 
@@ -447,7 +447,7 @@ export default function Header() {
           />
 
           {/* Dedicated Language Selector inside mobile menu */}
-          <div className="flex items-center justify-between p-2.5 bg-[#faf8f5] border border-[#e6dfd5]">
+          <div className="flex items-center justify-between p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-xl shadow-xs">
             <span className="font-mono text-xs text-[#737373] uppercase font-semibold">
               {isEn ? "Language / Langue" : "Langue / Language"} :
             </span>
@@ -455,14 +455,14 @@ export default function Header() {
               <Link 
                 href={frUrl} 
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-1.5 font-bold transition-colors ${!isEn ? 'bg-[#0b4627] text-white' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
+                className={`px-3 py-1.5 font-bold rounded-md transition-colors ${!isEn ? 'bg-[#0b4627] text-white' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
               >
                 FR
               </Link>
               <Link 
                 href={enUrl} 
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-1.5 font-bold transition-colors ${isEn ? 'bg-[#0b4627] text-white' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
+                className={`px-3 py-1.5 font-bold rounded-md transition-colors ${isEn ? 'bg-[#0b4627] text-white' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
               >
                 EN
               </Link>
@@ -474,7 +474,7 @@ export default function Header() {
             <Link 
               href={trackerHref} 
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 bg-[#f4eee3] border border-[#0b4627]/30 text-[#0b4627] font-mono font-bold text-xs uppercase"
+              className="flex items-center gap-2 p-3 bg-[#f4eee3] border border-[#0b4627]/30 text-[#0b4627] font-mono font-bold text-xs uppercase rounded-xl shadow-xs"
             >
               <SlidersHorizontal size={14} />
               <span>{isEn ? "The Tracker" : "Le Tracker"}</span>
@@ -483,7 +483,7 @@ export default function Header() {
             <Link 
               href={numerosHref} 
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50"
+              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50 rounded-xl shadow-xs"
             >
               <BookOpen size={14} />
               <span>{isEn ? "Monthly Issues" : "Les Numéros"}</span>
@@ -492,7 +492,7 @@ export default function Header() {
             <Link 
               href={filHref} 
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50"
+              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50 rounded-xl shadow-xs"
             >
               <Newspaper size={14} />
               <span>{isEn ? "The Brief (Weekly)" : "Le Fil Hebdo"}</span>
@@ -501,7 +501,7 @@ export default function Header() {
             <Link 
               href={indicateursHref} 
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50"
+              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50 rounded-xl shadow-xs"
             >
               <span className="text-[#0b4627] font-bold">RELANCE</span>
             </Link>
@@ -514,7 +514,7 @@ export default function Header() {
             </div>
             <div className="space-y-2">
               {activeCategoriesData.map((cat) => (
-                <div key={cat.code} className="border border-[#e6dfd5] bg-[#faf8f5] p-2.5 rounded-xs">
+                <div key={cat.code} className="border border-[#e6dfd5] bg-[#faf8f5] p-2.5 rounded-xl shadow-xs">
                   <div className="flex items-center justify-between mb-1.5">
                     <Link
                       href={isEn ? `/en/${cat.code}` : `/fr/${cat.code}`}
@@ -537,7 +537,7 @@ export default function Header() {
                         key={sub.code}
                         href={isEn ? `/en/${cat.code}?sub=${sub.code}` : `/fr/${cat.code}?sub=${sub.code}`}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="text-[11px] px-2 py-1 bg-white border border-[#e6dfd5] text-[#333333] hover:border-[#0b4627] hover:text-[#0b4627] transition-colors"
+                        className="text-[11px] px-2 py-1 bg-white border border-[#e6dfd5] rounded-md text-[#333333] hover:border-[#0b4627] hover:text-[#0b4627] transition-colors"
                       >
                         {isEn ? sub.nameEn : sub.nameFr}
                       </Link>

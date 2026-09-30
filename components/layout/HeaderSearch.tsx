@@ -227,8 +227,8 @@ export default function HeaderSearch({
           placeholder={placeholder}
           className={
             isMobile
-              ? "w-full pl-9 pr-9 py-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414] transition-colors"
-              : "w-56 lg:w-72 pl-8 pr-8 py-1.5 bg-white border border-[#e6dfd5] text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414] transition-colors"
+              ? "w-full pl-9 pr-9 py-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414] transition-colors"
+              : "w-56 lg:w-72 pl-8 pr-8 py-1.5 bg-white border border-[#e6dfd5] rounded-lg text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414] transition-colors"
           }
           aria-label={placeholder}
           autoComplete="off"
@@ -248,7 +248,7 @@ export default function HeaderSearch({
             <button
               type="button"
               onClick={handleClear}
-              className="text-[#888888] hover:text-[#141414] p-0.5 rounded cursor-pointer"
+              className="text-[#888888] hover:text-[#141414] p-0.5 rounded-md cursor-pointer"
               title={isEn ? "Clear search" : "Effacer la recherche"}
               aria-label={isEn ? "Clear search" : "Effacer"}
             >
@@ -261,7 +261,7 @@ export default function HeaderSearch({
       {/* Floating Suggestions Dropdown */}
       {isOpen && (
         <div 
-          className={`absolute left-0 mt-1 z-50 bg-white border-2 border-[#141414] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 ${
+          className={`absolute left-0 mt-1 z-50 bg-white border-2 border-[#141414] shadow-2xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 ${
             isMobile 
               ? 'w-full' 
               : 'w-[380px] lg:w-[440px] right-0 left-auto'
@@ -316,18 +316,18 @@ export default function HeaderSearch({
                       key={art.id}
                       href={`/${lang}/${art.category}/${art.slug}`}
                       onClick={handleItemClick}
-                      className="group flex items-start gap-2.5 p-2 rounded hover:bg-[#faf8f5] transition-colors"
+                      className="group flex items-start gap-2.5 p-2 rounded-lg hover:bg-[#faf8f5] transition-colors"
                     >
                       {art.image && (
                         <img 
                           src={art.image} 
                           alt="" 
-                          className="w-10 h-10 object-cover rounded shrink-0 border border-[#e6dfd5]" 
+                          className="w-10 h-10 object-cover rounded-md shrink-0 border border-[#e6dfd5]" 
                         />
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[9px] font-mono uppercase font-bold text-[#0b4627] bg-[#f4eee3] px-1.5 py-0.2 rounded">
+                          <span className="text-[9px] font-mono uppercase font-bold text-[#0b4627] bg-[#f4eee3] px-1.5 py-0.5 rounded-sm">
                             {art.category}
                           </span>
                           {art.readTime && (
@@ -367,7 +367,7 @@ export default function HeaderSearch({
                         key={proj.id}
                         href={`/${lang}/tracker/projets/${proj.slug}`}
                         onClick={handleItemClick}
-                        className="group flex items-start justify-between gap-2 p-2 rounded hover:bg-[#faf8f5] transition-colors"
+                        className="group flex items-start justify-between gap-2 p-2 rounded-lg hover:bg-[#faf8f5] transition-colors"
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
@@ -383,7 +383,7 @@ export default function HeaderSearch({
                             {proj.title}
                           </h4>
                         </div>
-                        <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 border rounded shrink-0 ${statusInfo.badge}`}>
+                        <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 border rounded-sm shrink-0 ${statusInfo.badge}`}>
                           {statusLabel}
                         </span>
                       </Link>
@@ -410,10 +410,10 @@ export default function HeaderSearch({
                         key={ind.id || ind.code}
                         href={`/${lang}/tracker/indicateurs/${ind.code}`}
                         onClick={handleItemClick}
-                        className="group flex items-center justify-between gap-2 p-2 rounded hover:bg-[#faf8f5] transition-colors"
+                        className="group flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-[#faf8f5] transition-colors"
                       >
                         <div className="min-w-0 flex-1">
-                          <span className="text-[9px] font-mono font-bold bg-[#141414] text-white px-1.5 py-0.2 rounded">
+                          <span className="text-[9px] font-mono font-bold bg-[#141414] text-white px-1.5 py-0.5 rounded-sm">
                             {ind.code}
                           </span>
                           <h4 className="font-serif text-xs font-bold text-[#141414] group-hover:text-[#0b4627] line-clamp-1 mt-0.5 transition-colors">
@@ -446,7 +446,7 @@ export default function HeaderSearch({
                       key={fact.id}
                       href={`/${lang}/fil`}
                       onClick={handleItemClick}
-                      className="group block p-2 rounded hover:bg-[#faf8f5] transition-colors"
+                      className="group block p-2 rounded-lg hover:bg-[#faf8f5] transition-colors"
                     >
                       <div className="flex items-center gap-2 text-[9px] font-mono text-[#888888]">
                         <span className="font-bold text-[#0b4627]">{fact.time}</span>

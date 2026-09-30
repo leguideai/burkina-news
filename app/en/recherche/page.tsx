@@ -140,7 +140,7 @@ function SearchContentEn() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 autoFocus
-                className="w-full pl-12 pr-12 py-3.5 bg-[#faf8f5] border-2 border-[#141414] text-base font-serif text-[#141414] placeholder:text-[#888888] focus:outline-none focus:bg-white"
+                className="w-full pl-12 pr-12 py-3.5 bg-[#faf8f5] border-2 border-[#141414] rounded-lg text-base font-serif text-[#141414] placeholder:text-[#888888] focus:outline-none focus:bg-white"
               />
               <Search size={20} className="absolute left-4 top-4 text-[#888888]" />
               {loading ? (
@@ -164,7 +164,7 @@ function SearchContentEn() {
               
               <button
                 onClick={() => setFilter('all')}
-                className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
                   filter === 'all' 
                     ? 'bg-[#141414] text-white border-[#141414]' 
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
@@ -175,7 +175,7 @@ function SearchContentEn() {
 
               <button
                 onClick={() => setFilter('articles')}
-                className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
                   filter === 'articles' 
                     ? 'bg-[#141414] text-white border-[#141414]' 
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
@@ -186,7 +186,7 @@ function SearchContentEn() {
 
               <button
                 onClick={() => setFilter('projects')}
-                className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
                   filter === 'projects' 
                     ? 'bg-[#141414] text-white border-[#141414]' 
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
@@ -197,7 +197,7 @@ function SearchContentEn() {
 
               <button
                 onClick={() => setFilter('indicators')}
-                className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
                   filter === 'indicators' 
                     ? 'bg-[#141414] text-white border-[#141414]' 
                     : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
@@ -209,7 +209,7 @@ function SearchContentEn() {
               {results.facts.length > 0 && (
                 <button
                   onClick={() => setFilter('facts')}
-                  className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
                     filter === 'facts' 
                       ? 'bg-[#141414] text-white border-[#141414]' 
                       : 'bg-white text-[#141414] border-[#e6dfd5] hover:border-[#141414]'
@@ -237,22 +237,22 @@ function SearchContentEn() {
               Search across investigative dossiers, the national project registry, or PND RELANCE statistical series.
             </p>
             <div className="flex flex-wrap justify-center gap-2 text-xs font-mono">
-              <button onClick={() => setQuery('Or')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414]">
+              <button onClick={() => setQuery('Or')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414] rounded-lg">
                 Gold extraction
               </button>
-              <button onClick={() => setQuery('Solaire')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414]">
+              <button onClick={() => setQuery('Solaire')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414] rounded-lg">
                 Solar power
               </button>
-              <button onClick={() => setQuery('Kaya')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414]">
+              <button onClick={() => setQuery('Kaya')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414] rounded-lg">
                 Rail Ouaga-Kaya
               </button>
-              <button onClick={() => setQuery('PIB')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414]">
+              <button onClick={() => setQuery('PIB')} className="px-2.5 py-1 bg-white border border-[#e6dfd5] hover:border-[#141414] rounded-lg">
                 GDP growth
               </button>
             </div>
           </div>
         ) : !loading && totalResults === 0 ? (
-          <div className="text-center py-16 bg-white border border-[#e6dfd5] p-8">
+          <div className="text-center py-16 bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-8">
             <h3 className="font-serif font-bold text-lg text-[#141414] mb-2">
               No results found for “{query}”
             </h3>
@@ -261,7 +261,7 @@ function SearchContentEn() {
             </p>
             <Link
               href="/en/tracker"
-              className="inline-block px-4 py-2 bg-[#0b4627] text-white text-xs font-mono uppercase font-bold tracking-wider hover:bg-[#072e1a] transition-colors"
+              className="inline-block px-4 py-2 bg-[#0b4627] text-white text-xs font-mono uppercase font-bold tracking-wider rounded-lg shadow-xs hover:bg-[#072e1a] transition-colors"
             >
               Open The Tracker →
             </Link>
@@ -326,10 +326,10 @@ function SearchContentEn() {
                     <Link
                       key={ind.code}
                       href={`/en/tracker/indicateurs/${ind.code}`}
-                      className="block p-5 bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors"
+                      className="block p-5 bg-white border border-[#e6dfd5] rounded-xl shadow-xs hover:border-[#141414] transition-colors"
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-mono font-bold uppercase text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">
+                        <span className="text-[10px] font-mono font-bold uppercase text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 rounded-md border border-[#e6dfd5]">
                           {ind.code}
                         </span>
                         <span className="text-xs font-mono font-bold text-[#141414]">
@@ -360,12 +360,12 @@ function SearchContentEn() {
                   </div>
                 </div>
 
-                <div className="bg-white border border-[#e6dfd5] divide-y divide-[#e6dfd5]">
+                <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden divide-y divide-[#e6dfd5]">
                   {results.facts.map((fact, idx) => (
                     <div key={fact.id || idx} className="p-4 hover:bg-[#faf8f5] transition-colors flex items-start justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="bg-[#0b4627] text-white text-[9px] font-mono uppercase px-1.5 py-0.5 font-bold">
+                          <span className="bg-[#0b4627] text-white text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-md font-bold">
                             {fact.category_code || 'WIRE'}
                           </span>
                           <span className="text-[10px] font-mono text-[#737373]">

@@ -79,11 +79,11 @@ export default async function FilPageEn() {
                 return (
                   <article 
                     key={brief.id} 
-                    className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all p-6 sm:p-8"
+                    className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all p-6 sm:p-8 rounded-xl shadow-xs"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-[#e6dfd5]">
                       <div className="flex items-center gap-2">
-                        <span className="bg-[#0b4627] text-white text-[10px] font-mono font-bold px-2 py-0.5 uppercase tracking-wider">
+                        <span className="bg-[#0b4627] text-white text-[10px] font-mono font-bold px-2 py-0.5 uppercase tracking-wider rounded-md">
                           Week {brief.week_number}
                         </span>
                         <span className="font-mono text-xs font-bold text-[#141414]">
@@ -97,7 +97,7 @@ export default async function FilPageEn() {
 
                     {/* Preview Image if available */}
                     {brief.image && (
-                      <div className="aspect-[21/9] w-full overflow-hidden bg-neutral-100 border border-[#e6dfd5] mb-6">
+                      <div className="aspect-[21/9] w-full overflow-hidden bg-neutral-100 border border-[#e6dfd5] mb-6 rounded-lg">
                         <img 
                           src={brief.image} 
                           alt={`Cover week ${brief.week_number}`}
@@ -141,7 +141,7 @@ export default async function FilPageEn() {
           <div className="lg:col-span-4 space-y-6">
             
             {/* Mission Box */}
-            <div className="bg-white border-2 border-[#141414] p-6">
+            <div className="bg-white border-2 border-[#141414] p-6 rounded-xl shadow-xs">
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#0b4627] font-bold block mb-2">
                 Concept & Rule
               </span>
@@ -168,7 +168,7 @@ export default async function FilPageEn() {
             </div>
 
             {/* Newsletter Hook */}
-            <div className="bg-[#f4eee3] border border-[#e6dfd5] p-6 text-center">
+            <div className="bg-[#f4eee3] border border-[#e6dfd5] p-6 text-center rounded-xl shadow-xs">
               <h4 className="font-serif font-bold text-sm text-[#141414] mb-2">
                 Receive The Brief by Email
               </h4>

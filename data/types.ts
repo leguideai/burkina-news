@@ -238,6 +238,7 @@ export interface Project {
   linkedArticleIds: string[]
   linkedIndicatorCodes?: string[] // Codes des indicateurs RELANCE liés (Many-to-Many)
   pndProgram?: string
+  bailleur?: string
   reliability?: 'A' | 'B' | 'C'
   image: string
 }

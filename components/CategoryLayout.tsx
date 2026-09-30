@@ -178,14 +178,14 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
                   key={sub.code}
                   href={`${pathname}?sub=${sub.code}`}
                   scroll={false}
-                  className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 rounded-xs flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 rounded-lg flex items-center gap-1.5 cursor-pointer ${
                     isSelected
                       ? 'bg-[#0b4627] text-white font-bold shadow-xs'
                       : 'bg-[#faf8f5] text-[#141414] border border-[#e6dfd5] hover:border-[#0b4627]'
                   }`}
                 >
                   <span>{label}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${isSelected ? 'bg-white/20 text-white' : 'bg-[#e6dfd5] text-[#555555]'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono font-bold ${isSelected ? 'bg-white/20 text-white' : 'bg-[#e6dfd5] text-[#555555]'}`}>
                     {pubCount}
                   </span>
                 </Link>
@@ -204,19 +204,19 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
           <div className="lg:col-span-8 flex flex-col gap-6">
             {isLoading && allArticles.length === 0 ? (
               <div className="space-y-6 animate-pulse">
-                <div className="bg-white border border-[#e6dfd5] p-6 h-80 flex flex-col justify-end">
-                  <div className="h-4 bg-neutral-200 w-1/4 mb-3"></div>
-                  <div className="h-8 bg-neutral-200 w-3/4 mb-2"></div>
-                  <div className="h-4 bg-neutral-200 w-full mb-1"></div>
-                  <div className="h-4 bg-neutral-200 w-2/3"></div>
+                <div className="bg-white border border-[#e6dfd5] p-6 h-80 flex flex-col justify-end rounded-xl">
+                  <div className="h-4 bg-neutral-200 w-1/4 mb-3 rounded"></div>
+                  <div className="h-8 bg-neutral-200 w-3/4 mb-2 rounded"></div>
+                  <div className="h-4 bg-neutral-200 w-full mb-1 rounded"></div>
+                  <div className="h-4 bg-neutral-200 w-2/3 rounded"></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="bg-white border border-[#e6dfd5] h-56"></div>
-                  <div className="bg-white border border-[#e6dfd5] h-56"></div>
+                  <div className="bg-white border border-[#e6dfd5] h-56 rounded-xl"></div>
+                  <div className="bg-white border border-[#e6dfd5] h-56 rounded-xl"></div>
                 </div>
               </div>
             ) : filteredArticles.length === 0 ? (
-              <div className="bg-white border border-[#e6dfd5] p-10 sm:p-14 text-center my-4">
+              <div className="bg-white border border-[#e6dfd5] p-10 sm:p-14 text-center my-4 rounded-xl shadow-xs">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#be185d] block mb-2">
                   {isEn ? "Editorial Archive" : "Archives Éditoriales"}
                 </span>
@@ -231,7 +231,7 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
                 <Link
                   href={pathname}
                   scroll={false}
-                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#0b4627] text-white text-xs font-mono uppercase tracking-wider font-bold"
+                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#0b4627] text-white text-xs font-mono uppercase tracking-wider font-bold rounded-lg"
                 >
                   {isEn ? "View all articles" : "Voir toutes les enquêtes"}
                 </Link>
@@ -265,7 +265,7 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
           <div className="lg:col-span-4 space-y-6">
             
             {/* Editorial Line Box */}
-            <div className="bg-[#faf8f5] border border-[#e6dfd5] p-5">
+            <div className="bg-[#faf8f5] border border-[#e6dfd5] p-5 rounded-xl">
               <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0b4627] mb-2 pb-2 border-b border-[#e6dfd5]">
                 {isEn ? "Editorial Standard" : "Ligne éditoriale"}
               </h4>
@@ -302,7 +302,7 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
 
             {/* Indicateurs RELANCE liés */}
             {indicators.length > 0 && (
-              <div className="border border-[#e6dfd5] bg-white p-5">
+              <div className="border border-[#e6dfd5] bg-white p-5 rounded-xl">
                 <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] mb-3 pb-2 border-b border-[#e6dfd5]">
                   {isEn ? "Barometer Indicators" : "Indicateurs du Baromètre"}
                 </h4>
@@ -312,7 +312,7 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
                     <Link 
                       key={ind.id} 
                       href={`/${isEn ? 'en' : 'fr'}/tracker/indicateurs/${ind.code}`}
-                      className="block p-2.5 bg-[#faf8f5] border border-[#e6dfd5] hover:border-[#141414] transition-colors"
+                      className="block p-2.5 bg-[#faf8f5] border border-[#e6dfd5] hover:border-[#141414] transition-colors rounded-lg"
                     >
                       <div className="flex justify-between items-center text-xs">
                         <span className="font-serif font-bold text-[#141414]">{ind.name}</span>

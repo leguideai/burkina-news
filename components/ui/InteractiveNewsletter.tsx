@@ -50,7 +50,7 @@ export default function InteractiveNewsletter({ lang = 'fr' }: InteractiveNewsle
   return (
     <div className="w-full">
       {status === 'success' ? (
-        <div className="bg-[#f0fdf4] border border-green-300 p-4 text-xs font-serif text-[#0b4627] flex items-center gap-2 max-w-md mx-auto">
+        <div className="bg-[#f0fdf4] border border-green-300 rounded-lg p-4 text-xs font-serif text-[#0b4627] flex items-center gap-2 max-w-md mx-auto">
           <CheckCircle2 size={16} className="shrink-0" />
           <span>{feedbackMessage}</span>
         </div>
@@ -63,12 +63,12 @@ export default function InteractiveNewsletter({ lang = 'fr' }: InteractiveNewsle
             placeholder={isEn ? "Your email address" : "Votre adresse email"}
             required
             disabled={status === 'loading'}
-            className="px-4 py-2.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] flex-1 disabled:opacity-50"
+            className="px-4 py-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] flex-1 disabled:opacity-50"
           />
           <button 
             type="submit"
             disabled={status === 'loading'}
-            className="px-6 py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors disabled:opacity-70 flex items-center justify-center gap-1.5"
+            className="px-6 py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors disabled:opacity-70 flex items-center justify-center gap-1.5 rounded-lg shadow-xs"
           >
             {status === 'loading' ? (
               <>

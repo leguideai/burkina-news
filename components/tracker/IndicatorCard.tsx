@@ -17,7 +17,7 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
     : 50;
 
   return (
-    <div className="group h-full bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors flex flex-col justify-between overflow-hidden">
+    <div className="group h-full bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors flex flex-col justify-between overflow-hidden rounded-xl shadow-xs">
       
       {/* Photographic Evidence Header */}
       {indicator.image && (
@@ -27,7 +27,7 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
             alt={indicator.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
-          <div className="absolute top-2 left-2 bg-[#141414] text-white px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-widest">
+          <div className="absolute top-2 left-2 bg-[#141414] text-white px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-widest rounded-md">
             {indicator.code}
           </div>
         </Link>

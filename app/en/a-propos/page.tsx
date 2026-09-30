@@ -32,19 +32,19 @@ export default function AProposPageEn() {
             Our Three Core Formats
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
-            <div className="bg-white p-5 border border-[#e6dfd5]">
+            <div className="bg-white p-5 border border-[#e6dfd5] rounded-xl shadow-xs">
               <h3 className="font-serif font-bold text-base text-[#141414] mb-2">The Monthly Issue</h3>
               <p className="text-xs text-[#555555] font-serif leading-relaxed">
                 In-depth investigative Deep Dives and sectoral dossiers, published with a complete registry of primary evidence.
               </p>
             </div>
-            <div className="bg-white p-5 border border-[#e6dfd5]">
+            <div className="bg-white p-5 border border-[#e6dfd5] rounded-xl shadow-xs">
               <h3 className="font-serif font-bold text-base text-[#141414] mb-2">The Brief</h3>
               <p className="text-xs text-[#555555] font-serif leading-relaxed">
                 The weekly summary of the ten major facts of the past week, timestamped and sourced without opinion or spin.
               </p>
             </div>
-            <div className="bg-white p-5 border border-[#e6dfd5]">
+            <div className="bg-white p-5 border border-[#e6dfd5] rounded-xl shadow-xs">
               <h3 className="font-serif font-bold text-base text-[#141414] mb-2">The Tracker</h3>
               <p className="text-xs text-[#555555] font-serif leading-relaxed">
                 Our public registry of major national infrastructure sites (target objective: 60 audited projects), monitored physically and documentarily through 6 verified statuses.
@@ -63,7 +63,7 @@ export default function AProposPageEn() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans text-xs">
-            <div className="border border-[#e6dfd5] bg-white p-5">
+            <div className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs p-5">
               <span className="font-mono text-[10px] uppercase text-[#0b4627] font-bold block mb-1">Desk 01</span>
               <h4 className="font-serif font-bold text-sm text-[#141414] mb-1">Investigation & Field Reporting</h4>
               <p className="text-xs text-[#555555] font-serif">
@@ -71,7 +71,7 @@ export default function AProposPageEn() {
               </p>
             </div>
 
-            <div className="border border-[#e6dfd5] bg-white p-5">
+            <div className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs p-5">
               <span className="font-mono text-[10px] uppercase text-[#0b4627] font-bold block mb-1">Desk 02</span>
               <h4 className="font-serif font-bold text-sm text-[#141414] mb-1">Data & Tracker</h4>
               <p className="text-xs text-[#555555] font-serif">
@@ -79,7 +79,7 @@ export default function AProposPageEn() {
               </p>
             </div>
 
-            <div className="border border-[#e6dfd5] bg-white p-5">
+            <div className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs p-5">
               <span className="font-mono text-[10px] uppercase text-[#0b4627] font-bold block mb-1">Desk 03</span>
               <h4 className="font-serif font-bold text-sm text-[#141414] mb-1">Monitoring & Archival</h4>
               <p className="text-xs text-[#555555] font-serif">
@@ -103,7 +103,7 @@ export default function AProposPageEn() {
         </section>
 
         {/* The Promise */}
-        <div className="p-6 bg-[#f4eee3] border border-[#e6dfd5] text-center">
+        <div className="p-6 bg-[#f4eee3] border border-[#e6dfd5] rounded-2xl shadow-xs text-center">
           <h3 className="font-serif font-bold text-base text-[#141414] mb-2">
             Our Core Promise
           </h3>

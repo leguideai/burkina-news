@@ -94,7 +94,7 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
 
           <div className="pb-6 border-b border-[#141414]">
             <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] mb-2">
-              <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5]">Issue {issue.number}</span>
+              <span className="bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">Issue {issue.number}</span>
               <span>·</span>
               <span className="text-[#555555]">{formattedDate}</span>
             </div>
@@ -118,7 +118,7 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
                 <a 
                   href={issue.pdfUrl}
                   download={`Burkina-News-Issue-0${issue.number}.pdf`}
-                  className="w-full py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 transition-colors"
+                  className="w-full py-2.5 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 rounded-lg shadow-xs transition-colors"
                 >
                   <Download size={15} />
                   <span>Download Issue 0{issue.number} (PDF)</span>
@@ -138,7 +138,7 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
           <div className="lg:col-span-8 space-y-8">
             
             {/* Issue Editorial Introduction */}
-            <div className="bg-white border border-[#e6dfd5] p-6 sm:p-8">
+            <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-6 sm:p-8">
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#0b4627] font-bold block mb-2">
                 Editorial Overview
               </span>
@@ -161,12 +161,12 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
               {issueArticles.map((art, idx) => (
                 <article 
                   key={art.id}
-                  className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all p-6 flex flex-col justify-between group"
+                  className="bg-white border border-[#e6dfd5] hover:border-[#141414] rounded-xl shadow-xs transition-all p-6 flex flex-col justify-between group"
                 >
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-[10px] font-mono">
                       <div className="flex items-center gap-2">
-                        <span className="bg-[#141414] text-white px-2 py-0.5 uppercase tracking-wider font-bold">
+                        <span className="bg-[#141414] text-white px-2 py-0.5 uppercase tracking-wider font-bold rounded-xs">
                           Dossier 0{idx + 1}
                         </span>
                         <span className="uppercase text-[#0b4627] font-semibold">
@@ -178,7 +178,7 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
 
                     <div className="flex flex-col sm:flex-row gap-5 items-start my-3">
                       {art.image && (
-                        <div className="w-full sm:w-36 aspect-[16/10] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                        <div className="w-full sm:w-36 aspect-[16/10] shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                           <img 
                             src={art.image} 
                             alt={art.title}
@@ -221,8 +221,8 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
           <div className="lg:col-span-4 space-y-6">
             
             {/* Cover Card */}
-            <div className="border border-[#e6dfd5] bg-white p-5">
-              <div className="aspect-[4/3] w-full overflow-hidden bg-neutral-100 border border-[#e6dfd5] mb-4">
+            <div className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs p-5">
+              <div className="aspect-[4/3] w-full overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-lg mb-4">
                 <img 
                   src={issue.coverImage} 
                   alt={issue.title}
@@ -247,7 +247,7 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
             </div>
 
             {/* PDF Card with real download */}
-            <div className="border border-[#141414] bg-white p-5">
+            <div className="border border-[#141414] bg-white rounded-xl shadow-xs p-5">
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#141414] mb-2 pb-2 border-b border-[#141414]">
                 Archive Edition
               </h3>
@@ -258,12 +258,12 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
                 <a 
                   href={issue.pdfUrl}
                   download={`Burkina-News-Issue-0${issue.number}.pdf`}
-                  className="w-full py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center block transition-colors"
+                  className="w-full py-2 bg-[#0b4627] hover:bg-[#072e1a] text-white text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs transition-colors"
                 >
                   Download Official PDF
                 </a>
               ) : (
-                <span className="w-full py-2 bg-[#faf8f5] border border-[#e6dfd5] text-[#737373] text-xs font-mono text-center block">
+                <span className="w-full py-2 bg-[#faf8f5] border border-[#e6dfd5] text-[#737373] text-xs font-mono text-center block rounded-lg">
                   Online Digital Edition
                 </span>
               )}
@@ -272,7 +272,7 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
             {/* Back link */}
             <Link 
               href="/en/numeros"
-              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block hover:bg-[#141414] hover:text-white transition-colors"
+              className="w-full py-2.5 bg-white border border-[#141414] text-[#141414] text-xs font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs hover:bg-[#141414] hover:text-white transition-colors"
             >
               ← All Monthly Issues
             </Link>

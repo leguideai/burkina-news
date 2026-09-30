@@ -9,7 +9,7 @@ export default function Badge({ label, color = 'var(--orange)', variant = 'fille
   
   return (
     <span 
-      className="inline-block uppercase tracking-wider text-[10px] font-extrabold px-2 py-1 rounded-sm"
+      className="inline-block uppercase tracking-wider text-[10px] font-extrabold px-2 py-1 rounded-md"
       style={{
         backgroundColor: isFilled ? color : 'transparent',
         color: isFilled ? 'white' : color,

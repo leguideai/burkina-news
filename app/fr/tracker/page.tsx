@@ -46,6 +46,7 @@ export default function TrackerPage() {
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedSector, setSelectedSector] = useState<string>('all');
+  const [selectedBailleur, setSelectedBailleur] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedProvince, setSelectedProvince] = useState<string>('all');
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
@@ -111,13 +112,22 @@ export default function TrackerPage() {
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
-      if (search && !p.title.toLowerCase().includes(search.toLowerCase()) && !p.description.toLowerCase().includes(search.toLowerCase())) {
-        return false;
+      if (search) {
+        const q = search.toLowerCase();
+        const match = p.title.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          p.region.toLowerCase().includes(q) ||
+          (p.province && p.province.toLowerCase().includes(q)) ||
+          (p.bailleur && p.bailleur.toLowerCase().includes(q));
+        if (!match) return false;
       }
       if (selectedStatus !== 'all' && p.currentStatus !== selectedStatus) {
         return false;
       }
       if (selectedSector !== 'all' && p.sector !== selectedSector) {
+        return false;
+      }
+      if (selectedBailleur !== 'all' && p.bailleur !== selectedBailleur) {
         return false;
       }
       if (selectedRegion !== 'all' && p.region !== selectedRegion) {
@@ -135,14 +145,15 @@ export default function TrackerPage() {
       }
       return true;
     });
-  }, [projects, search, selectedStatus, selectedSector, selectedRegion, selectedProvince, selectedCommune]);
+  }, [projects, search, selectedStatus, selectedSector, selectedBailleur, selectedRegion, selectedProvince, selectedCommune]);
 
-  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all' || selectedCommune !== 'all';
+  const hasActiveFilters = search || selectedStatus !== 'all' || selectedSector !== 'all' || selectedBailleur !== 'all' || selectedRegion !== 'all' || selectedProvince !== 'all' || selectedCommune !== 'all';
 
   const resetFilters = () => {
     setSearch('');
     setSelectedStatus('all');
     setSelectedSector('all');
+    setSelectedBailleur('all');
     setSelectedRegion('all');
     setSelectedProvince('all');
     setSelectedCommune('all');
@@ -191,7 +202,7 @@ export default function TrackerPage() {
                 <button
                   key={status}
                   onClick={() => setSelectedStatus(selectedStatus === status ? 'all' : status)}
-                  className={`p-3 border text-left transition-all relative flex flex-col justify-between rounded-xs ${
+                  className={`p-3 border text-left transition-all relative flex flex-col justify-between rounded-lg ${
                     isSelected 
                       ? `${theme.bgActive} text-white ${theme.borderActive} shadow-sm ring-1 ring-black/10` 
                       : 'bg-white border-[#e6dfd5] hover:border-[#141414] text-[#141414] hover:shadow-xs'
@@ -203,7 +214,7 @@ export default function TrackerPage() {
                 >
                   <div className="flex justify-between items-center text-[10px] font-mono mb-2">
                     <span 
-                      className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-xs text-[10px] ${
+                      className={`inline-flex items-center gap-1 font-bold px-1.5 py-0.5 rounded-md text-[10px] ${
                         isSelected ? 'bg-white/20 text-white' : 'bg-neutral-100'
                       }`}
                       style={{ color: isSelected ? '#ffffff' : color }}
@@ -248,7 +259,7 @@ export default function TrackerPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8">
         
         {/* Unified Search & Filters Bar */}
-        <div className="bg-white border border-[#e6dfd5] p-3.5 sm:p-4 mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-3.5 sm:p-4 mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           
           {/* Search Field */}
           <div className="relative flex-1">
@@ -257,7 +268,7 @@ export default function TrackerPage() {
               placeholder="Rechercher par nom de chantier, région, bailleur, maître d'ouvrage..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
+              className="w-full pl-8 pr-3 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
             />
             <Search size={14} className="absolute left-2.5 top-2.5 sm:top-2 text-[#888888]" />
             {search && (
@@ -276,10 +287,25 @@ export default function TrackerPage() {
             <select 
               value={selectedSector}
               onChange={(e) => setSelectedSector(e.target.value)}
-              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
             >
               <option value="all">Tous les secteurs</option>
               {sectors.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+
+            <select 
+              value={selectedBailleur}
+              onChange={(e) => setSelectedBailleur(e.target.value)}
+              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+            >
+              <option value="all">Tous les bailleurs</option>
+              <option value="État du Burkina Faso">État du Burkina Faso</option>
+              <option value="Banque mondiale">Banque mondiale</option>
+              <option value="BAD">BAD</option>
+              <option value="CEDEAO">CEDEAO</option>
+              <option value="Union Européenne">Union Européenne</option>
+              <option value="Coopération bilatérale">Coopération bilatérale</option>
+              <option value="Secteur privé">Secteur privé</option>
             </select>
 
             <select 
@@ -290,7 +316,7 @@ export default function TrackerPage() {
                 setSelectedProvince('all');
                 setSelectedCommune('all');
               }}
-              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
             >
               <option value="all">Toutes les 17 régions</option>
               {BURKINA_REGIONS_17.map(r => <option key={r} value={r}>{r}</option>)}
@@ -309,7 +335,7 @@ export default function TrackerPage() {
                   }
                 }
               }}
-              className={`w-full lg:w-auto px-2.5 py-2 sm:py-1.5 border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
+              className={`w-full lg:w-auto px-2.5 py-2 sm:py-1.5 border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
                 selectedRegion !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
               }`}
             >
@@ -322,7 +348,7 @@ export default function TrackerPage() {
             <select 
               value={selectedCommune}
               onChange={(e) => setSelectedCommune(e.target.value)}
-              className={`w-full lg:w-auto px-2.5 py-2 sm:py-1.5 border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
+              className={`w-full lg:w-auto px-2.5 py-2 sm:py-1.5 border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
                 selectedProvince !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
               }`}
             >
@@ -339,7 +365,7 @@ export default function TrackerPage() {
             <select 
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
+              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
             >
               <option value="all">Tous les statuts (6)</option>
               {PROJECT_STATUS_ORDER.map(st => (
@@ -348,10 +374,10 @@ export default function TrackerPage() {
             </select>
 
             {/* View Mode Toggles */}
-            <div className="hidden sm:flex items-center border border-[#e6dfd5] p-0.5 bg-[#faf8f5]">
+            <div className="hidden sm:flex items-center border border-[#e6dfd5] p-0.5 bg-[#faf8f5] rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 transition-colors ${viewMode === 'grid' ? 'bg-white text-[#0b4627] shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white text-[#0b4627] shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
                 aria-label="Vue Grille"
                 title="Affichage en fiches"
               >
@@ -359,7 +385,7 @@ export default function TrackerPage() {
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={`p-1.5 transition-colors ${viewMode === 'table' ? 'bg-white text-[#0b4627] shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white text-[#0b4627] shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
                 aria-label="Vue Tableau"
                 title="Affichage en tableau"
               >
@@ -411,7 +437,7 @@ export default function TrackerPage() {
                   <div className="sm:hidden text-[10px] font-mono text-[#737373] text-right mb-1">
                     ↔ Faites glisser le tableau pour voir toutes les colonnes
                   </div>
-                  <div className="bg-white border border-[#e6dfd5] overflow-x-auto">
+                  <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-x-auto">
                     <table className="w-full min-w-[720px] text-left border-collapse text-xs font-serif">
                     <thead>
                       <tr className="border-b border-[#141414] bg-[#faf8f5] text-[10px] font-mono uppercase text-[#737373]">
@@ -432,7 +458,7 @@ export default function TrackerPage() {
                           </td>
                           <td className="py-2.5 px-3 max-w-sm">
                             <div className="flex items-center gap-3">
-                              <div className="w-12 h-9 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5]">
+                              <div className="w-12 h-9 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                                 <img 
                                   src={proj.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
                                   alt={proj.title}
@@ -474,7 +500,7 @@ export default function TrackerPage() {
                 </div>
               </div>
             )) : (
-              <div className="p-12 text-center bg-white border border-[#e6dfd5] mb-12 space-y-3">
+              <div className="p-12 text-center bg-white border border-[#e6dfd5] rounded-xl shadow-xs mb-12 space-y-3">
                 <Compass size={32} className="mx-auto text-[#888888]" />
                 <h3 className="text-base font-bold font-serif text-[#141414]">Aucun chantier ne correspond aux filtres sélectionnés</h3>
                 <p className="text-xs font-serif text-[#555555] max-w-sm mx-auto">
@@ -482,7 +508,7 @@ export default function TrackerPage() {
                 </p>
                 <button 
                   onClick={resetFilters}
-                  className="px-4 py-2 bg-[#0b4627] text-white text-xs font-mono font-bold uppercase tracking-wider"
+                  className="px-4 py-2 bg-[#0b4627] text-white text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-xs hover:bg-[#072e1a] transition-colors"
                 >
                   Afficher tous les projets
                 </button>
@@ -490,7 +516,7 @@ export default function TrackerPage() {
             )}
 
             {/* Protocol Note at Bottom of Projects List */}
-            <div className="border border-[#e6dfd5] bg-[#faf8f5] p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="border border-[#e6dfd5] bg-[#faf8f5] rounded-xl shadow-xs p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-[#0b4627] font-bold block mb-1">
                   Protocole d'audit documentaire
@@ -504,7 +530,7 @@ export default function TrackerPage() {
               </div>
               <Link 
                 href="/fr/methode"
-                className="px-3 py-2 border border-[#141414] bg-white hover:bg-[#141414] hover:text-white text-[#141414] text-xs font-mono font-bold uppercase tracking-wider transition-colors shrink-0"
+                className="px-3 py-2 border border-[#141414] bg-white hover:bg-[#141414] hover:text-white text-[#141414] text-xs font-mono font-bold uppercase tracking-wider rounded-lg shadow-xs transition-colors shrink-0"
               >
                 Méthode →
               </Link>
@@ -518,7 +544,7 @@ export default function TrackerPage() {
           <aside className="lg:col-span-4 lg:sticky lg:top-20 space-y-6">
             
             {/* The Slim Sticky Baromètre RELANCE Widget */}
-            <div className="border border-[#141414] bg-white p-5 shadow-xs">
+            <div className="border border-[#141414] bg-white rounded-xl shadow-xs p-5">
               
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#141414]">
                 <div>
@@ -529,7 +555,7 @@ export default function TrackerPage() {
                     Baromètre RELANCE
                   </h3>
                 </div>
-                <span className="text-[10px] font-mono font-bold bg-[#f4eee3] px-1.5 py-0.5 border border-[#e6dfd5]">
+                <span className="text-[10px] font-mono font-bold bg-[#f4eee3] px-1.5 py-0.5 rounded-md border border-[#e6dfd5]">
                   2026
                 </span>
               </div>
@@ -544,7 +570,7 @@ export default function TrackerPage() {
                   <Link 
                     key={ind.id} 
                     href={`/fr/tracker/indicateurs/${ind.code}`}
-                    className="block p-2.5 bg-[#faf8f5] border border-[#e6dfd5] hover:border-[#141414] transition-colors group"
+                    className="block p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg hover:border-[#141414] transition-colors group"
                   >
                     <div className="flex justify-between items-baseline mb-0.5">
                       <span className="text-[10px] font-mono uppercase text-[#737373]">{ind.code}</span>
@@ -567,14 +593,14 @@ export default function TrackerPage() {
 
               <Link 
                 href="/fr/tracker/indicateurs"
-                className="mt-4 w-full py-2 bg-[#141414] hover:bg-[#0b4627] text-white text-[11px] font-mono font-bold uppercase tracking-wider text-center block transition-colors"
+                className="mt-4 w-full py-2 bg-[#141414] hover:bg-[#0b4627] text-white text-[11px] font-mono font-bold uppercase tracking-wider text-center block rounded-lg shadow-xs transition-colors"
               >
                 Consulter les 20 indicateurs →
               </Link>
             </div>
 
             {/* Quick Helper / Key Contacts */}
-            <div className="border border-[#e6dfd5] bg-white p-4 text-xs font-serif">
+            <div className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs p-4 text-xs font-serif">
               <span className="text-[10px] font-mono uppercase tracking-wider text-[#737373] block mb-1">
                 Contribuer au Tracker
               </span>
