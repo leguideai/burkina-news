@@ -34,29 +34,19 @@ import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
 import SearchableSelect from '@/components/ui/SearchableSelect';
-
-const SECTORS = [
-  'Agriculture & Irrigation',
-  'Eau & Assainissement',
-  'Éducation',
-  'Énergie',
-  'Mines',
-  'Santé',
-  'Télécoms & Numérique',
-  'Transport'
-];
-
+import { trackerFiltersApi } from '@/lib/api/trackerFilters';
 import { BURKINA_REGIONS_17 } from '@/data/mock/referentiel-territoire';
 
 const REGIONS = [
   'National (Multi-régions)',
   ...BURKINA_REGIONS_17
-];
+].sort((a, b) => a.localeCompare(b, 'fr'));
 
 export default function AdminProjectsPage() {
   const { success, error, warning } = useToast();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [dynamicSectors, setDynamicSectors] = useState<string[]>([]);
 
   // Filters & Search
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,11 +64,19 @@ export default function AdminProjectsPage() {
   const [statusNoteFr, setStatusNoteFr] = useState('');
   const [statusNoteEn, setStatusNoteEn] = useState('');
 
-  // Fetch projects
+  // Fetch projects and dynamic sectors
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await trackerApi.listProjects({ limit: 100 });
+      const [res, filterRes] = await Promise.all([
+        trackerApi.listProjects({ limit: 100 }).catch(() => ({ projects: [] })),
+        trackerFiltersApi.getFilters().catch(() => ({ sectors: [] })),
+      ]);
+
+      if (filterRes.sectors && filterRes.sectors.length > 0) {
+        setDynamicSectors(filterRes.sectors);
+      }
+
       if (res.projects && res.projects.length > 0) {
         setProjects(res.projects.map(mapProjectDTOToProject));
       } else {
@@ -86,6 +84,9 @@ export default function AdminProjectsPage() {
         if (fallback.ok) {
           const data = await fallback.json();
           setProjects(data.projects || []);
+          if (data.trackerFilters?.sectors) {
+            setDynamicSectors(data.trackerFilters.sectors.map((s: any) => s.name).sort((a: string, b: string) => a.localeCompare(b, 'fr')));
+          }
         }
       }
     } catch (err: any) {
@@ -195,13 +196,23 @@ export default function AdminProjectsPage() {
           </p>
         </div>
 
-        <Link
-          href="/admin/projets/nouveau"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm self-start md:self-auto"
-        >
-          <Plus size={16} />
-          Nouveau Chantier
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/projets/filtres"
+            className="inline-flex items-center gap-2 px-3 py-2.5 bg-white border border-[#e6dfd5] text-[#141414] hover:bg-[#f6f5f0] hover:border-[#141414] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm self-start md:self-auto"
+          >
+            <Filter size={15} className="text-[#087443]" />
+            Gérer les Filtres
+          </Link>
+
+          <Link
+            href="/admin/projets/nouveau"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#087443] text-white hover:bg-[#075f37] font-mono text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm self-start md:self-auto"
+          >
+            <Plus size={16} />
+            Nouveau Chantier
+          </Link>
+        </div>
       </div>
 
       {/* 6-Stage Progress Strip */}
@@ -281,7 +292,7 @@ export default function AdminProjectsPage() {
           <SearchableSelect
             value={sectorFilter}
             onChange={setSectorFilter}
-            options={SECTORS}
+            options={dynamicSectors.length > 0 ? dynamicSectors : Array.from(new Set(projects.map(p => p.sector))).filter(Boolean).sort((a, b) => a.localeCompare(b, 'fr'))}
             allOptionLabel="Tous les secteurs"
             allValue="all"
             searchPlaceholder="Filtrer secteur..."

@@ -11,6 +11,10 @@ import {
   FileText,
   ShieldCheck,
   Languages,
+  Check,
+  X,
+  AlertCircle,
+  Sparkles,
 } from 'lucide-react';
 import { Article, CategoryCode, ContentType } from '@/data/types';
 import { categoriesApi } from '@/lib/api/categories';
@@ -134,6 +138,46 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
     );
     const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
     const [isSaving, setIsSaving] = useState(false);
+
+    // Déontological Audit State (Charte v3.1)
+    const [isAuditing, setIsAuditing] = useState(false);
+    const [auditResult, setAuditResult] = useState<any>(null);
+    const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+
+    const handleRunAudit = async () => {
+      if (!formData.title || !formData.body) {
+        alert("Veuillez renseigner au moins un titre et un corps d'article pour lancer l'audit déontologique.");
+        return;
+      }
+      try {
+        setIsAuditing(true);
+        const res = await fetch('/api/admin/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'audit_charte',
+            payload: {
+              article: {
+                title: formData.title,
+                excerpt: formData.excerpt,
+                content: formData.body,
+                sourcesCount: formData.sourceCount,
+              }
+            }
+          })
+        });
+        if (!res.ok) throw new Error("Erreur lors de l'audit déontologique");
+        const json = await res.json();
+        if (json.data) {
+          setAuditResult(json.data);
+          setIsAuditModalOpen(true);
+        }
+      } catch (err: any) {
+        alert(err.message || "Impossible de compléter l'audit déontologique.");
+      } finally {
+        setIsAuditing(false);
+      }
+    };
 
     // Sync if initialData changes after async load
     useEffect(() => {
@@ -279,6 +323,18 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
                   EN
                 </button>
               </div>
+
+              {/* Audit Charte v3.1 */}
+              <button
+                type="button"
+                onClick={handleRunAudit}
+                disabled={isAuditing || !formData.title || !formData.body}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#e6dfd5] text-[#141414] hover:bg-[#faf8f5] hover:border-[#087443] font-mono text-xs font-bold rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                title="Vérifier l'alignement avec la Charte Déontologique v3.1"
+              >
+                {isAuditing ? <Loader2 size={14} className="animate-spin text-[#087443]" /> : <ShieldCheck size={14} className="text-[#087443]" />}
+                <span className="hidden sm:inline">{isAuditing ? 'Audit en cours...' : 'Audit Charte'}</span>
+              </button>
 
               {/* Save */}
               <button
@@ -505,6 +561,123 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
             )}
           </div>
         </div>
+
+        {/* Modal : Rapport d'Audit Déontologique Micum */}
+        {isAuditModalOpen && auditResult && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white border-2 border-[#141414] rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center pb-3 border-b border-[#e6dfd5]">
+                <h3 className="font-serif font-bold text-lg text-[#141414] flex items-center gap-2">
+                  <ShieldCheck size={20} className="text-[#087443]" />
+                  <span>Rapport d'Audit Déontologique</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsAuditModalOpen(false)}
+                  className="p-1 text-[#736c62] hover:text-[#141414] rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Score & Verdict */}
+              <div className="flex items-center justify-between p-4 bg-[#faf8f5] border border-[#e6dfd5] rounded-xl">
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[#736c62]">Verdict Déontologique</div>
+                  <div className="text-xl font-bold font-serif text-[#141414] flex items-center gap-2 mt-0.5">
+                    <span className={`px-2.5 py-0.5 text-xs font-mono font-bold uppercase rounded ${
+                      auditResult.verdict === 'CONFORME'
+                        ? 'bg-green-100 text-[#087443] border border-green-300'
+                        : auditResult.verdict === 'A_REVOIR'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-red-100 text-red-800 border border-red-300'
+                    }`}>
+                      {auditResult.verdict}
+                    </span>
+                    <span>Note : {auditResult.score}/100</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[#736c62]">Confiance Suggérée</div>
+                  <div className="font-mono text-sm font-bold text-[#087443] mt-0.5">
+                    Niveau {auditResult.suggestedConfidence || auditResult.confidenceLevel || 'high'}
+                  </div>
+                </div>
+              </div>
+
+              {auditResult.summary && (
+                <p className="text-xs font-serif text-[#555555] italic bg-white p-3 border border-[#e6dfd5] rounded-lg">
+                  « {auditResult.summary} »
+                </p>
+              )}
+
+              {/* Points forts */}
+              {auditResult.strengths && auditResult.strengths.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-mono uppercase font-bold text-[#087443] flex items-center gap-1">
+                    <Check size={14} /> Points forts & Rigueur
+                  </div>
+                  <ul className="text-xs font-serif space-y-1 pl-4 list-disc text-[#141414]">
+                    {auditResult.strengths.map((s: string, idx: number) => (
+                      <li key={idx}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Avertissements */}
+              {auditResult.warnings && auditResult.warnings.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-mono uppercase font-bold text-[#c2410c] flex items-center gap-1">
+                    <AlertCircle size={14} /> Formulations à surveiller
+                  </div>
+                  <ul className="text-xs font-serif space-y-1 pl-4 list-disc text-[#141414]">
+                    {auditResult.warnings.map((w: string, idx: number) => (
+                      <li key={idx}>{w}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Recommandations */}
+              {auditResult.recommendations && auditResult.recommendations.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-mono uppercase font-bold text-[#1e3a5f] flex items-center gap-1">
+                    <Sparkles size={14} /> Recommandations d'Amélioration
+                  </div>
+                  <ul className="text-xs font-serif space-y-1 pl-4 list-disc text-[#555555]">
+                    {auditResult.recommendations.map((r: string, idx: number) => (
+                      <li key={idx}>{r}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Actions Footer */}
+              <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (auditResult.suggestedConfidence) {
+                      setFormData(prev => ({ ...prev, confidence: auditResult.suggestedConfidence }));
+                    }
+                    setIsAuditModalOpen(false);
+                  }}
+                  className="px-4 py-2 bg-[#087443] hover:bg-[#075f37] text-white font-mono text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                >
+                  Appliquer la note & Fermer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAuditModalOpen(false)}
+                  className="px-3 py-2 bg-neutral-100 hover:bg-neutral-200 text-[#141414] font-mono text-xs rounded-lg transition-colors cursor-pointer"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

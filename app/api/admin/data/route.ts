@@ -12,9 +12,10 @@ import {
   saveIssues,
   saveCorrections,
   saveCategories,
-  saveSubCategories
+  saveSubCategories,
+  saveTrackerFilters
 } from '@/data/admin-store';
-import { Article, Project, ProjectStatus, Indicator, Brief, Issue, Correction, SubCategory, Category } from '@/data/types';
+import { Article, Project, ProjectStatus, Indicator, Brief, Issue, Correction, SubCategory, Category, TrackerSector, TrackerBailleur, TrackerFiltersConfig } from '@/data/types';
 
 export async function GET(request: Request) {
   const store = getAdminStore();
@@ -32,6 +33,7 @@ export async function GET(request: Request) {
     corrections: store.corrections,
     homepageConfig: store.homepageConfig,
     users: store.users,
+    trackerFilters: store.trackerFilters,
     contacts,
     newsletter,
   });
@@ -688,6 +690,119 @@ export async function POST(request: Request) {
         store.users = store.users.filter(u => u.id !== payload.id);
         saveAdminUsers(store.users);
         return NextResponse.json({ success: true, message: `Compte de ${user.name} définitivement supprimé.` });
+      }
+
+      // ── TRACKER FILTERS (SECTEURS, BAILLEURS) ────────────────
+      case 'create_tracker_sector': {
+        if (!store.trackerFilters) {
+          store.trackerFilters = { sectors: [], bailleurs: [] };
+        }
+        const name = payload.name?.trim();
+        if (!name) {
+          return NextResponse.json({ error: 'Le nom du secteur est requis.' }, { status: 400 });
+        }
+        const code = payload.code?.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const newSector: TrackerSector = {
+          id: `sec-${Date.now()}`,
+          name,
+          nameEn: payload.nameEn?.trim() || name,
+          code,
+          description: payload.description || '',
+          createdAt: new Date().toISOString(),
+        };
+        store.trackerFilters.sectors.push(newSector);
+        store.trackerFilters.updatedAt = new Date().toISOString();
+        saveTrackerFilters(store.trackerFilters);
+        return NextResponse.json({ success: true, message: `Secteur « ${name} » ajouté avec succès.`, item: newSector });
+      }
+
+      case 'update_tracker_sector': {
+        if (!store.trackerFilters?.sectors) {
+          return NextResponse.json({ error: 'Secteur introuvable.' }, { status: 404 });
+        }
+        const idx = store.trackerFilters.sectors.findIndex(s => s.id === payload.id);
+        if (idx === -1) {
+          return NextResponse.json({ error: 'Secteur introuvable.' }, { status: 404 });
+        }
+        store.trackerFilters.sectors[idx] = {
+          ...store.trackerFilters.sectors[idx],
+          ...payload,
+        };
+        store.trackerFilters.updatedAt = new Date().toISOString();
+        saveTrackerFilters(store.trackerFilters);
+        return NextResponse.json({ success: true, message: 'Secteur mis à jour avec succès.', item: store.trackerFilters.sectors[idx] });
+      }
+
+      case 'delete_tracker_sector': {
+        if (!store.trackerFilters?.sectors) {
+          return NextResponse.json({ error: 'Secteur introuvable.' }, { status: 404 });
+        }
+        store.trackerFilters.sectors = store.trackerFilters.sectors.filter(s => s.id !== payload.id);
+        store.trackerFilters.updatedAt = new Date().toISOString();
+        saveTrackerFilters(store.trackerFilters);
+        return NextResponse.json({ success: true, message: 'Secteur retiré avec succès.' });
+      }
+
+      case 'create_tracker_bailleur': {
+        if (!store.trackerFilters) {
+          store.trackerFilters = { sectors: [], bailleurs: [] };
+        }
+        const name = payload.name?.trim();
+        if (!name) {
+          return NextResponse.json({ error: 'Le nom du bailleur est requis.' }, { status: 400 });
+        }
+        const code = payload.code?.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const newBailleur: TrackerBailleur = {
+          id: `bai-${Date.now()}`,
+          name,
+          nameEn: payload.nameEn?.trim() || name,
+          code,
+          type: payload.type || 'multilateral',
+          country: payload.country || '',
+          description: payload.description || '',
+          createdAt: new Date().toISOString(),
+        };
+        store.trackerFilters.bailleurs.push(newBailleur);
+        store.trackerFilters.updatedAt = new Date().toISOString();
+        saveTrackerFilters(store.trackerFilters);
+        return NextResponse.json({ success: true, message: `Bailleur « ${name} » ajouté avec succès.`, item: newBailleur });
+      }
+
+      case 'update_tracker_bailleur': {
+        if (!store.trackerFilters?.bailleurs) {
+          return NextResponse.json({ error: 'Bailleur introuvable.' }, { status: 404 });
+        }
+        const idx = store.trackerFilters.bailleurs.findIndex(b => b.id === payload.id);
+        if (idx === -1) {
+          return NextResponse.json({ error: 'Bailleur introuvable.' }, { status: 404 });
+        }
+        store.trackerFilters.bailleurs[idx] = {
+          ...store.trackerFilters.bailleurs[idx],
+          ...payload,
+        };
+        store.trackerFilters.updatedAt = new Date().toISOString();
+        saveTrackerFilters(store.trackerFilters);
+        return NextResponse.json({ success: true, message: 'Bailleur mis à jour avec succès.', item: store.trackerFilters.bailleurs[idx] });
+      }
+
+      case 'delete_tracker_bailleur': {
+        if (!store.trackerFilters?.bailleurs) {
+          return NextResponse.json({ error: 'Bailleur introuvable.' }, { status: 404 });
+        }
+        store.trackerFilters.bailleurs = store.trackerFilters.bailleurs.filter(b => b.id !== payload.id);
+        store.trackerFilters.updatedAt = new Date().toISOString();
+        saveTrackerFilters(store.trackerFilters);
+        return NextResponse.json({ success: true, message: 'Bailleur retiré avec succès.' });
+      }
+
+      case 'update_tracker_filters': {
+        store.trackerFilters = {
+          ...store.trackerFilters,
+          ...payload,
+          updatedAt: new Date().toISOString(),
+        };
+        saveTrackerFilters(store.trackerFilters);
+        return NextResponse.json({ success: true, message: 'Référentiel des filtres mis à jour.', item: store.trackerFilters });
       }
 
       default:

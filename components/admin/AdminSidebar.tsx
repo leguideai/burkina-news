@@ -20,7 +20,8 @@ import {
   ExternalLink,
   PanelLeftClose,
   PanelLeftOpen,
-  FolderTree
+  FolderTree,
+  Filter
 } from 'lucide-react';
 import Tooltip from '@/components/ui/Tooltip';
 import MicumIcon from '@/components/admin/MicumIcon';
@@ -53,6 +54,7 @@ export default function AdminSidebar({
     { label: "Articles & Enquêtes", href: "/admin/articles", icon: FileText },
     { label: "Rubriques & Sous-rubriques", href: "/admin/rubriques", icon: FolderTree, badge: "Structure" },
     { label: "Tracker des Chantiers", href: "/admin/projets", icon: Construction },
+    { label: "Filtres du Tracker", href: "/admin/projets/filtres", icon: Filter },
     { label: "Baromètre RELANCE", href: "/admin/indicateurs", icon: TrendingUp },
     { label: "Le Fil Hebdo", href: "/admin/fil", icon: Zap },
     { label: "Numéros Mensuels", href: "/admin/numeros", icon: BookOpen },
@@ -133,7 +135,11 @@ export default function AdminSidebar({
 
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = item.href === '/admin'
+              ? pathname === '/admin'
+              : item.href === '/admin/projets'
+                ? pathname === '/admin/projets' || (pathname.startsWith('/admin/projets/') && !pathname.startsWith('/admin/projets/filtres'))
+                : pathname === item.href || pathname.startsWith(item.href + '/');
 
             const linkContent = (
               <Link

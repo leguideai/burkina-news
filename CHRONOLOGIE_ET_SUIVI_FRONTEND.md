@@ -129,6 +129,7 @@
 | **F6.6** | `[x]` | Découpage territorial officiel (17 Régions, 47 Provinces, 351 Communes), recherche conditionnelle en cascade & ordre officiel des rubriques Alfred. | `data/mock/referentiel-territoire.ts`, `lib/api/territories.ts`, `components/tracker/FilterBar.tsx`, `components/layout/Header.tsx`, `app/fr/tracker/page.tsx`, `app/en/tracker/page.tsx`, `components/admin/ProjectEditorForm.tsx` | `GET /api/v1/territories/*` | Recherche en cascade Région ➔ Province ➔ Commune/Ville, alignement de l'ordre officiel des 6 rubriques (Économie en 1, Sécurité en 5) et menu horizontal pleine largeur sans descriptions. |
 | **F6.7** | `[x]` | Harmonisation intégrale du corpus éditorial (articles, chantiers, dépêches) et résolution des clés React homonymes. | `data/mock/articles.ts`, `data/mock/projects.ts`, `data/mock/briefs.ts`, `data/mock/referentiel-territoire.ts`, `components/tracker/FilterBar.tsx`, `app/fr/tracker/page.tsx`, `app/en/tracker/page.tsx` | N/A | Déduplication Set sur les homonymies de communes (Boussouma, Namissiguima), clés uniques indexées, déploiement des 17 régions et nouvelles provinces sur l'ensemble du corpus éditorial. |
 | **F6.8** | `[x]` | Différenciation chromatique des 6 boutons filtres et barres d'avancement des cartes du Tracker. | `data/types.ts`, `components/tracker/StatusBadge.tsx`, `components/tracker/ProjectCard.tsx`, `app/fr/tracker/page.tsx`, `app/en/tracker/page.tsx`, `app/fr/tracker/projets/[slug]/page.tsx`, `app/en/tracker/projets/[slug]/page.tsx` | N/A | Palette unifiée (01 Ardoise, 02 Bleu royal, 03 Orange chantier, 04 Sarcelle, 05 Vert Faso, 06 Violet améthyste). Boutons interactifs avec bordure d'accent haute, badges et jauge 6 segments personnalisés selon l'étape réelle. |
+| **F6.9** | `[x]` | Dynamisation CRUD des Filtres du Tracker (Secteurs & Bailleurs) côté Admin, tri alphabétique strict & Clicabilité universelle des cartes. | `app/admin/projets/filtres/page.tsx`, `app/api/tracker/filters/route.ts`, `lib/api/trackerFilters.ts`, `components/admin/AdminSidebar.tsx`, `components/admin/ProjectEditorForm.tsx`, `app/fr/tracker/page.tsx`, `app/en/tracker/page.tsx` | `GET /api/tracker/filters`<br>`POST /api/admin/data` | Gestion CRUD complète des filtres sans toucher au code, tri alphabétique strict garanti (`localeCompare`), recherche intégrée dans les selects et redirection par clic sur toutes les cartes. |
 
 ---
 
@@ -142,10 +143,38 @@
 
 ---
 
-## 📅 PHASES F8 À F10 (SYNCHRONISATION FUTURE AVEC LES SEMAINES BACKEND 8 À 10)
+## 📅 PHASE F8 (SEMAINE 8) : Curation Avancée de la Une, Newsletter & Assistant MICUM Contextuel
 
-- **Phase F8 (Semaine 8) :** Intégration Curation Une, Formulaires Signalements & Assistant Micum.
-- **Phase F9 (Semaine 9) :** Durcissement, gestion du mode hors-ligne, audit de résilience.
-- **Phase F10 (Semaine 10) :** Recette finale de performance CWV & Mise en production.
+> **🎯 Objectif :** Finaliser l'orchestration éditoriale de la page d'accueil (Une), le système d'abonnés/envoi de newsletters et le copilote IA MICUM sur les flux de révision.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F8.1** | `[x]` | Curation de la Une en direct (`/admin/une`) raccordée à l'API Go. | `app/admin/une/page.tsx`, `lib/api/homepage.ts`, `lib/api/articles.ts` | `GET /api/v1/homepage`<br>`PUT /api/v1/admin/homepage`<br>`GET /api/v1/admin/articles` | Pilotage éditorial en direct de la manchette, des 3 articles secondaires, des formats Terrain et Vrai ou Faux, et de la citation bilingue. |
+| **F8.2** | `[x]` | Module Newsletter & Campagnes de diffusion (`/admin/newsletter`). | `app/admin/newsletter/page.tsx`, `lib/api/newsletter.ts` | `GET /api/v1/admin/newsletter/subscribers`<br>`POST /api/v1/newsletter/subscribe`<br>`DELETE /api/v1/admin/newsletter/:id` | Consultation des abonnés, export CSV officiel & de repli, modération et génération de lettres d'information par IA. |
+| **F8.3** | `[x]` | Extension MICUM : Analyse d'alignement de la Charte Déontologique v3.1. | `components/admin/ArticleEditorForm.tsx`, `app/api/admin/ai/route.ts` | `POST /api/admin/ai` | Audit automatisé de conformité factuelle : note sur 100, verdict (Conforme/À revoir/Non conforme), points forts, alertes et application automatique de l'indice de confiance. |
+
+---
+
+## 📅 PHASE F9 (SEMAINE 9) : Durcissement, Sécurité, Mode Hors-Ligne & PWA
+
+> **🎯 Objectif :** Préparer le frontend à des conditions réseau dégradées (Burkina Faso / Sahel) et durcir la sécurité des sessions et cookies.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F9.1** | `[ ]` | Service Worker & Cache PWA offline pour les articles et dépêches. | `public/sw.js`, `next.config.mjs` | Cache API local | Lecture hors-ligne des 10 dernières dépêches du Fil et des enquêtes récemment consultées en cas de coupure Internet. |
+| **F9.2** | `[ ]` | Durcissement CSP (Content Security Policy) et en-têtes HTTP de sécurité. | `next.config.mjs`, `middleware.ts` | Headers HTTP | Configuration strict-transport-security, X-Frame-Options, X-Content-Type-Options et CSP adaptée à Cloudflare R2 / Gemini API. |
+| **F9.3** | `[ ]` | Audit de résilience réseau et rejeu des requêtes échouées (Offline Queue). | `lib/api/client.ts` | Retry / LocalStorage | File d'attente locale pour les brouillons et modifications en cours en cas de perte de connexion de la rédaction. |
+
+---
+
+## 📅 PHASE F10 (SEMAINE 10) : Recette Globale, Optimisation CWV & Mise en Production
+
+> **🎯 Objectif :** Validation finale de bout en bout, tests d'accessibilité et de performance, déploiement de production.
+
+| ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **F10.1** | `[ ]` | Audit Core Web Vitals (LCP < 1.8s, INP < 150ms, CLS = 0). | `app/*`, `components/*` | Lighthouse / PageSpeed | Optimisation des polices web (font-display: swap), images WebP/AVIF et lazy loading strict. |
+| **F10.2** | `[ ]` | Recette bilingue exhaustive FR / EN & Audit a11y (WCAG 2.1 AA). | Ensemble des pages | N/A | Vérification des balises ARIA, navigation au clavier intégrale, contrastes et alt texts sur toutes les infographies. |
+| **F10.3** | `[ ]` | Préparation du build de production et documentation de déploiement (Railway / Vercel). | `Dockerfile`, `README.md` | CI/CD | Procédure de déploiement sans indisponibilité, variables d'environnement de production et validation des Webhooks de revalidation. |
 
 

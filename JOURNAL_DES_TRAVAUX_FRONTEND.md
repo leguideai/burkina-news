@@ -585,9 +585,64 @@
   - `go test ./...` : 0 erreur.
 - **État :** Validé et terminé.
 
+### Entrée F6.9 — Dynamisation CRUD des Filtres du Tracker dans l'Admin Dashboard, Tri Alphabétique & Clicabilité Universelle
+
+- **Date :** 01 Octobre 2026
+- **Objectifs :**
+  1. **Dynamisation des Filtres du Tracker :** Rendre les données des filtres (Secteurs d'intervention et Bailleurs de fonds) 100% dynamiques et administrables via le dashboard admin (`/admin/projets/filtres`) sans jamais modifier le code source.
+  2. **Tri Alphabétique Universel :** Appliquer rigoureusement l'ordre alphabétique (`localeCompare`) sur l'intégralité des menus déroulants et sélecteurs de données (Secteurs, Bailleurs, Régions, Provinces, Communes).
+  3. **Recherche Intégrée :** Équiper les menus déroulants d'une recherche textuelle en direct (`SearchableSelect`) pour une ergonomie optimale.
+  4. **Différenciation Visuelle des Statuts :** Présentation graphique distincte des 6 statuts du Tracker (onglets colorés avec numérotation et accents spécifiques) par rapport aux filtres standard.
+  5. **Clicabilité Globale des Cartes :** Rendre l'ensemble des cards du site (Articles, Chantiers, Indicateurs RELANCE, Dépêches du Fil, Kiosque de parutions) intégralement cliquables avec redirection directe vers leur page de détail.
+  6. **Design & Arrondis :** Harmonisation des coins arrondis (`rounded-lg`, `rounded-xl`, `rounded-full`) sur l'ensemble des boutons, cartes, badges et menus déroulants de la plateforme.
+  7. **Contraste de Navigation Active :** Renforcement du contraste visuel (fond et bordure) des onglets de navigation actifs par rapport aux inactifs.
+  8. **Correction d'Empilement du Baromètre :** Résolution du débordement des articles sous le cadre du Baromètre RELANCE en vue liste.
+- **Fichiers créés / modifiés :**
+  - `data/types.ts` : Modèles `TrackerSector`, `TrackerBailleur` et `TrackerFiltersConfig`.
+  - `data/mock/tracker-filters.ts` : Référentiel initial complet de 10 secteurs et 10 bailleurs de fonds officiels avec descriptions.
+  - `data/admin-store.ts` : Persistance JSON (`data/submissions/tracker-filters.json`) avec méthodes de lecture/écriture synchronisées.
+  - `app/api/admin/data/route.ts` : Handlers d'actions CRUD complètes pour les secteurs et bailleurs de fonds.
+  - `app/api/tracker/filters/route.ts` : Endpoint public `GET /api/tracker/filters?lang=...` avec tri alphabétique garanti (`localeCompare(..., lang)`).
+  - `lib/api/trackerFilters.ts` & `lib/api/index.ts` : Client API singleton `trackerFiltersApi`.
+  - `app/admin/projets/filtres/page.tsx` : Interface d'administration dédiée :
+    - Gestion CRUD complète des Secteurs (création, édition bilingue FR/EN, suppression avec vérification des projets rattachés).
+    - Gestion CRUD complète des Bailleurs de fonds (type, siège, statut, projets rattachés).
+    - Exploration interactive du découpage territorial (17 Régions, 47 Provinces, 351 Communes).
+  - `app/admin/projets/page.tsx` : Bouton d'accès direct "Gérer les Filtres" et sélecteur de secteur dynamique.
+  - `components/admin/AdminSidebar.tsx` : Intégration de l'élément "Filtres du Tracker" dans la navigation latérale avec icône `Filter`.
+  - `components/admin/ProjectEditorForm.tsx` : Raccordement des listes déroulantes de secteurs et bailleurs aux données dynamiques de l'API.
+  - `app/fr/tracker/page.tsx` & `app/en/tracker/page.tsx` : Consommation dynamique des filtres et tri alphabétique strict.
+  - `components/editorial/ArticleCard.tsx`, `components/tracker/ProjectCard.tsx`, `app/fr/tracker/indicateurs/page.tsx` : Clicabilité universelle des cartes.
+- **Vérifications :**
+  - Typage TypeScript sans faute : `npx tsc --noEmit` (code 0, 0 erreur).
+  - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 105/105 pages statiques et dynamiques validées).
+- **État :** Validé et terminé.
+
+### Entrée F8 — Curation Avancée de la Une, Module Newsletter & Assistant Déontologique MICUM (Charte v3.1)
+
+- **Date :** 01 Octobre 2026
+- **Objectifs :**
+  1. **Curation de la Une (`/admin/une`) :** Raccordement de l'écran d'orchestration de la Une au backend Go (`homepageApi`) et alimentation dynamique des articles disponibles via `articlesApi.adminListArticles` avec synchronisation temps réel de la Manchette, des 3 articles secondaires, des formats Terrain et Vrai ou Faux, et de la citation éditoriale bilingue.
+  2. **Module Newsletter & Campagnes (`/admin/newsletter`) :** Raccordement direct à l'API Go (`newsletterApi`) pour la consultation des abonnés, l'export CSV officiel et de repli, l'ajout/suppression sécurisée et la rédaction de lettres d'information hebdomadaires par IA.
+  3. **Assistant Déontologique MICUM (Charte v3.1) :** Intégration de l'action `audit_charte` dans `app/api/admin/ai/route.ts` et du bouton « Audit Charte » dans le formulaire de rédaction d'articles (`ArticleEditorForm.tsx`). Évaluation instantanée de la rigueur factuelle, note sur 100, verdict (« CONFORME », « A_REVOIR », « NON_CONFORME »), points forts, avertissements, recommandations concrètes et suggestion automatique du niveau de confiance (A, B, C).
+  4. **Bilinguisme Intégral des Filtres (FR & EN) :** Vérification et consolidation de la traduction des bailleurs et secteurs en anglais (`nameEn`), avec tri alphabétique spécifique à chaque locale (`localeCompare(..., lang)`).
+- **Fichiers créés / modifiés :**
+  - `app/admin/une/page.tsx` : Raccordement à `articlesApi.adminListArticles` et `homepageApi`.
+  - `app/admin/newsletter/page.tsx` : Raccordement à `newsletterApi` et génération de brouillons IA.
+  - `app/api/admin/ai/route.ts` : Extension de l'interface `AIRequest` et implémentation de l'action `audit_charte`.
+  - `components/admin/ArticleEditorForm.tsx` : Ajout du bouton d'audit déontologique et de la modale complète de restitution du rapport avec application en un clic du niveau de confiance recommandé.
+  - `data/types.ts` & `data/mock/tracker-filters.ts` : Ajout du champ `nameEn` pour les bailleurs de fonds.
+  - `app/api/tracker/filters/route.ts` : Prise en charge dynamique de `nameEn` pour les secteurs et bailleurs en mode `lang=en`.
+  - `app/admin/projets/filtres/page.tsx` : Formulaire bilingue FR/EN et affichage de la traduction anglaise dans la table des bailleurs.
+  - `components/tracker/FilterBar.tsx` : Dynamisation complète sans aucun mock résiduel.
+- **Vérifications :**
+  - Typage TypeScript sans faute : `npx tsc --noEmit` (code 0, 0 erreur).
+  - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 105/105 pages validées).
+- **État :** Validé et terminé.
+
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F8 à F10 synchronisées avec les semaines backend)*
+*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F9 à F10 synchronisées avec les semaines backend)*
 
 
 

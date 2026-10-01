@@ -21,4 +21,6 @@ export * from './search';
 export * from './homepage';
 export * from './newsletter';
 export * from './ai';
+export * from './trackerFilters';
+export * from './territories';
 

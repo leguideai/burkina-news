@@ -25,6 +25,7 @@ import { indicators } from '@/data/mock/indicators';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 import { useMicum } from '@/components/admin/MicumContext';
+import { trackerFiltersApi } from '@/lib/api/trackerFilters';
 
 export interface ProjectEditorFormHandle {
   insertToBody: (text: string) => void;
@@ -38,7 +39,7 @@ interface ProjectEditorFormProps {
   onSave: (data: Partial<Project>) => Promise<void>;
 }
 
-const SECTORS = [
+const DEFAULT_SECTORS = [
   'Agriculture & Irrigation',
   'Eau & Assainissement',
   'Éducation',
@@ -47,9 +48,9 @@ const SECTORS = [
   'Santé',
   'Télécoms & Numérique',
   'Transport'
-];
+].sort((a, b) => a.localeCompare(b, 'fr'));
 
-const BAILLEURS = [
+const DEFAULT_BAILLEURS = [
   'BAD',
   'Banque mondiale',
   'CEDEAO',
@@ -58,12 +59,12 @@ const BAILLEURS = [
   'Secteur privé',
   'Union Européenne',
   'Autre / Co-financement'
-];
+].sort((a, b) => a.localeCompare(b, 'fr'));
 
 const REGIONS = [
   'National (Multi-régions)',
   ...BURKINA_REGIONS_17
-];
+].sort((a, b) => a.localeCompare(b, 'fr'));
 
 const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormProps>(
   ({ initialData, isEditing, onSave }, ref) => {
@@ -95,6 +96,38 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
     const [formData, setFormData] = useState<Partial<Project>>(defaultData);
     const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
     const [isSaving, setIsSaving] = useState(false);
+
+    // Dynamic Tracker Filters (Alphabetical order)
+    const [sectors, setSectors] = useState<string[]>(DEFAULT_SECTORS);
+    const [bailleurs, setBailleurs] = useState<string[]>(DEFAULT_BAILLEURS);
+
+    useEffect(() => {
+      let isMounted = true;
+      trackerFiltersApi.getFilters('fr')
+        .then(data => {
+          if (!isMounted) return;
+          if (data.sectors && data.sectors.length > 0) {
+            setSectors(data.sectors);
+          }
+          if (data.bailleurs && data.bailleurs.length > 0) {
+            setBailleurs(data.bailleurs);
+          }
+        })
+        .catch(() => {});
+      return () => { isMounted = false; };
+    }, []);
+
+    const displayedSectors = useMemo(() => {
+      const set = new Set(sectors);
+      if (formData.sector) set.add(formData.sector);
+      return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+    }, [sectors, formData.sector]);
+
+    const displayedBailleurs = useMemo(() => {
+      const set = new Set(bailleurs);
+      if (formData.bailleur) set.add(formData.bailleur);
+      return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+    }, [bailleurs, formData.bailleur]);
 
     const availableProvinces: string[] = useMemo(() => {
       if (formData.region && formData.region !== 'National (Multi-régions)') {
@@ -348,7 +381,7 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                   <div>
                     <label className={labelClass}>Secteur</label>
                     <select value={formData.sector || ''} onChange={(e) => setFormData(prev => ({ ...prev, sector: e.target.value }))} className={selectClass}>
-                      {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
+                      {displayedSectors.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                 </div>
@@ -384,7 +417,7 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                       className={selectClass}
                     >
                       <option value="">Sélectionner un bailleur</option>
-                      {BAILLEURS.map(b => <option key={b} value={b}>{b}</option>)}
+                      {displayedBailleurs.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </div>
                 </div>

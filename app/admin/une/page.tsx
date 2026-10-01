@@ -22,6 +22,8 @@ import { useToast } from '@/components/admin/Toast';
 import { SkeletonCard, SkeletonStat } from '@/components/admin/Skeleton';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 import { homepageApi } from '@/lib/api/homepage';
+import { articlesApi } from '@/lib/api/articles';
+import { mapArticleDTOToArticle } from '@/lib/api/mappers';
 
 export default function AdminUnePage() {
   const { success, error, warning } = useToast();
@@ -61,12 +63,28 @@ export default function AdminUnePage() {
         // Fallback to local store
       }
 
-      // 2. Fetch local articles / fallback store
+      // 2. Fetch live articles from Go backend, fallback to local store
+      let loadedArticles: Article[] = [];
+      try {
+        const artRes = await articlesApi.adminListArticles({ limit: 100 });
+        if (artRes.articles && artRes.articles.length > 0) {
+          loadedArticles = artRes.articles.map(mapArticleDTOToArticle);
+        }
+      } catch {
+        // Fallback
+      }
+
       const res = await fetch('/api/admin/data');
-      if (!res.ok) throw new Error('Impossible de charger la configuration de la Une.');
-      const data = await res.json();
-      setArticles(data.articles || []);
-      setHomepageConfig(loadedConfig || data.homepageConfig || null);
+      if (res.ok) {
+        const data = await res.json();
+        setArticles(loadedArticles.length > 0 ? loadedArticles : (data.articles || []));
+        setHomepageConfig(loadedConfig || data.homepageConfig || null);
+      } else if (loadedArticles.length > 0) {
+        setArticles(loadedArticles);
+        if (loadedConfig) setHomepageConfig(loadedConfig);
+      } else {
+        throw new Error('Impossible de charger la configuration de la Une.');
+      }
     } catch (err: any) {
       error('Erreur', err.message);
     } finally {

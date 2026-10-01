@@ -378,3 +378,30 @@ export function generateMediaFilename(options: {
   }
 }
 
+// ─── Référentiel Dynamique des Filtres du Tracker ────────────────────────
+export interface TrackerSector {
+  id: string;
+  name: string;        // Nom en français (ex: "Agriculture & Irrigation")
+  nameEn?: string;      // Nom en anglais (ex: "Agriculture & Irrigation")
+  code: string;        // Code unique slugifié (ex: "agriculture-irrigation")
+  description?: string;
+  createdAt?: string;
+}
+
+export interface TrackerBailleur {
+  id: string;
+  name: string;        // Nom officiel (ex: "Banque mondiale", "BAD", "État du Burkina Faso")
+  nameEn?: string;      // Nom officiel en anglais (ex: "World Bank", "AfDB", "State of Burkina Faso")
+  code: string;        // Code unique (ex: "banque-mondiale")
+  type?: string;       // "multilateral", "etatique", "bilateral", "prive", "autre"
+  country?: string;    // Pays ou siège (ex: "Burkina Faso", "Côte d'Ivoire", "États-Unis")
+  description?: string;
+  createdAt?: string;
+}
+
+export interface TrackerFiltersConfig {
+  sectors: TrackerSector[];
+  bailleurs: TrackerBailleur[];
+  regions?: string[];
+  updatedAt?: string;
+}
