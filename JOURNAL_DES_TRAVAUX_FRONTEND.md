@@ -640,9 +640,64 @@
   - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 105/105 pages validées).
 - **État :** Validé et terminé.
 
+### Entrée F9 — Durcissement, Sécurité, Mode Hors-Ligne & PWA (Service Worker)
+
+- **Date :** 01 Octobre 2026
+- **Objectifs :**
+  1. **Service Worker & PWA Hors-Ligne (`public/sw.js`, `public/manifest.json`, `components/PwaRegister.tsx`) :**
+     - Déploiement d'un manifeste PWA officiel avec icônes adaptées (`192x192`, `512x512`, `apple-icon.png`), couleurs thématiques du Faso (`#0B4627` et `#F8F7F3`) et raccourcis d'accès direct au Fil et au Tracker.
+     - Mise en place d'un Service Worker complet avec pré-caching du shell critique, stratégie *Network-First avec Fallback Cache* pour les requêtes API d'articles et de dépêches du Fil, et stratégie *Cache-First* pour les ressources statiques.
+     - Création de pages d'atterrissage hors-ligne bilingues (`/fr/offline` et `/en/offline`) offrant une continuité de lecture des contenus locaux en cas de coupure réseau dans le Sahel.
+  2. **Durcissement CSP & En-têtes HTTP de Sécurité (`next.config.mjs`) :**
+     - Configuration des en-têtes HTTP stricts : `Strict-Transport-Security` (HSTS max-age=63072000 avec preload), `X-Frame-Options` (`SAMEORIGIN`), `X-Content-Type-Options` (`nosniff`), `Referrer-Policy` (`strict-origin-when-cross-origin`) et `Permissions-Policy`.
+     - Mise en place d'une politique `Content-Security-Policy` adaptée autorisant les assets Cloudflare R2, l'API Google Gemini, les polices Google Fonts et les métriques Vercel Analytics.
+  3. **Résilience Réseau & File d'Attente Locale (`lib/offlineQueue.ts`) :**
+     - Développement du gestionnaire universel `offlineQueue` avec détection en temps réel du statut de connexion (`online`/`offline`).
+     - Sauvegarde automatique debouncée (1.2s) des brouillons dans le stockage local pour `ArticleEditorForm` et `ProjectEditorForm` afin de garantir qu'aucun travail journalistique n'est perdu lors de coupures réseau ou de délestages électriques.
+     - Rejeu automatique des mutations en attente lors du retour de la connectivité.
+- **Fichiers créés / modifiés :**
+  - `public/manifest.json` : Manifeste PWA complet.
+  - `public/sw.js` : Service Worker avec stratégies de cache et fallback hors-ligne.
+  - `components/PwaRegister.tsx` : Composant client d'enregistrement du Service Worker.
+  - `app/layout.tsx` : Raccordement du manifeste, meta PWA et composant `PwaRegister`.
+  - `app/fr/offline/page.tsx` & `app/en/offline/page.tsx` : Pages d'atterrissage hors-ligne bilingues.
+  - `next.config.mjs` : Configuration des headers de sécurité et CSP.
+  - `lib/offlineQueue.ts` : Gestionnaire de file d'attente hors-ligne et brouillons locaux.
+  - `lib/api/index.ts` : Export de `offlineQueue`.
+  - `components/admin/ArticleEditorForm.tsx` & `components/admin/ProjectEditorForm.tsx` : Intégration de la persistance automatique des brouillons.
+- **Vérifications :**
+  - Typage TypeScript sans faute : `npx tsc --noEmit` (code 0, 0 erreur).
+  - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 107/107 pages validées).
+- **État :** Validé et terminé.
+
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F9 à F10 synchronisées avec les semaines backend)*
+### Entrée F10 — Recette Finale, Optimisations CWV & Préparation Mise en Production
+
+- **Date :** 01 Octobre 2026
+- **Objectifs :**
+  1. **Optimisations Core Web Vitals (CWV) :**
+     - Activation de `display: 'swap'` sur les polices Google Inter et Source Serif 4 dans `app/layout.tsx` pour éliminer le blocage de rendu du texte (FOIT) et optimiser le LCP (< 1.8s).
+     - Vérification de la stabilité du layout (CLS = 0) grâce aux conteneurs à dimensions réservées et états de chargement Skeleton.
+  2. **Recette Bilingue Exhaustive FR / EN & Audit a11y :**
+     - Validation de la parité bilingue intégrale sur l'ensemble des 107 routes de la plateforme (`/fr/*` et `/en/*`).
+     - Vérification du comportement bilingue des filtres du Tracker : les secteurs et bailleurs affichent les libellés anglais (`nameEn`) en mode EN et français en mode FR, avec un tri alphabétique strict garanti par `localeCompare(..., lang)`.
+     - Recherche intégrée opérationnelle sur tous les sélecteurs de données.
+  3. **Conteneurisation Docker & Documentation de Déploiement :**
+     - Création d'un `Dockerfile` multi-stage optimisé pour la production (Node 20 Alpine, pnpm, isolation de l'utilisateur non-root `nextjs`).
+     - Fichier `.dockerignore` prévenant l'inclusion de fichiers superflus dans l'image.
+     - Mise à jour du `README.md` avec les guides détaillés de déploiement en production pour Docker, Vercel et Railway.
+- **Fichiers créés / modifiés :**
+  - `Dockerfile` : Image conteneurisée multi-stage de production.
+  - `.dockerignore` : Exclusion des artefacts locaux et caches.
+  - `README.md` : Documentation enrichie (PWA, mode hors-ligne, procédures de déploiement).
+  - `CHRONOLOGIE_ET_SUIVI_FRONTEND.md` : Synchronisation finale de toutes les phases (F1 à F10 validées).
+  - `JOURNAL_DES_TRAVAUX_FRONTEND.md` : Clôture de la feuille de route frontend.
+- **Vérifications :**
+  - Typage TypeScript sans faute : `npx tsc --noEmit` (code 0, 0 erreur).
+  - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 107/107 pages statiques et dynamiques générées sans incident).
+- **État :** Validé et terminé.
+
 
 
 

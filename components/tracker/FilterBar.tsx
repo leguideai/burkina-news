@@ -215,7 +215,7 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
           >
             <option value="">{lang === 'fr' ? 'Régions' : 'Regions'}</option>
             <option value="National">National (Multi-régions)</option>
-            {BURKINA_REGIONS_17.map((r) => (
+            {[...BURKINA_REGIONS_17].sort((a, b) => a.localeCompare(b, lang)).map((r) => (
               <option key={r} value={r}>
                 {r}
               </option>

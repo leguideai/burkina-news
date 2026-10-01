@@ -1,0 +1,47 @@
+{
+  "name": "Burkina News — L'info juste, l'info vraie",
+  "short_name": "Burkina News",
+  "description": "Actualités, enquêtes et suivi des politiques publiques du Burkina Faso.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F7F3",
+  "theme_color": "#0B4627",
+  "lang": "fr",
+  "orientation": "portrait-primary",
+  "categories": ["news", "politics", "investigation"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Le Fil d'actualité",
+      "short_name": "Le Fil",
+      "description": "Dernières dépêches et alertes en direct",
+      "url": "/fr/fil",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tracker des Chantiers",
+      "short_name": "Tracker",
+      "description": "Observatoire des investissements publics",
+      "url": "/fr/tracker",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

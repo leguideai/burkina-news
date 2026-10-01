@@ -101,7 +101,40 @@ burkina-news/
 
 ---
 
+## 📱 Mode Hors-Ligne & PWA (Progressive Web App)
+
+Burkina News intègre une suite de fonctionnalités conçues pour résister aux réseaux instables du Sahel :
+- **Service Worker (`/sw.js`) :** Mise en cache automatique des 10 dernières dépêches du Fil et des articles consultés.
+- **Pages Hors-Ligne Dédiées :** `/fr/offline` et `/en/offline` fournissant un accès continu aux contenus locaux.
+- **Résilience Rédactionnelle (`lib/offlineQueue.ts`) :** Sauvegarde automatique des brouillons d'articles et de chantiers en cas de coupure Internet ou électrique inopinée.
+- **En-têtes de Sécurité & CSP :** Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options et Content-Security-Policy configurés dans `next.config.mjs`.
+
+---
+
+## 🚢 Déploiement en Production
+
+### 1. Déploiement avec Docker
+```bash
+# Construction de l'image
+docker build -t burkina-news-frontend:latest .
+
+# Lancement du conteneur (port 3000)
+docker run -p 3000:3000 -e NEXT_PUBLIC_API_URL=https://api.votre-domaine.bf/api/v1 burkina-news-frontend:latest
+```
+
+### 2. Déploiement sur Vercel
+1. Lier le dépôt GitHub à Vercel en sélectionnant le sous-dossier `burkina-news/`.
+2. Définir `NEXT_PUBLIC_API_URL` pointant vers l'API de production Go.
+3. Le framework est automatiquement détecté comme `Next.js`.
+
+### 3. Déploiement sur Railway
+1. Créer un nouveau service pointant sur le Dockerfile du frontend.
+2. Configurer les variables d'environnement `NEXT_PUBLIC_API_URL` et `PORT=3000`.
+
+---
+
 ## 📚 Documents de Référence
 - [`REGLES_DEVELOPPEMENT_FRONTEND.md`](./REGLES_DEVELOPPEMENT_FRONTEND.md) : Règles absolues d'architecture, de typage strict et de Skeletons.
 - [`CHRONOLOGIE_ET_SUIVI_FRONTEND.md`](./CHRONOLOGIE_ET_SUIVI_FRONTEND.md) : Calendrier et correspondances des phases frontend/backend.
 - [`JOURNAL_DES_TRAVAUX_FRONTEND.md`](./JOURNAL_DES_TRAVAUX_FRONTEND.md) : Historique chronologique des intégrations.
+
