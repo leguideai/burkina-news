@@ -26,6 +26,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 import { useMicum } from '@/components/admin/MicumContext';
 import { trackerFiltersApi } from '@/lib/api/trackerFilters';
+import { offlineQueue } from '@/lib/offlineQueue';
 
 export interface ProjectEditorFormHandle {
   insertToBody: (text: string) => void;
@@ -38,28 +39,6 @@ interface ProjectEditorFormProps {
   isEditing: boolean;
   onSave: (data: Partial<Project>) => Promise<void>;
 }
-
-const DEFAULT_SECTORS = [
-  'Agriculture & Irrigation',
-  'Eau & Assainissement',
-  'Éducation',
-  'Énergie',
-  'Mines',
-  'Santé',
-  'Télécoms & Numérique',
-  'Transport'
-].sort((a, b) => a.localeCompare(b, 'fr'));
-
-const DEFAULT_BAILLEURS = [
-  'BAD',
-  'Banque mondiale',
-  'CEDEAO',
-  'Coopération bilatérale',
-  'État du Burkina Faso',
-  'Secteur privé',
-  'Union Européenne',
-  'Autre / Co-financement'
-].sort((a, b) => a.localeCompare(b, 'fr'));
 
 const REGIONS = [
   'National (Multi-régions)',
@@ -97,9 +76,9 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
     const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
     const [isSaving, setIsSaving] = useState(false);
 
-    // Dynamic Tracker Filters (Alphabetical order)
-    const [sectors, setSectors] = useState<string[]>(DEFAULT_SECTORS);
-    const [bailleurs, setBailleurs] = useState<string[]>(DEFAULT_BAILLEURS);
+    // Dynamic Tracker Filters (Alphabetical order, loaded via trackerFiltersApi)
+    const [sectors, setSectors] = useState<string[]>([]);
+    const [bailleurs, setBailleurs] = useState<string[]>([]);
 
     useEffect(() => {
       let isMounted = true;
@@ -285,10 +264,26 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
       });
     };
 
+    // Persistance automatique du brouillon local de projet
+    useEffect(() => {
+      if (formData.title || formData.slug) {
+        const draftKey = `project_${formData.slug || 'active_draft'}`;
+        const timer = setTimeout(() => {
+          offlineQueue.saveDraft(draftKey, formData, formData.title || 'Brouillon de chantier');
+        }, 1200);
+        return () => clearTimeout(timer);
+      }
+    }, [formData]);
+
     const handleSaveClick = async () => {
       setIsSaving(true);
+      const draftKey = `project_${formData.slug || 'active_draft'}`;
       try {
         await onSave(formData);
+        offlineQueue.removeDraft(draftKey);
+      } catch (err: any) {
+        offlineQueue.saveDraft(draftKey, formData, formData.title || 'Brouillon chantier sauvegardé hors-ligne');
+        throw err;
       } finally {
         setIsSaving(false);
       }

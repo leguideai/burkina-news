@@ -23,6 +23,7 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MicumTranslateButton from '@/components/admin/MicumTranslateButton';
 import { useMicum } from '@/components/admin/MicumContext';
+import { offlineQueue } from '@/lib/offlineQueue';
 
 export interface ArticleEditorFormHandle {
   insertToBody: (text: string) => void;
@@ -271,10 +272,26 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
       }));
     };
 
+    // Persistance automatique du brouillon local en cas de coupure de courant ou réseau
+    useEffect(() => {
+      if (formData.title || formData.body) {
+        const draftKey = `article_${formData.slug || 'active_draft'}`;
+        const timer = setTimeout(() => {
+          offlineQueue.saveDraft(draftKey, { formData, tagsInput }, formData.title || 'Brouillon d\'article');
+        }, 1200);
+        return () => clearTimeout(timer);
+      }
+    }, [formData, tagsInput]);
+
     const handleSaveClick = async () => {
       setIsSaving(true);
+      const draftKey = `article_${formData.slug || 'active_draft'}`;
       try {
         await onSave(formData, tagsInput);
+        offlineQueue.removeDraft(draftKey);
+      } catch (err: any) {
+        offlineQueue.saveDraft(draftKey, { formData, tagsInput }, formData.title || 'Brouillon sauvegardé hors-ligne');
+        throw err;
       } finally {
         setIsSaving(false);
       }

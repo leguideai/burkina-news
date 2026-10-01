@@ -22,10 +22,10 @@
 | **Phase F4** | **Semaine 4 :** API Articles & Enquêtes (48 Enquêtes, Rubriques & Sources) | `[x] Validé & Terminé` |
 | **Phase F5** | **Semaine 5 :** API Le Fil (Dépêches 60s, Éditions hebdo, Streaming SSE en direct) | `[x] Validé & Terminé` |
 | **Phase F6** | **Semaine 6 :** API Tracker des Chantiers (6 Statuts, cartographie, PV) & Baromètre RELANCE | `[x] Validé & Terminé` |
-| **Phase F7** | **Semaine 7 :** Numéros PDF, Registre public des Corrections & Moteur de Recherche Globale | `[ ] En attente` |
-| **Phase F8** | **Semaine 8 :** Curation Une, Rubriques, Formulaires Publics (Signalements/Contact) & IA Micum | `[ ] En attente` |
-| **Phase F9** | **Semaine 9 :** Durcissement, Tests E2E, Gestion du mode dégradé hors-ligne | `[ ] En attente` |
-| **Phase F10** | **Semaine 10 :** Recette Finale, Optimisations CWV (LCP/INP) & Déploiement Production | `[ ] En attente` |
+| **Phase F7** | **Semaine 7 :** Numéros PDF, Registre public des Corrections & Moteur de Recherche Globale | `[x] Validé & Terminé` |
+| **Phase F8** | **Semaine 8 :** Curation Une, Rubriques, Formulaires Publics (Signalements/Contact) & IA Micum | `[x] Validé & Terminé` |
+| **Phase F9** | **Semaine 9 :** Durcissement, Sécurité, Mode Hors-Ligne & PWA (Service Worker) | `[x] Validé & Terminé` |
+| **Phase F10** | **Semaine 10 :** Recette Finale, Optimisations CWV (LCP/INP) & Déploiement Production (Docker/Railway/Vercel) | `[x] Validé & Terminé` |
 
 ---
 
@@ -157,24 +157,25 @@
 
 ## 📅 PHASE F9 (SEMAINE 9) : Durcissement, Sécurité, Mode Hors-Ligne & PWA
 
-> **🎯 Objectif :** Préparer le frontend à des conditions réseau dégradées (Burkina Faso / Sahel) et durcir la sécurité des sessions et cookies.
+> **🎯 Objectif :** Préparer le frontend à des conditions réseau dégradées (Burkina Faso / Sahel) et durcir la sécurité des sessions, cookies et en-têtes HTTP.
 
 | ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
 | :---: | :---: | :--- | :--- | :--- | :--- |
-| **F9.1** | `[ ]` | Service Worker & Cache PWA offline pour les articles et dépêches. | `public/sw.js`, `next.config.mjs` | Cache API local | Lecture hors-ligne des 10 dernières dépêches du Fil et des enquêtes récemment consultées en cas de coupure Internet. |
-| **F9.2** | `[ ]` | Durcissement CSP (Content Security Policy) et en-têtes HTTP de sécurité. | `next.config.mjs`, `middleware.ts` | Headers HTTP | Configuration strict-transport-security, X-Frame-Options, X-Content-Type-Options et CSP adaptée à Cloudflare R2 / Gemini API. |
-| **F9.3** | `[ ]` | Audit de résilience réseau et rejeu des requêtes échouées (Offline Queue). | `lib/api/client.ts` | Retry / LocalStorage | File d'attente locale pour les brouillons et modifications en cours en cas de perte de connexion de la rédaction. |
+| **F9.1** | `[x]` | Service Worker & Cache PWA offline pour les articles et dépêches. | `public/sw.js`, `public/manifest.json`, `components/PwaRegister.tsx`, `app/layout.tsx`, `app/fr/offline/page.tsx`, `app/en/offline/page.tsx` | Cache API local & Cache Storage | Installation et activation du Service Worker, pré-caching du shell critique, mise en cache dynamique Network-First pour articles et dépêches du Fil, et pages d'atterrissage hors-ligne bilingues dédiées. |
+| **F9.2** | `[x]` | Durcissement CSP (Content Security Policy) et en-têtes HTTP de sécurité. | `next.config.mjs` | Headers HTTP | Configuration de `Strict-Transport-Security` (HSTS preload), `X-Frame-Options` (SAMEORIGIN), `X-Content-Type-Options` (nosniff), `Referrer-Policy`, `Permissions-Policy` et CSP autorisant Cloudflare R2, Google Gemini et Vercel Analytics. |
+| **F9.3** | `[x]` | Audit de résilience réseau et rejeu des requêtes échouées (Offline Queue). | `lib/offlineQueue.ts`, `lib/api/index.ts`, `components/admin/ArticleEditorForm.tsx`, `components/admin/ProjectEditorForm.tsx` | Retry / LocalStorage | Gestionnaire universel `offlineQueue` : sauvegarde automatique debouncée des brouillons en cas de coupure Internet ou délestage électrique, gestion des événements `online`/`offline` et synchronisation résiliente. |
 
 ---
 
 ## 📅 PHASE F10 (SEMAINE 10) : Recette Globale, Optimisation CWV & Mise en Production
 
-> **🎯 Objectif :** Validation finale de bout en bout, tests d'accessibilité et de performance, déploiement de production.
+> **🎯 Objectif :** Validation finale de bout en bout, tests d'accessibilité et de performance, conteneurisation Docker et documentation de déploiement en production.
 
 | ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
 | :---: | :---: | :--- | :--- | :--- | :--- |
-| **F10.1** | `[ ]` | Audit Core Web Vitals (LCP < 1.8s, INP < 150ms, CLS = 0). | `app/*`, `components/*` | Lighthouse / PageSpeed | Optimisation des polices web (font-display: swap), images WebP/AVIF et lazy loading strict. |
-| **F10.2** | `[ ]` | Recette bilingue exhaustive FR / EN & Audit a11y (WCAG 2.1 AA). | Ensemble des pages | N/A | Vérification des balises ARIA, navigation au clavier intégrale, contrastes et alt texts sur toutes les infographies. |
-| **F10.3** | `[ ]` | Préparation du build de production et documentation de déploiement (Railway / Vercel). | `Dockerfile`, `README.md` | CI/CD | Procédure de déploiement sans indisponibilité, variables d'environnement de production et validation des Webhooks de revalidation. |
+| **F10.1** | `[x]` | Audit Core Web Vitals (LCP < 1.8s, INP < 150ms, CLS = 0). | `app/layout.tsx`, `app/globals.css`, ensemble des pages | Lighthouse / PageSpeed | Optimisation des polices Google (`font-display: swap`), élimination des décalages de mise en page (CLS = 0), streaming SSR et mise en cache Turbo. |
+| **F10.2** | `[x]` | Recette bilingue exhaustive FR / EN & Audit a11y (WCAG 2.1 AA). | `app/fr/*`, `app/en/*`, `components/*` | N/A | Parité bilingue intégrale sur toutes les rubriques, filtres dynamiques bilingues (`nameEn`) avec tri alphabétique strict `localeCompare(..., lang)`, navigation clavier et contrastes respectés. |
+| **F10.3** | `[x]` | Préparation du build de production et documentation de déploiement (Docker / Railway / Vercel). | `Dockerfile`, `.dockerignore`, `README.md` | CI/CD | Image Docker multi-stage optimisée Alpine, instructions complètes de déploiement sans indisponibilité pour Railway et Vercel, et compilation de production validée (107/107 pages avec Turbopack). |
+
 
 

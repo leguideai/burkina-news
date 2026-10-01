@@ -112,25 +112,14 @@ export default function TrackerPageEn() {
     return combined.sort((a, b) => a.localeCompare(b, 'en'));
   }, [enProjects, dynamicSectors]);
 
-  const BAILLEURS_OFFICIELS = [
-    "État du Burkina Faso",
-    "Banque mondiale",
-    "BAD",
-    "CEDEAO",
-    "Union Européenne",
-    "Coopération bilatérale",
-    "Secteur privé"
-  ];
-
   const bailleurs = useMemo(() => {
     const fromProjects = enProjects.map(p => p.bailleur).filter(Boolean) as string[];
-    const base = dynamicBailleurs.length > 0 ? dynamicBailleurs : BAILLEURS_OFFICIELS;
-    const combined = Array.from(new Set([...base, ...fromProjects]));
+    const combined = Array.from(new Set([...dynamicBailleurs, ...fromProjects]));
     return combined.sort((a, b) => a.localeCompare(b, 'en'));
   }, [enProjects, dynamicBailleurs]);
 
   const regions = useMemo(() => {
-    return [...BURKINA_REGIONS_17].sort((a, b) => a.localeCompare(b, 'fr'));
+    return [...BURKINA_REGIONS_17].sort((a, b) => a.localeCompare(b, 'en'));
   }, []);
 
   const availableProvinces = useMemo(() => {

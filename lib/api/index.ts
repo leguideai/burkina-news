@@ -23,4 +23,5 @@ export * from './newsletter';
 export * from './ai';
 export * from './trackerFilters';
 export * from './territories';
+export * from '../offlineQueue';
 
