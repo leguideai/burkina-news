@@ -32,7 +32,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https: http:",
       "font-src 'self' https://fonts.gstatic.com data:",
-      "connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 https://*.railway.app https://*.up.railway.app https://burkina-news-backend-production.up.railway.app https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-scripts.com",
+      "connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 https://*.railway.app https://*.up.railway.app https://burkina-news-backend-production.up.railway.app https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-scripts.com https: http:",
       "media-src 'self' data: blob: https:",
       "object-src 'none'",
       "base-uri 'self'",
