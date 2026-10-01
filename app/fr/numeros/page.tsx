@@ -63,12 +63,13 @@ export default async function IssuesPage() {
             });
 
             return (
-              <article 
+              <Link 
                 key={issue.id} 
-                className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between group rounded-xl overflow-hidden shadow-xs"
+                href={`/fr/numeros/${issue.slug}`}
+                className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between group rounded-xl overflow-hidden shadow-xs cursor-pointer block"
               >
                 <div>
-                  <Link href={`/fr/numeros/${issue.slug}`} className="block relative aspect-[16/10] overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
+                  <div className="block relative aspect-[16/10] overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                     <img
                       src={issue.coverImage}
                       alt={issue.title}
@@ -77,7 +78,7 @@ export default async function IssuesPage() {
                     <div className="absolute top-2.5 left-2.5 bg-[#0b4627] text-white text-[10px] font-mono font-bold px-2 py-1 uppercase tracking-wider rounded-md">
                       Numéro {issue.number}
                     </div>
-                  </Link>
+                  </div>
 
                   <div className="p-6">
                     <div className="text-[11px] font-mono text-[#737373] uppercase mb-2">
@@ -85,9 +86,7 @@ export default async function IssuesPage() {
                     </div>
 
                     <h2 className="text-xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-3">
-                      <Link href={`/fr/numeros/${issue.slug}`}>
-                        {issue.title}
-                      </Link>
+                      {issue.title}
                     </h2>
 
                     <p className="text-xs font-serif text-[#555555] leading-relaxed line-clamp-3 mb-4">
@@ -99,15 +98,12 @@ export default async function IssuesPage() {
                 <div className="px-6 pb-6 pt-0">
                   <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-serif">
                     <span className="font-mono text-[11px] text-[#737373]">Édition certifiée</span>
-                    <Link 
-                      href={`/fr/numeros/${issue.slug}`}
-                      className="font-mono font-bold text-xs text-[#0b4627] hover:underline inline-flex items-center gap-1"
-                    >
+                    <span className="font-mono font-bold text-xs text-[#0b4627] group-hover:underline inline-flex items-center gap-1">
                       Consulter <ArrowRight size={12} />
-                    </Link>
+                    </span>
                   </div>
                 </div>
-              </article>
+              </Link>
             );
           })}
         </div>

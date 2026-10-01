@@ -295,24 +295,25 @@ export default async function HomePageEn() {
           </div>
 
           {/* COLUMN 2 (Col 6 / 50%) : THE DEEP DIVE (THE HERO) (Order 1 on mobile, Order 2 on desktop) */}
-          <div className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
+          <Link 
+            href={`/en/${leadArticle.category}/${leadArticle.slug}`}
+            className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0 group cursor-pointer block"
+          >
             <div className="mb-3">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">
                 The Deep Dive · Economy
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] leading-[1.18] mb-4">
-              <Link href={`/en/${leadArticle.category}/${leadArticle.slug}`} className="hover:text-[#0b4627] transition-colors">
-                {leadArticle.title}
-              </Link>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-[1.18] mb-4">
+              {leadArticle.title}
             </h1>
 
             <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5] rounded-xl shadow-xs">
               <img 
                 src={leadArticle.image || leadArticle.imageUrl} 
                 alt={leadArticle.title} 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
 
@@ -326,13 +327,12 @@ export default async function HomePageEn() {
               {leadArticle.excerpt}
             </p>
 
-            <Link 
-              href={`/en/${leadArticle.category}/${leadArticle.slug}`}
-              className="font-mono text-xs font-bold uppercase tracking-wider text-white bg-[#0b4627] hover:bg-[#072e1a] px-5 py-3 self-start transition-colors rounded-lg"
+            <span 
+              className="font-mono text-xs font-bold uppercase tracking-wider text-white bg-[#0b4627] group-hover:bg-[#072e1a] px-5 py-3 self-start transition-colors rounded-lg inline-block"
             >
               Read full investigation →
-            </Link>
-          </div>
+            </span>
+          </Link>
 
           {/* COLUMN 3 (Col 3 / 25%) : ANALYSES & QUOTE (Order 3 on mobile and desktop) */}
           <div className="order-3 lg:col-span-3 flex flex-col space-y-6">
@@ -344,7 +344,11 @@ export default async function HomePageEn() {
 
             <div className="space-y-6">
               {secondaryArticles.slice(0, 2).map((art) => (
-                <article key={art.id} className="group pb-6 border-b border-[#e6dfd5] last:border-0 last:pb-0">
+                <Link 
+                  key={art.id} 
+                  href={`/en/${art.category}/${art.slug}`}
+                  className="group pb-6 border-b border-[#e6dfd5] last:border-0 last:pb-0 block cursor-pointer"
+                >
                   <div className="w-full aspect-[16/10] overflow-hidden bg-neutral-100 mb-2.5 border border-[#e6dfd5] rounded-lg">
                     <img 
                       src={art.image || art.imageUrl} 
@@ -358,9 +362,7 @@ export default async function HomePageEn() {
                   </span>
                   
                   <h4 className="font-serif font-bold text-sm sm:text-base text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-2">
-                    <Link href={`/en/${art.category}/${art.slug}`}>
-                      {art.title}
-                    </Link>
+                    {art.title}
                   </h4>
                   
                   <p className="text-xs font-serif text-[#555555] line-clamp-2 mb-2 leading-relaxed">
@@ -369,11 +371,11 @@ export default async function HomePageEn() {
 
                   <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
                     <span className="text-[11px] font-mono text-[#0b4627] font-semibold">{art.sourceCount} verified sources</span>
-                    <Link href={`/en/${art.category}/${art.slug}`} className="text-xs font-serif text-[#0b4627] font-bold hover:underline">
+                    <span className="text-xs font-serif text-[#0b4627] font-bold group-hover:underline">
                       Read →
-                    </Link>
+                    </span>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
 
@@ -415,12 +417,16 @@ export default async function HomePageEn() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {indicators.slice(0, 4).map((ind) => (
-              <div key={ind.code} className="border-l-2 border-[#0b4627] pl-4">
-                <span className="text-[10px] font-mono uppercase text-[#737373] block mb-1">
+              <Link 
+                key={ind.code} 
+                href={`/en/tracker/indicateurs/${ind.code}`}
+                className="border-l-2 border-[#0b4627] pl-4 block group hover:bg-[#faf8f5] p-2 rounded-r-lg transition-colors cursor-pointer"
+              >
+                <span className="text-[10px] font-mono uppercase text-[#737373] block mb-1 group-hover:text-[#0b4627]">
                   {ind.category}
                 </span>
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold font-mono text-[#141414]">
+                  <span className="text-2xl sm:text-3xl font-bold font-mono text-[#141414] group-hover:text-[#0b4627] transition-colors">
                     {ind.currentValue}
                   </span>
                   <span className="text-xs font-mono text-[#555555]">
@@ -430,10 +436,15 @@ export default async function HomePageEn() {
                 <p className="text-xs font-serif text-[#333333] line-clamp-1 mb-1">
                   {ind.name}
                 </p>
-                <span className="text-[10px] font-mono text-[#0b4627]">
-                  {ind.trend === 'up' ? '↗ Increasing' : ind.trend === 'down' ? '↘ Decreasing' : '→ Stable'}
-                </span>
-              </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[#0b4627]">
+                    {ind.trend === 'up' ? '↗ Increasing' : ind.trend === 'down' ? '↘ Decreasing' : '→ Stable'}
+                  </span>
+                  <span className="text-[10px] font-mono text-[#0b4627] font-bold group-hover:underline">
+                    View →
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -497,7 +508,10 @@ export default async function HomePageEn() {
               <span className="text-[11px] font-serif text-[#737373] italic">Bobo-Dioulasso Desk</span>
             </div>
 
-            <article className="bg-white border border-[#e6dfd5] flex flex-col justify-between group h-[calc(100%-3rem)] rounded-xl overflow-hidden shadow-xs">
+            <Link 
+              href={`/en/${terrainArticle.category}/${terrainArticle.slug}`}
+              className="bg-white border border-[#e6dfd5] flex flex-col justify-between group h-[calc(100%-3rem)] rounded-xl overflow-hidden shadow-xs hover:border-[#141414] transition-colors cursor-pointer block"
+            >
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                   <img 
@@ -513,9 +527,7 @@ export default async function HomePageEn() {
                   </span>
 
                   <h3 className="text-xl sm:text-2xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-3">
-                    <Link href={`/en/${terrainArticle.category}/${terrainArticle.slug}`}>
-                      {terrainArticle.title}
-                    </Link>
+                    {terrainArticle.title}
                   </h3>
 
                   <p className="text-xs sm:text-sm font-serif text-[#444444] leading-relaxed mb-4">
@@ -527,12 +539,12 @@ export default async function HomePageEn() {
               <div className="px-6 pb-6 pt-0">
                 <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-serif text-[#555555]">
                   <span className="italic">Newsroom Investigation · Bobo-Dioulasso</span>
-                  <Link href={`/en/${terrainArticle.category}/${terrainArticle.slug}`} className="font-mono font-bold text-xs text-[#0b4627] hover:underline">
+                  <span className="font-mono font-bold text-xs text-[#0b4627] group-hover:underline flex items-center gap-1">
                     Read investigation →
-                  </Link>
+                  </span>
                 </div>
               </div>
-            </article>
+            </Link>
           </div>
 
           {/* Right Feature : Fact Checking (Col 5) */}
@@ -544,7 +556,10 @@ export default async function HomePageEn() {
               </h2>
             </div>
 
-            <article className="bg-white border border-[#e6dfd5] flex flex-col justify-between group h-[calc(100%-3rem)] rounded-xl overflow-hidden shadow-xs">
+            <Link 
+              href={`/en/${factCheckArticle.category}/${factCheckArticle.slug}`}
+              className="bg-white border border-[#e6dfd5] flex flex-col justify-between group h-[calc(100%-3rem)] rounded-xl overflow-hidden shadow-xs hover:border-[#141414] transition-colors cursor-pointer block"
+            >
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                   <img 
@@ -560,9 +575,7 @@ export default async function HomePageEn() {
                   </span>
 
                   <h3 className="text-lg sm:text-xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-3">
-                    <Link href={`/en/${factCheckArticle.category}/${factCheckArticle.slug}`}>
-                      {factCheckArticle.title}
-                    </Link>
+                    {factCheckArticle.title}
                   </h3>
 
                   <p className="text-xs sm:text-sm font-serif text-[#444444] leading-relaxed mb-4">
@@ -574,12 +587,12 @@ export default async function HomePageEn() {
               <div className="px-6 pb-6 pt-0">
                 <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-serif text-[#555555]">
                   <span className="text-[#0b4627] font-semibold">{factCheckArticle.sourceCount} verified sources</span>
-                  <Link href={`/en/${factCheckArticle.category}/${factCheckArticle.slug}`} className="font-mono font-bold text-xs text-[#0b4627] hover:underline">
+                  <span className="font-mono font-bold text-xs text-[#0b4627] group-hover:underline flex items-center gap-1">
                     View data breakdown →
-                  </Link>
+                  </span>
                 </div>
               </div>
-            </article>
+            </Link>
 
           </div>
 

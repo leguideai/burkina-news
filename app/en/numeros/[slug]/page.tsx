@@ -159,9 +159,10 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
               </div>
 
               {issueArticles.map((art, idx) => (
-                <article 
+                <Link 
                   key={art.id}
-                  className="bg-white border border-[#e6dfd5] hover:border-[#141414] rounded-xl shadow-xs transition-all p-6 flex flex-col justify-between group"
+                  href={`/en/${art.category}/${art.slug}`}
+                  className="bg-white border border-[#e6dfd5] hover:border-[#141414] rounded-xl shadow-xs transition-all p-6 flex flex-col justify-between group cursor-pointer block"
                 >
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-[10px] font-mono">
@@ -189,9 +190,7 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
 
                       <div>
                         <h3 className="text-lg font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-2">
-                          <Link href={`/en/${art.category}/${art.slug}`}>
-                            {art.title}
-                          </Link>
+                          {art.title}
                         </h3>
 
                         <p className="text-xs font-serif text-[#555555] leading-relaxed line-clamp-2">
@@ -205,14 +204,11 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
                     <span className="text-[#737373] font-serif italic">
                       Newsroom Investigation · Bobo-Dioulasso
                     </span>
-                    <Link 
-                      href={`/en/${art.category}/${art.slug}`}
-                      className="font-mono text-xs font-bold text-[#0b4627] hover:underline inline-flex items-center gap-1"
-                    >
+                    <span className="font-mono text-xs font-bold text-[#0b4627] group-hover:underline inline-flex items-center gap-1">
                       Read investigation →
-                    </Link>
+                    </span>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           </div>

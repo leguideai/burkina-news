@@ -296,12 +296,16 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
                 </h3>
                 <div className="space-y-3">
                   {relatedProjects.map(p => (
-                    <div key={p.id} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg flex gap-3 items-start">
+                    <Link 
+                      key={p.id} 
+                      href={`/fr/tracker/projets/${p.slug}`}
+                      className="p-3 bg-[#faf8f5] border border-[#e6dfd5] hover:border-[#141414] rounded-lg flex gap-3 items-start group cursor-pointer block transition-colors"
+                    >
                       <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                         <img 
                           src={p.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
                           alt={p.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -309,13 +313,11 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
                           <StatusBadge status={p.currentStatus} size="sm" />
                           <span className="text-[10px] font-mono text-[#737373]">{p.region}</span>
                         </div>
-                        <h4 className="font-serif font-bold text-xs text-[#141414] leading-snug line-clamp-1">
-                          <Link href={`/fr/tracker/projets/${p.slug}`} className="hover:text-[#0b4627]">
-                            {p.title}
-                          </Link>
+                        <h4 className="font-serif font-bold text-xs text-[#141414] group-hover:text-[#0b4627] leading-snug line-clamp-1 transition-colors">
+                          {p.title}
                         </h4>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>

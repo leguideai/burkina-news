@@ -126,7 +126,11 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
 
             <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden">
               {issueArticles.map((art, idx) => (
-                <article key={art.id} className="p-4 sm:p-6 hover:bg-[#faf8f5] transition-colors group flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
+                <Link 
+                  key={art.id} 
+                  href={`/fr/${art.category}/${art.slug}`}
+                  className="p-4 sm:p-6 hover:bg-[#faf8f5] transition-colors group flex flex-col sm:flex-row gap-4 sm:gap-5 items-start cursor-pointer block"
+                >
                   <div className="flex sm:flex-col items-center sm:items-start gap-3 w-full sm:w-36 shrink-0">
                     <span className="font-mono text-lg sm:text-xl font-bold text-[#0b4627] block sm:mb-2">
                       0{idx + 1}
@@ -148,23 +152,18 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ sl
                     </div>
 
                     <h3 className="font-serif font-bold text-base sm:text-lg text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-2">
-                      <Link href={`/fr/${art.category}/${art.slug}`}>
-                        {art.title}
-                      </Link>
+                      {art.title}
                     </h3>
 
                     <p className="font-serif text-xs sm:text-sm text-[#555555] leading-relaxed line-clamp-2 mb-3">
                       {art.excerpt}
                     </p>
 
-                    <Link 
-                      href={`/fr/${art.category}/${art.slug}`}
-                      className="font-mono text-xs font-bold text-[#0b4627] hover:underline inline-flex items-center gap-1"
-                    >
+                    <span className="font-mono text-xs font-bold text-[#0b4627] group-hover:underline inline-flex items-center gap-1">
                       Consulter l'enquête →
-                    </Link>
+                    </span>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           </div>

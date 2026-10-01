@@ -303,7 +303,7 @@ export default function TrackerPageEn() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Main Content Area (Col 8) */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 min-w-0 w-full space-y-6">
             
             {/* Filter Bar */}
             <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-4 sm:p-5">
@@ -333,14 +333,14 @@ export default function TrackerPageEn() {
                 <div className="flex items-center gap-1 border border-[#e6dfd5] p-0.5 bg-[#faf8f5] rounded-lg shrink-0 self-end sm:self-auto">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-xs text-[#0b4627]' : 'text-[#737373] hover:text-[#141414]'}`}
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-[#0b4627] text-white shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
                     title="Grid view"
                   >
                     <LayoutGrid size={15} />
                   </button>
                   <button
                     onClick={() => setViewMode('table')}
-                    className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white shadow-xs text-[#0b4627]' : 'text-[#737373] hover:text-[#141414]'}`}
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-[#0b4627] text-white shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
                     title="Table view"
                   >
                     <List size={15} />
@@ -555,20 +555,20 @@ export default function TrackerPageEn() {
               </div>
             ) : (
               /* Table View */
-              <div className="mb-6">
+              <div className="mb-6 min-w-0 w-full">
                 <div className="sm:hidden text-[10px] font-mono text-[#737373] text-right mb-1">
                   ↔ Swipe table horizontally to see all columns
                 </div>
-                <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-x-auto">
-                  <table className="w-full min-w-[700px] text-left text-xs font-serif">
+                <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-x-auto w-full">
+                  <table className="w-full text-left text-xs font-serif min-w-[600px]">
                   <thead>
                     <tr className="bg-[#faf8f5] border-b border-[#141414] font-mono text-[10px] uppercase text-[#737373]">
-                      <th className="py-3 px-4">Project</th>
-                      <th className="py-3 px-3">Sector</th>
-                      <th className="py-3 px-3">Region</th>
-                      <th className="py-3 px-3">Budget</th>
-                      <th className="py-3 px-3">Last verification</th>
-                      <th className="py-3 px-4 text-right">Status</th>
+                      <th className="py-2.5 px-3 min-w-[180px]">Project</th>
+                      <th className="py-2.5 px-2 whitespace-nowrap">Sector</th>
+                      <th className="py-2.5 px-2 whitespace-nowrap">Region</th>
+                      <th className="py-2.5 px-2 whitespace-nowrap">Budget</th>
+                      <th className="py-2.5 px-2 whitespace-nowrap hidden xl:table-cell">Last verification</th>
+                      <th className="py-2.5 px-3 text-right whitespace-nowrap">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#e6dfd5]">
@@ -576,28 +576,33 @@ export default function TrackerPageEn() {
                       const imageSrc = project.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80';
                       return (
                         <tr key={project.id} className="hover:bg-[#fcfaf7] transition-colors">
-                          <td className="py-3 px-4 font-bold text-[#141414]">
-                            <div className="flex items-center gap-3">
+                          <td className="py-2.5 px-3 font-bold text-[#141414]">
+                            <div className="flex items-center gap-2.5">
                               <div className="w-10 h-8 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                                 <img src={imageSrc} alt="" className="w-full h-full object-cover" />
                               </div>
-                              <Link 
-                                href={`/en/tracker/projets/${project.slug}`}
-                                className="hover:text-[#0b4627] transition-colors line-clamp-2"
-                              >
-                                {project.title}
-                              </Link>
+                              <div className="min-w-0">
+                                <Link 
+                                  href={`/en/tracker/projets/${project.slug}`}
+                                  className="hover:text-[#0b4627] transition-colors line-clamp-1 block"
+                                >
+                                  {project.title}
+                                </Link>
+                                <span className="text-[9px] font-mono text-[#888888] xl:hidden block">
+                                  Verified {new Date(project.lastVerifiedAt).toLocaleDateString('en-US')}
+                                </span>
+                              </div>
                             </div>
                           </td>
-                          <td className="py-3 px-3 font-mono text-[11px] text-[#555555]">{project.sector}</td>
-                          <td className="py-3 px-3 font-mono text-[11px] text-[#555555]">{project.region}</td>
-                          <td className="py-3 px-3 font-mono text-[11px] font-semibold text-[#141414]">
+                          <td className="py-2.5 px-2 font-mono text-[11px] text-[#555555] whitespace-nowrap">{project.sector}</td>
+                          <td className="py-2.5 px-2 font-mono text-[11px] text-[#555555] whitespace-nowrap">{project.region}</td>
+                          <td className="py-2.5 px-2 font-mono text-[11px] font-semibold text-[#141414] whitespace-nowrap">
                             {project.amount ? `${project.amount} ${project.currency}` : '—'}
                           </td>
-                          <td className="py-3 px-3 font-mono text-[11px] text-[#737373]">
+                          <td className="py-2.5 px-2 font-mono text-[11px] text-[#737373] whitespace-nowrap hidden xl:table-cell">
                             {new Date(project.lastVerifiedAt).toLocaleDateString('en-US')}
                           </td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-2.5 px-3 text-right whitespace-nowrap">
                             <StatusBadge status={project.currentStatus} size="sm" lang="en" />
                           </td>
                         </tr>
@@ -634,7 +639,11 @@ export default function TrackerPageEn() {
 
               <div className="space-y-4">
                 {keyIndicators.slice(0, 4).map((ind) => (
-                  <div key={ind.code} className="p-3 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg">
+                  <Link 
+                    key={ind.code} 
+                    href={`/en/tracker/indicateurs/${ind.code}`}
+                    className="block p-3 bg-[#faf8f5] border border-[#e6dfd5] hover:border-[#141414] rounded-lg transition-colors group cursor-pointer"
+                  >
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-[10px] font-mono uppercase text-[#737373]">
                         {ind.category}
@@ -644,10 +653,8 @@ export default function TrackerPageEn() {
                       </span>
                     </div>
 
-                    <h4 className="font-serif font-bold text-sm text-[#141414] mb-1">
-                      <Link href={`/en/tracker/indicateurs/${ind.code}`} className="hover:underline">
-                        {ind.name}
-                      </Link>
+                    <h4 className="font-serif font-bold text-sm text-[#141414] group-hover:text-[#0b4627] mb-1 transition-colors">
+                      {ind.name}
                     </h4>
 
                     <div className="flex justify-between items-baseline pt-1">
@@ -655,11 +662,11 @@ export default function TrackerPageEn() {
                         <span className="text-xl font-bold text-[#141414]">{ind.currentValue}</span>
                         <span className="text-xs text-[#555555]">{ind.unit}</span>
                       </div>
-                      <span className="text-[11px] font-mono text-[#0b4627]">
+                      <span className="text-[11px] font-mono text-[#0b4627] group-hover:underline">
                         {ind.trend === 'up' ? '↗ Progressing' : ind.trend === 'down' ? '↘ Retracting' : '→ Stable'}
                       </span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 

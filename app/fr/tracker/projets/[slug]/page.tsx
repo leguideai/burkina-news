@@ -240,21 +240,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {linkedArticles.map(art => (
-                    <article key={art.id} className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs hover:border-[#141414] transition-colors flex flex-col justify-between">
+                    <Link 
+                      key={art.id} 
+                      href={`/fr/${art.category}/${art.slug}`}
+                      className="p-4 bg-white border border-[#e6dfd5] rounded-xl shadow-xs hover:border-[#141414] transition-colors flex flex-col justify-between group cursor-pointer block"
+                    >
                       <div>
                         <span className="text-[10px] font-mono font-bold uppercase text-[#0b4627] block mb-1">
                           {art.category}
                         </span>
-                        <h4 className="font-serif font-bold text-sm text-[#141414] mb-2 leading-snug">
-                          <Link href={`/fr/${art.category}/${art.slug}`}>
-                            {art.title}
-                          </Link>
+                        <h4 className="font-serif font-bold text-sm text-[#141414] group-hover:text-[#0b4627] mb-2 leading-snug transition-colors">
+                          {art.title}
                         </h4>
                       </div>
-                      <Link href={`/fr/${art.category}/${art.slug}`} className="text-xs font-mono font-bold text-[#0b4627] hover:underline inline-flex items-center gap-1 pt-2 border-t border-neutral-100">
+                      <span className="text-xs font-mono font-bold text-[#0b4627] group-hover:underline inline-flex items-center gap-1 pt-2 border-t border-neutral-100">
                         Lire l'article →
-                      </Link>
-                    </article>
+                      </span>
+                    </Link>
                   ))}
                 </div>
               </section>

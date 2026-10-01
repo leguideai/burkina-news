@@ -17,11 +17,13 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
     : 50;
 
   return (
-    <div className="group h-full bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors flex flex-col justify-between overflow-hidden rounded-xl shadow-xs">
+    <div className="group h-full bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors flex flex-col justify-between overflow-hidden rounded-xl shadow-xs relative cursor-pointer">
+      {/* Full Card Stretched Link */}
+      <Link href={indicatorHref} className="absolute inset-0 z-0" aria-label={isEn && indicator.nameEn ? indicator.nameEn : indicator.name} />
       
       {/* Photographic Evidence Header */}
       {indicator.image && (
-        <Link href={indicatorHref} className="block relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
+        <div className="block relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5] pointer-events-none">
           <img 
             src={indicator.image} 
             alt={indicator.name}
@@ -30,10 +32,10 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
           <div className="absolute top-2 left-2 bg-[#141414] text-white px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-widest rounded-md">
             {indicator.code}
           </div>
-        </Link>
+        </div>
       )}
 
-      <div className="p-5 flex-1 flex flex-col justify-between">
+      <div className="p-5 flex-1 flex flex-col justify-between pointer-events-none">
         <div>
           <div className="flex justify-between items-center text-[10px] font-mono uppercase text-[#737373] mb-2">
             <span className="font-bold text-[#0b4627]">{indicator.category}</span>
@@ -41,12 +43,9 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
           </div>
 
           <div className="flex items-baseline gap-1.5 mb-2">
-            <Link 
-              href={indicatorHref}
-              className="text-3xl font-bold font-mono text-[#141414] hover:text-[#0b4627] transition-colors"
-            >
+            <span className="text-3xl font-bold font-mono text-[#141414] group-hover:text-[#0b4627] transition-colors">
               {indicator.currentValue}
-            </Link>
+            </span>
             <span className="text-xs font-mono text-[#555555]">{indicator.unit}</span>
             
             <div className="ml-auto">
@@ -56,10 +55,8 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
             </div>
           </div>
 
-          <h4 className="text-xs font-serif font-bold text-[#141414] leading-snug mb-4 line-clamp-2">
-            <Link href={indicatorHref} className="hover:text-[#0b4627] transition-colors">
-              {isEn && indicator.nameEn ? indicator.nameEn : indicator.name}
-            </Link>
+          <h4 className="text-xs font-serif font-bold text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-4 line-clamp-2">
+            {isEn && indicator.nameEn ? indicator.nameEn : indicator.name}
           </h4>
         </div>
 
@@ -85,7 +82,7 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
               href={getSourceUrl(indicator.source)}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#737373] hover:text-[#0b4627] hover:underline font-mono text-[10px] truncate max-w-[140px] inline-flex items-center gap-0.5"
+              className="text-[#737373] hover:text-[#0b4627] hover:underline font-mono text-[10px] truncate max-w-[140px] inline-flex items-center gap-0.5 relative z-10 pointer-events-auto"
               title={`Source : ${indicator.source}`}
             >
               <span>{indicator.source}</span>
@@ -93,13 +90,12 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
             </a>
 
             {/* Indicator Detail Link */}
-            <Link 
-              href={indicatorHref} 
-              className="font-mono font-bold text-[11px] text-[#0b4627] hover:underline inline-flex items-center gap-1"
+            <span 
+              className="font-mono font-bold text-[11px] text-[#0b4627] group-hover:underline inline-flex items-center gap-1"
             >
               <span>{isEn ? 'History' : 'Historique'}</span>
               <ArrowRight size={11} />
-            </Link>
+            </span>
           </div>
         </div>
       </div>
