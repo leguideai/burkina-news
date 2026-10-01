@@ -165,38 +165,39 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
 
         {/* Filtres sélecteurs */}
         <div className="flex flex-wrap sm:flex-nowrap gap-2 overflow-x-auto pb-1">
-          {/* Secteur */}
+          {/* Secteur (Ordre alphabétique) */}
+          {/* Secteur (Ordre alphabétique) */}
           <select
             className="border border-[#e6dfd5] bg-[#faf8f5] rounded-lg text-xs py-2 px-2.5 text-[#141414] focus:ring-1 focus:ring-[#0b4627] focus:border-[#0b4627]"
             value={filters.sector}
             onChange={(e) => handleChange('sector', e.target.value)}
           >
-            <option value="">{lang === 'fr' ? 'Tous les secteurs' : 'All sectors'}</option>
-            <option value="Énergie">Énergie</option>
-            <option value="Transport">Transport</option>
+            <option value="">{lang === 'fr' ? 'Secteurs' : 'Sectors'}</option>
+            <option value="Agriculture">Agriculture</option>
             <option value="Agro-industrie">Agro-industrie</option>
             <option value="Eau / Irrigation">Eau / Irrigation</option>
-            <option value="Santé">Santé</option>
             <option value="Éducation">Éducation</option>
-            <option value="Routes">Routes</option>
+            <option value="Énergie">Énergie</option>
             <option value="Mines">Mines</option>
-            <option value="Agriculture">Agriculture</option>
+            <option value="Routes">Routes</option>
+            <option value="Santé">Santé</option>
+            <option value="Transport">Transport</option>
           </select>
 
-          {/* Bailleur */}
+          {/* Bailleur (Ordre alphabétique) */}
           <select
             className="border border-[#e6dfd5] bg-[#faf8f5] rounded-lg text-xs py-2 px-2.5 text-[#141414] focus:ring-1 focus:ring-[#0b4627] focus:border-[#0b4627]"
             value={filters.bailleur}
             onChange={(e) => handleChange('bailleur', e.target.value)}
           >
-            <option value="">{lang === 'fr' ? 'Tous les bailleurs' : 'All donors'}</option>
-            <option value="État du Burkina Faso">État du Burkina Faso</option>
-            <option value="Banque mondiale">Banque mondiale</option>
+            <option value="">{lang === 'fr' ? 'Bailleurs' : 'Donors'}</option>
             <option value="BAD">BAD</option>
+            <option value="Banque mondiale">Banque mondiale</option>
             <option value="CEDEAO">CEDEAO</option>
-            <option value="Union Européenne">Union Européenne</option>
             <option value="Coopération bilatérale">Coopération bilatérale</option>
+            <option value="État du Burkina Faso">État du Burkina Faso</option>
             <option value="Secteur privé">Secteur privé</option>
+            <option value="Union Européenne">Union Européenne</option>
           </select>
 
           {/* Étape 1 : Région (17 régions officielles) */}
@@ -205,7 +206,7 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
             value={filters.region}
             onChange={(e) => handleRegionChange(e.target.value)}
           >
-            <option value="">{lang === 'fr' ? 'Toutes les 17 régions' : 'All 17 regions'}</option>
+            <option value="">{lang === 'fr' ? 'Régions' : 'Regions'}</option>
             <option value="National">National (Multi-régions)</option>
             {BURKINA_REGIONS_17.map((r) => (
               <option key={r} value={r}>
@@ -215,15 +216,11 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
           </select>
 
           {/* Étape 2 : Province (Conditionnée par la région choisie) */}
-          <div className="relative min-w-[180px]">
+          <div className="relative min-w-[140px]">
             <div className="relative flex items-center">
               <input
                 type="text"
-                placeholder={
-                  filters.region
-                    ? `${lang === 'fr' ? 'Provinces de' : 'Provinces of'} ${filters.region} (${availableProvinces.length})`
-                    : `${lang === 'fr' ? 'Toutes les 47 provinces' : 'All 47 provinces'}`
-                }
+                placeholder={lang === 'fr' ? 'Provinces' : 'Provinces'}
                 value={filters.province || provinceSearch}
                 onChange={(e) => {
                   if (filters.province) {
@@ -278,15 +275,11 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
           </div>
 
           {/* Étape 3 : Commune / Ville (Conditionnée par la province et région) */}
-          <div className="relative min-w-[180px]">
+          <div className="relative min-w-[140px]">
             <div className="relative flex items-center">
               <input
                 type="text"
-                placeholder={
-                  filters.province
-                    ? `${lang === 'fr' ? 'Communes de' : 'Towns of'} ${filters.province} (${availableCommunes.length})`
-                    : `${lang === 'fr' ? 'Toutes les 351 communes' : 'All 351 communes'}`
-                }
+                placeholder={lang === 'fr' ? 'Communes' : 'Communes'}
                 value={filters.commune || communeSearch}
                 onChange={(e) => {
                   if (filters.commune) {
@@ -340,15 +333,19 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
             )}
           </div>
 
-          {/* Statut officiel du chantier */}
+          {/* Statut officiel du chantier (Présentation distincte sombre & badge) */}
           <select
-            className="border border-[#e6dfd5] bg-[#faf8f5] rounded-lg text-xs py-2 px-2.5 text-[#141414] focus:ring-1 focus:ring-[#0b4627] focus:border-[#0b4627]"
+            className={`border rounded-lg text-xs py-2 px-2.5 font-bold transition-all ${
+              filters.status
+                ? 'bg-white border-[#0b4627] text-[#0b4627]'
+                : 'bg-[#141414] border-[#141414] text-white hover:bg-[#262626]'
+            }`}
             value={filters.status}
             onChange={(e) => handleChange('status', e.target.value)}
           >
-            <option value="">{lang === 'fr' ? 'Tous les statuts (6)' : 'All 6 statuses'}</option>
+            <option value="" className="bg-white text-[#141414]">{lang === 'fr' ? '● Statut' : '● Status'}</option>
             {Object.entries(PROJECT_STATUS_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>
+              <option key={key} value={key} className="bg-white text-[#141414]">
                 {label}
               </option>
             ))}

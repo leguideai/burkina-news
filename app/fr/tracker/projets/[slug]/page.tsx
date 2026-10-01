@@ -335,6 +335,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                   <dt className="text-[#737373]">Région :</dt>
                   <dd className="font-semibold text-[#141414]">{project.region}</dd>
                 </div>
+                {project.bailleur && (
+                  <div className="py-2.5 flex justify-between">
+                    <dt className="text-[#737373]">Bailleur principal :</dt>
+                    <dd className="font-semibold text-[#0b4627]">{project.bailleur}</dd>
+                  </div>
+                )}
                 {project.amount && (
                   <div className="py-2.5 flex justify-between">
                     <dt className="text-[#737373]">Budget estimé :</dt>

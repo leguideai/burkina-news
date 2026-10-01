@@ -33,23 +33,24 @@ import { mapProjectDTOToProject } from '@/lib/api/mappers';
 import { useToast } from '@/components/admin/Toast';
 import { SkeletonTable, SkeletonStat } from '@/components/admin/Skeleton';
 import Tooltip from '@/components/ui/Tooltip';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 
 const SECTORS = [
-  'Énergie',
-  'Transport',
+  'Agriculture & Irrigation',
   'Eau & Assainissement',
+  'Éducation',
+  'Énergie',
   'Mines',
   'Santé',
-  'Éducation',
-  'Agriculture & Irrigation',
-  'Télécoms & Numérique'
+  'Télécoms & Numérique',
+  'Transport'
 ];
 
 import { BURKINA_REGIONS_17 } from '@/data/mock/referentiel-territoire';
 
 const REGIONS = [
-  ...BURKINA_REGIONS_17,
-  'National (Multi-régions)'
+  'National (Multi-régions)',
+  ...BURKINA_REGIONS_17
 ];
 
 export default function AdminProjectsPage() {
@@ -266,38 +267,36 @@ export default function AdminProjectsPage() {
             <span>Filtres :</span>
           </div>
 
-          <select
+          <SearchableSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs font-mono border border-[#e6dfd5] px-2.5 py-2 rounded bg-[#faf8f5] focus:outline-none focus:border-[#087443]"
-          >
-            <option value="all">Tous les statuts ({projects.length})</option>
-            {PROJECT_STATUS_ORDER.map(s => (
-              <option key={s} value={s}>{PROJECT_STATUS_LABELS[s]}</option>
-            ))}
-          </select>
+            onChange={setStatusFilter}
+            options={PROJECT_STATUS_ORDER.map(s => ({ value: s, label: PROJECT_STATUS_LABELS[s] }))}
+            allOptionLabel={`Tous les statuts (${projects.length})`}
+            allValue="all"
+            autoSort={false}
+            searchPlaceholder="Filtrer statut..."
+            className="min-w-[170px]"
+          />
 
-          <select
+          <SearchableSelect
             value={sectorFilter}
-            onChange={(e) => setSectorFilter(e.target.value)}
-            className="text-xs font-mono border border-[#e6dfd5] px-2.5 py-2 rounded bg-[#faf8f5] focus:outline-none focus:border-[#087443]"
-          >
-            <option value="all">Tous les secteurs</option>
-            {SECTORS.map(sec => (
-              <option key={sec} value={sec}>{sec}</option>
-            ))}
-          </select>
+            onChange={setSectorFilter}
+            options={SECTORS}
+            allOptionLabel="Tous les secteurs"
+            allValue="all"
+            searchPlaceholder="Filtrer secteur..."
+            className="min-w-[170px]"
+          />
 
-          <select
+          <SearchableSelect
             value={regionFilter}
-            onChange={(e) => setRegionFilter(e.target.value)}
-            className="text-xs font-mono border border-[#e6dfd5] px-2.5 py-2 rounded bg-[#faf8f5] focus:outline-none focus:border-[#087443]"
-          >
-            <option value="all">Toutes les régions</option>
-            {REGIONS.map(reg => (
-              <option key={reg} value={reg}>{reg}</option>
-            ))}
-          </select>
+            onChange={setRegionFilter}
+            options={REGIONS}
+            allOptionLabel="Toutes les régions"
+            allValue="all"
+            searchPlaceholder="Rechercher région..."
+            className="min-w-[170px]"
+          />
         </div>
       </div>
 

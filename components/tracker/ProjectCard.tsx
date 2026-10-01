@@ -71,6 +71,12 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
                 <span className="font-semibold text-[#141414]">{project.capacity}</span>
               </div>
             )}
+            {project.bailleur && (
+              <div className="flex justify-between">
+                <span className="text-[#737373] uppercase">{isEn ? 'Donor:' : 'Bailleur :'}</span>
+                <span className="font-semibold text-[#0b4627] truncate max-w-[140px]">{project.bailleur}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-[#737373] uppercase">{isEn ? 'Client authority:' : "Maître d'ouvrage :"}</span>
               <span className="font-semibold text-[#141414] truncate max-w-[140px]">

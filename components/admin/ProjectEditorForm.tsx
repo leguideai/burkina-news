@@ -39,19 +39,30 @@ interface ProjectEditorFormProps {
 }
 
 const SECTORS = [
-  'Énergie',
-  'Transport',
+  'Agriculture & Irrigation',
   'Eau & Assainissement',
+  'Éducation',
+  'Énergie',
   'Mines',
   'Santé',
-  'Éducation',
-  'Agriculture & Irrigation',
-  'Télécoms & Numérique'
+  'Télécoms & Numérique',
+  'Transport'
+];
+
+const BAILLEURS = [
+  'BAD',
+  'Banque mondiale',
+  'CEDEAO',
+  'Coopération bilatérale',
+  'État du Burkina Faso',
+  'Secteur privé',
+  'Union Européenne',
+  'Autre / Co-financement'
 ];
 
 const REGIONS = [
-  ...BURKINA_REGIONS_17,
-  'National (Multi-régions)'
+  'National (Multi-régions)',
+  ...BURKINA_REGIONS_17
 ];
 
 const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormProps>(
@@ -64,6 +75,7 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
       description: '',
       descriptionEn: '',
       sector: 'Énergie',
+      bailleur: 'État du Burkina Faso',
       region: 'Kadiogo',
       province: 'Kadiogo',
       pndProgram: '',
@@ -341,8 +353,8 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                   </div>
                 </div>
 
-                {/* Région & Province */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Région, Province & Bailleur */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className={labelClass}><MapPin size={10} className="inline mr-1" />Région</label>
                     <select 
@@ -362,6 +374,17 @@ const ProjectEditorForm = forwardRef<ProjectEditorFormHandle, ProjectEditorFormP
                     >
                       <option value="">Sélectionner une province</option>
                       {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Bailleur Principal</label>
+                    <select 
+                      value={formData.bailleur || ''} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, bailleur: e.target.value }))} 
+                      className={selectClass}
+                    >
+                      <option value="">Sélectionner un bailleur</option>
+                      {BAILLEURS.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </div>
                 </div>
