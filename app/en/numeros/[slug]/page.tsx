@@ -5,6 +5,8 @@ import { issuesApi } from '@/lib/api/issues';
 import { articlesApi } from '@/lib/api/articles';
 import { mapArticleDTOToArticle, mapIssueDTOToIssue } from '@/lib/api/mappers';
 import { Article, Issue } from '@/data/types';
+import { getArticles } from '@/data/mock/articles';
+import { getIssueBySlug } from '@/data/mock/issues';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,6 +48,10 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
   }
   
   if (!issue) {
+    issue = getIssueBySlug(slug, 'en') || null;
+  }
+
+  if (!issue) {
     notFound();
   }
 
@@ -53,7 +59,7 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
     let enArticles: Article[] = [];
     try {
       const res = await articlesApi.listArticles({ limit: 100 });
-      if (res.articles) {
+      if (res.articles && res.articles.length > 0) {
         enArticles = res.articles.map(dto => {
           const mapped = mapArticleDTOToArticle(dto);
           if (dto.title_en) mapped.title = dto.title_en;
@@ -63,6 +69,9 @@ export default async function IssueDetailPageEn({ params }: { params: Promise<{ 
       }
     } catch {
       enArticles = [];
+    }
+    if (enArticles.length === 0) {
+      enArticles = getArticles('en');
     }
     issueArticles = (issue.articleIds || [])
       .map(id => enArticles.find(a => a.id === id || a.slug === id))

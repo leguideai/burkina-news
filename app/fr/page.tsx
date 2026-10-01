@@ -11,6 +11,11 @@ import { barometreApi } from '@/lib/api/barometre';
 import { trackerApi } from '@/lib/api/tracker';
 import { mapArticleDTOToArticle, mapIssueDTOToIssue, mapIndicatorDTOToIndicator, mapProjectDTOToProject } from '@/lib/api/mappers';
 import { Article, Project, Indicator, Issue } from '@/data/types';
+import { getArticles } from '@/data/mock/articles';
+import { getLatestIssue } from '@/data/mock/issues';
+import { getLatestBrief } from '@/data/mock/briefs';
+import { getKeyIndicators } from '@/data/mock/indicators';
+import { getProjects, getProjectStats } from '@/data/mock/projects';
 import { 
   ArrowRight, 
   Clock, 
@@ -75,9 +80,9 @@ export default async function HomePage() {
     // API error
   }
 
-  const articlesList = liveArticles;
+  const articlesList = liveArticles.length > 0 ? liveArticles : getArticles('fr');
 
-  // 1. Dernier Numéro (API Go)
+  // 1. Dernier Numéro (API Go avec fallback)
   let latestIssue: Issue | null = null;
   try {
     const issueRes = await issuesApi.listIssues({ limit: 1 });
@@ -87,8 +92,11 @@ export default async function HomePage() {
   } catch {
     // API error
   }
+  if (!latestIssue) {
+    latestIssue = getLatestIssue();
+  }
 
-  // 2. Le Fil Hebdo / Dépêches 60s (API Go)
+  // 2. Le Fil Hebdo / Dépêches 60s (API Go avec fallback)
   interface HomeBriefFact {
     time: string;
     text: string;
@@ -141,8 +149,28 @@ export default async function HomePage() {
   } catch {
     // API error
   }
+  if (!latestBrief) {
+    const mockBrief = getLatestBrief('fr');
+    if (mockBrief) {
+      latestBrief = {
+        id: mockBrief.id,
+        title: mockBrief.title,
+        titleEn: mockBrief.titleEn || mockBrief.title,
+        slug: mockBrief.slug,
+        date: mockBrief.date,
+        facts: mockBrief.facts.map((f) => ({
+          time: f.time,
+          text: f.text,
+          textEn: f.textEn || f.text,
+          category: f.category || 'economie',
+          source: f.source || '',
+          image: f.image || '',
+        })),
+      };
+    }
+  }
 
-  // 3. Indicateurs RELANCE (API Go)
+  // 3. Indicateurs RELANCE (API Go avec fallback)
   let indicators: Indicator[] = [];
   try {
     const indRes = await barometreApi.listIndicators();
@@ -152,8 +180,11 @@ export default async function HomePage() {
   } catch {
     // API error
   }
+  if (indicators.length === 0) {
+    indicators = getKeyIndicators('fr');
+  }
 
-  // 4. Chantiers & Statistiques Tracker (API Go)
+  // 4. Chantiers & Statistiques Tracker (API Go avec fallback)
   let featuredProjects: Project[] = [];
   let projectStats: any = {
     total: 0,
@@ -173,6 +204,12 @@ export default async function HomePage() {
     }
   } catch {
     // API error
+  }
+  if (featuredProjects.length === 0) {
+    featuredProjects = getProjects('fr').slice(0, 3);
+  }
+  if (!projectStats || !projectStats.total) {
+    projectStats = getProjectStats();
   }
 
   const normalizeId = (id?: string) => (id || '').replace(/^art-0*/, 'art-');
@@ -249,7 +286,7 @@ export default async function HomePage() {
               {latestBrief?.facts.slice(0, 5).map((fact, idx) => (
                 <Link 
                   key={idx} 
-                  href={`/fr/fil/${latestBrief.slug}#fait-${idx + 1}`}
+                  href={`/fr/fil/${latestBrief?.slug || '2026-semaine-34'}#fait-${idx + 1}`}
                   className="group block p-2 -mx-2 hover:bg-white hover:border-[#141414] border border-transparent transition-all"
                 >
                   <div className="flex items-center gap-2 mb-1.5 text-[10px] font-mono text-[#555555]">
@@ -286,40 +323,42 @@ export default async function HomePage() {
           </div>
 
           {/* COLUMN 2 (Col 6 / 50%) : LE GRAND DÉCRYPTAGE (THE HERO) (Order 1 on mobile, Order 2 on desktop) */}
-          <Link 
-            href={`/fr/${leadArticle.category}/${leadArticle.slug}`}
-            className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0 group cursor-pointer block"
-          >
-            <div className="mb-3">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">
-                Grand Décryptage · Économie
-              </span>
-            </div>
+          {leadArticle && (
+            <Link 
+              href={`/fr/${leadArticle.category}/${leadArticle.slug}`}
+              className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0 group cursor-pointer block"
+            >
+              <div className="mb-3">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">
+                  Grand Décryptage · {leadArticle.category}
+                </span>
+              </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-[1.18] mb-4">
-              {leadArticle.title}
-            </h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-[1.18] mb-4">
+                {leadArticle.title}
+              </h1>
 
-            <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5] rounded-xl shadow-xs">
-              <SafeImage 
-                src={leadArticle.image} 
-                alt={leadArticle.title}
-                fallbackSrc="/images/lead.jpeg"
-                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-              />
-            </div>
+              <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5] rounded-xl shadow-xs">
+                <SafeImage 
+                  src={leadArticle.image} 
+                  alt={leadArticle.title}
+                  fallbackSrc="/images/lead.jpeg"
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                />
+              </div>
 
-            <p className="text-sm sm:text-base font-serif text-[#333333] leading-relaxed mb-4">
-              {leadArticle.excerpt}
-            </p>
+              <p className="text-sm sm:text-base font-serif text-[#333333] leading-relaxed mb-4">
+                {leadArticle.excerpt}
+              </p>
 
-            <div className="pt-3 border-t border-[#e6dfd5] flex flex-wrap justify-between items-center text-xs font-serif text-[#555555]">
-              <span>Par {leadArticle.author} · Bobo-Dioulasso</span>
-              <span className="font-mono text-[11px] text-[#0b4627] font-semibold flex items-center gap-1">
-                {leadArticle.sourceCount} sources vérifiées · <span className="group-hover:underline">Lire l'enquête →</span>
-              </span>
-            </div>
-          </Link>
+              <div className="pt-3 border-t border-[#e6dfd5] flex flex-wrap justify-between items-center text-xs font-serif text-[#555555]">
+                <span>Par {leadArticle.author} · Bobo-Dioulasso</span>
+                <span className="font-mono text-[11px] text-[#0b4627] font-semibold flex items-center gap-1">
+                  {leadArticle.sourceCount} sources vérifiées · <span className="group-hover:underline">Lire l'enquête →</span>
+                </span>
+              </div>
+            </Link>
+          )}
 
           {/* COLUMN 3 (Col 3 / 25%) : ANALYSES & DÉBATS (Order 3 on mobile and desktop) */}
           <div className="order-3 lg:col-span-3 flex flex-col gap-6">

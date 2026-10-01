@@ -195,7 +195,7 @@ export const briefs: Brief[] = [
     slug: '2026-semaine-32',
     date: '2026-08-10',
     weekNumber: 32,
-    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=85',
+    image: 'https://www.sidwaya.info/wp-content/uploads/2025/09/2-31.jpg',
     facts: [
       { 
         time: '09:15', 
