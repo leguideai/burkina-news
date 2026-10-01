@@ -618,9 +618,31 @@
   - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 105/105 pages statiques et dynamiques validées).
 - **État :** Validé et terminé.
 
+### Entrée F8 — Curation Avancée de la Une, Module Newsletter & Assistant Déontologique MICUM (Charte v3.1)
+
+- **Date :** 01 Octobre 2026
+- **Objectifs :**
+  1. **Curation de la Une (`/admin/une`) :** Raccordement de l'écran d'orchestration de la Une au backend Go (`homepageApi`) et alimentation dynamique des articles disponibles via `articlesApi.adminListArticles` avec synchronisation temps réel de la Manchette, des 3 articles secondaires, des formats Terrain et Vrai ou Faux, et de la citation éditoriale bilingue.
+  2. **Module Newsletter & Campagnes (`/admin/newsletter`) :** Raccordement direct à l'API Go (`newsletterApi`) pour la consultation des abonnés, l'export CSV officiel et de repli, l'ajout/suppression sécurisée et la rédaction de lettres d'information hebdomadaires par IA.
+  3. **Assistant Déontologique MICUM (Charte v3.1) :** Intégration de l'action `audit_charte` dans `app/api/admin/ai/route.ts` et du bouton « Audit Charte » dans le formulaire de rédaction d'articles (`ArticleEditorForm.tsx`). Évaluation instantanée de la rigueur factuelle, note sur 100, verdict (« CONFORME », « A_REVOIR », « NON_CONFORME »), points forts, avertissements, recommandations concrètes et suggestion automatique du niveau de confiance (A, B, C).
+  4. **Bilinguisme Intégral des Filtres (FR & EN) :** Vérification et consolidation de la traduction des bailleurs et secteurs en anglais (`nameEn`), avec tri alphabétique spécifique à chaque locale (`localeCompare(..., lang)`).
+- **Fichiers créés / modifiés :**
+  - `app/admin/une/page.tsx` : Raccordement à `articlesApi.adminListArticles` et `homepageApi`.
+  - `app/admin/newsletter/page.tsx` : Raccordement à `newsletterApi` et génération de brouillons IA.
+  - `app/api/admin/ai/route.ts` : Extension de l'interface `AIRequest` et implémentation de l'action `audit_charte`.
+  - `components/admin/ArticleEditorForm.tsx` : Ajout du bouton d'audit déontologique et de la modale complète de restitution du rapport avec application en un clic du niveau de confiance recommandé.
+  - `data/types.ts` & `data/mock/tracker-filters.ts` : Ajout du champ `nameEn` pour les bailleurs de fonds.
+  - `app/api/tracker/filters/route.ts` : Prise en charge dynamique de `nameEn` pour les secteurs et bailleurs en mode `lang=en`.
+  - `app/admin/projets/filtres/page.tsx` : Formulaire bilingue FR/EN et affichage de la traduction anglaise dans la table des bailleurs.
+  - `components/tracker/FilterBar.tsx` : Dynamisation complète sans aucun mock résiduel.
+- **Vérifications :**
+  - Typage TypeScript sans faute : `npx tsc --noEmit` (code 0, 0 erreur).
+  - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 105/105 pages validées).
+- **État :** Validé et terminé.
+
 ---
 
-*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F8 à F10 synchronisées avec les semaines backend)*
+*(Les entrées suivantes seront ajoutées lors de l'intégration des phases F9 à F10 synchronisées avec les semaines backend)*
 
 
 

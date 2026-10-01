@@ -391,6 +391,7 @@ export interface TrackerSector {
 export interface TrackerBailleur {
   id: string;
   name: string;        // Nom officiel (ex: "Banque mondiale", "BAD", "État du Burkina Faso")
+  nameEn?: string;      // Nom officiel en anglais (ex: "World Bank", "AfDB", "State of Burkina Faso")
   code: string;        // Code unique (ex: "banque-mondiale")
   type?: string;       // "multilateral", "etatique", "bilateral", "prive", "autre"
   country?: string;    // Pays ou siège (ex: "Burkina Faso", "Côte d'Ivoire", "États-Unis")

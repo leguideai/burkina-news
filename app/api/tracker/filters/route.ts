@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
     // Bailleurs : extraire les libellés et trier par ordre alphabétique
     const bailleurs = (config.bailleurs || [])
-      .map(b => b.name)
+      .map(b => (lang === 'en' && b.nameEn ? b.nameEn : b.name))
       .filter(Boolean)
       .sort((a, b) => a.localeCompare(b, lang));
 

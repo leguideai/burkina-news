@@ -149,9 +149,9 @@
 
 | ID | Statut | Tâche Technique | Fichiers / Composants | Endpoints associés | Détails & Vérification |
 | :---: | :---: | :--- | :--- | :--- | :--- |
-| **F8.1** | `[ ]` | Curation de la Une en direct (`/admin/une`) raccordée à l'API Go. | `app/admin/une/page.tsx`, `lib/api/une.ts` | `GET /api/v1/une`<br>`PUT /api/v1/admin/une` | Réordonnancement des articles en manchette, citation du jour et sélection de la rédaction. |
-| **F8.2** | `[ ]` | Module Newsletter & Campagnes de diffusion (`/admin/newsletter`). | `app/admin/newsletter/page.tsx`, `lib/api/newsletter.ts` | `GET /api/v1/admin/newsletter/subscribers`<br>`POST /api/v1/admin/newsletter/campaign` | Export CSV des abonnés, historique des envois hebdomadaires et gabarit éditorial pour envoi groupé. |
-| **F8.3** | `[ ]` | Extension MICUM : Analyse d'alignement de la Charte Déontologique v3.1. | `components/admin/MicumCopilot.tsx`, `app/api/admin/ai/route.ts` | `POST /api/admin/ai` | Audit automatisé des articles avant publication : vérification des sources contradictoires, détection des biais partisans et validation de l'écriture factuelle. |
+| **F8.1** | `[x]` | Curation de la Une en direct (`/admin/une`) raccordée à l'API Go. | `app/admin/une/page.tsx`, `lib/api/homepage.ts`, `lib/api/articles.ts` | `GET /api/v1/homepage`<br>`PUT /api/v1/admin/homepage`<br>`GET /api/v1/admin/articles` | Pilotage éditorial en direct de la manchette, des 3 articles secondaires, des formats Terrain et Vrai ou Faux, et de la citation bilingue. |
+| **F8.2** | `[x]` | Module Newsletter & Campagnes de diffusion (`/admin/newsletter`). | `app/admin/newsletter/page.tsx`, `lib/api/newsletter.ts` | `GET /api/v1/admin/newsletter/subscribers`<br>`POST /api/v1/newsletter/subscribe`<br>`DELETE /api/v1/admin/newsletter/:id` | Consultation des abonnés, export CSV officiel & de repli, modération et génération de lettres d'information par IA. |
+| **F8.3** | `[x]` | Extension MICUM : Analyse d'alignement de la Charte Déontologique v3.1. | `components/admin/ArticleEditorForm.tsx`, `app/api/admin/ai/route.ts` | `POST /api/admin/ai` | Audit automatisé de conformité factuelle : note sur 100, verdict (Conforme/À revoir/Non conforme), points forts, alertes et application automatique de l'indice de confiance. |
 
 ---
 

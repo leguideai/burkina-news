@@ -14,7 +14,8 @@ interface AIRequest {
     | 'convert_signalement'
     | 'morning_brief'
     | 'generate_newsletter'
-    | 'suggest_quote';
+    | 'suggest_quote'
+    | 'audit_charte';
   payload: any;
 }
 
@@ -806,6 +807,64 @@ Structure JSON attendue :
         } catch (err: any) {
           console.error('Erreur suggest_quote Micum:', err);
           return NextResponse.json({ error: err.message || 'Échec de génération de citation' }, { status: 502 });
+        }
+      }
+
+      case 'audit_charte': {
+        const article = payload?.article || {};
+        const title = article.title || '';
+        const excerpt = article.excerpt || '';
+        const content = article.body || article.content || '';
+        const sourcesCount = article.sourcesCount || (article.sources?.length || 0);
+
+        try {
+          const aiRes = await generateAIJson({
+            systemPrompt: `Tu es l'Auditeur Déontologique en chef de Burkina News, garant du respect rigoureux de la Charte Déontologique v3.1.
+Ta mission est d'auditer l'article avant publication pour vérifier :
+1. Rigueur factuelle et probité des affirmations (aucun sensationnalisme, neutralité de ton).
+2. Absence de parti pris ou de biais partisan.
+3. Présence et équilibre du contradictoire (chiffres officiels vérifiés vs réalités de terrain).
+4. Cohérence du niveau d'audit et de confiance (A = officiel vérifié, B = recoupé, C = non audité).
+
+Structure JSON attendue :
+{
+  "score": 92, // note de 0 à 100
+  "verdict": "CONFORME" | "A_REVOIR" | "NON_CONFORME",
+  "confidenceLevel": "high" | "medium" | "low",
+  "summary": "Synthèse de l'évaluation déontologique en 2 phrases...",
+  "strengths": [
+    "Point fort 1...",
+    "Point fort 2..."
+  ],
+  "warnings": [
+    "Avertissement ou formulation à surveiller 1..."
+  ],
+  "recommendations": [
+    "Recommandation concrète pour parfaire l'article..."
+  ],
+  "suggestedConfidence": "high" | "medium" | "low"
+}`,
+            userPrompt: `Audit déontologique de l'article suivant :
+Titre : ${title}
+Chapô : ${excerpt}
+Nombre de sources indiquées : ${sourcesCount}
+Corps de l'article :
+${content.slice(0, 3500)}`
+          });
+
+          if (!aiRes?.data) {
+            throw new Error("Échec de l'audit déontologique par l'IA");
+          }
+
+          return NextResponse.json({
+            success: true,
+            model: aiRes.model,
+            provider: aiRes.provider,
+            data: aiRes.data
+          });
+        } catch (err: any) {
+          console.error('Erreur audit_charte Micum:', err);
+          return NextResponse.json({ error: err.message || "Échec de l'audit déontologique" }, { status: 502 });
         }
       }
 

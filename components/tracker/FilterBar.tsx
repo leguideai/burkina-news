@@ -9,6 +9,7 @@ import {
   getCommunesByCondition,
   getRegionByProvinceName,
 } from '@/data/mock/referentiel-territoire';
+import { trackerFiltersApi } from '@/lib/api/trackerFilters';
 
 export interface FilterState {
   search: string;
@@ -40,6 +41,22 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
   const [communeSearch, setCommuneSearch] = useState('');
   const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
   const [showCommuneDropdown, setShowCommuneDropdown] = useState(false);
+
+  // Dynamic filter lists fetched from API
+  const [dynamicSectors, setDynamicSectors] = useState<string[]>([]);
+  const [dynamicBailleurs, setDynamicBailleurs] = useState<string[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    trackerFiltersApi.getFilters(lang)
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.sectors && res.sectors.length > 0) setDynamicSectors(res.sectors);
+        if (res.bailleurs && res.bailleurs.length > 0) setDynamicBailleurs(res.bailleurs);
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, [lang]);
 
   useEffect(() => {
     if (!filters.province) setProvinceSearch('');
@@ -173,15 +190,9 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
             onChange={(e) => handleChange('sector', e.target.value)}
           >
             <option value="">{lang === 'fr' ? 'Secteurs' : 'Sectors'}</option>
-            <option value="Agriculture">Agriculture</option>
-            <option value="Agro-industrie">Agro-industrie</option>
-            <option value="Eau / Irrigation">Eau / Irrigation</option>
-            <option value="Éducation">Éducation</option>
-            <option value="Énergie">Énergie</option>
-            <option value="Mines">Mines</option>
-            <option value="Routes">Routes</option>
-            <option value="Santé">Santé</option>
-            <option value="Transport">Transport</option>
+            {dynamicSectors.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </select>
 
           {/* Bailleur (Ordre alphabétique) */}
@@ -191,13 +202,9 @@ export default function FilterBar({ onFilter, lang = 'fr' }: FilterBarProps) {
             onChange={(e) => handleChange('bailleur', e.target.value)}
           >
             <option value="">{lang === 'fr' ? 'Bailleurs' : 'Donors'}</option>
-            <option value="BAD">BAD</option>
-            <option value="Banque mondiale">Banque mondiale</option>
-            <option value="CEDEAO">CEDEAO</option>
-            <option value="Coopération bilatérale">Coopération bilatérale</option>
-            <option value="État du Burkina Faso">État du Burkina Faso</option>
-            <option value="Secteur privé">Secteur privé</option>
-            <option value="Union Européenne">Union Européenne</option>
+            {dynamicBailleurs.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
           </select>
 
           {/* Étape 1 : Région (17 régions officielles) */}

@@ -755,6 +755,7 @@ export async function POST(request: Request) {
         const newBailleur: TrackerBailleur = {
           id: `bai-${Date.now()}`,
           name,
+          nameEn: payload.nameEn?.trim() || name,
           code,
           type: payload.type || 'multilateral',
           country: payload.country || '',

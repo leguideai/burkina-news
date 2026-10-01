@@ -60,6 +60,7 @@ export default function AdminTrackerFiltersPage() {
   const [editingBailleur, setEditingBailleur] = useState<TrackerBailleur | null>(null);
   const [bailleurFormData, setBailleurFormData] = useState({
     name: '',
+    nameEn: '',
     code: '',
     type: 'multilateral',
     country: '',
@@ -211,6 +212,7 @@ export default function AdminTrackerFiltersPage() {
       setEditingBailleur(bailleur);
       setBailleurFormData({
         name: bailleur.name,
+        nameEn: bailleur.nameEn || bailleur.name,
         code: bailleur.code,
         type: bailleur.type || 'multilateral',
         country: bailleur.country || '',
@@ -220,6 +222,7 @@ export default function AdminTrackerFiltersPage() {
       setEditingBailleur(null);
       setBailleurFormData({
         name: '',
+        nameEn: '',
         code: '',
         type: 'multilateral',
         country: '',
@@ -500,7 +503,10 @@ export default function AdminTrackerFiltersPage() {
                         {String(idx + 1).padStart(2, '0')}
                       </td>
                       <td className="py-3 px-4 font-bold text-[#141414] font-serif text-sm">
-                        {bailleur.name}
+                        <div>{bailleur.name}</div>
+                        {bailleur.nameEn && bailleur.nameEn !== bailleur.name && (
+                          <div className="text-[11px] font-mono text-[#0b4627] font-normal">EN : {bailleur.nameEn}</div>
+                        )}
                       </td>
                       <td className="py-3 px-4 font-mono text-[11px] capitalize text-[#555555]">
                         <span className="px-2 py-0.5 bg-neutral-100 rounded-md border border-[#e6dfd5]">
@@ -742,25 +748,39 @@ export default function AdminTrackerFiltersPage() {
             </div>
 
             <form onSubmit={handleSaveBailleur} className="space-y-4 text-xs font-mono">
-              <div>
-                <label className="block text-[#141414] font-bold uppercase mb-1">
-                  Nom officiel de l'institution *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex : Banque Ouest Africaine de Développement (BOAD)"
-                  value={bailleurFormData.name}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setBailleurFormData(prev => ({
-                      ...prev,
-                      name: val,
-                      code: prev.code || val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-                    }));
-                  }}
-                  className="w-full px-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-sm font-serif text-[#141414] focus:outline-none focus:border-[#0b4627]"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[#141414] font-bold uppercase mb-1">
+                    Nom officiel (FR) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex : Banque mondiale"
+                    value={bailleurFormData.name}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBailleurFormData(prev => ({
+                        ...prev,
+                        name: val,
+                        code: prev.code || val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+                      }));
+                    }}
+                    className="w-full px-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-sm font-serif text-[#141414] focus:outline-none focus:border-[#0b4627]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#141414] font-bold uppercase mb-1">
+                    Nom officiel (EN)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex : World Bank"
+                    value={bailleurFormData.nameEn}
+                    onChange={(e) => setBailleurFormData(prev => ({ ...prev, nameEn: e.target.value }))}
+                    className="w-full px-3 py-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-sm font-serif text-[#141414] focus:outline-none focus:border-[#0b4627]"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
