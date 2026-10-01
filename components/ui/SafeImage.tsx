@@ -11,7 +11,7 @@ export default function SafeImage({
   alt = '',
   fallbackSrc = '/images/lead.jpeg',
   className,
-  referrerPolicy = 'no-referrer',
+  referrerPolicy,
   loading = 'lazy',
   ...props
 }: SafeImageProps) {

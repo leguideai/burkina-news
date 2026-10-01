@@ -9,6 +9,7 @@ import { trackerApi } from '@/lib/api/tracker';
 import { mapArticleDTOToArticle, mapProjectDTOToProject } from '@/lib/api/mappers';
 import { Article, Project } from '@/data/types';
 import { ArticleDTO } from '@/lib/api/types';
+import { getArticleBySlug } from '@/data/mock/articles';
 import SafeImage from '@/components/ui/SafeImage';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,10 @@ export default async function ArticleDetailPage({
     }
   } catch {
     // API error / Not found
+  }
+
+  if (!article) {
+    article = getArticleBySlug(slug, 'fr') || null;
   }
 
   if (!article) {

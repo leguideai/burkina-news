@@ -86,7 +86,7 @@ export const indicators: Indicator[] = [
     pillar: 'Pilier 4 — Économie productive & Mines',
     pillarEn: 'Pillar 4 — Productive Economy & Mining Sector',
     linkedProjectSlugs: ['complexe-minier-sanbrado', 'raffinerie-nationale-or'],
-    image: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=900&q=80',
+    image: 'https://www.afrik.com/wp-content/uploads/2024/03/lingot-d-or.jpg',
     history: [
       { year: 2022, value: 45.8, source: 'DGMG' },
       { year: 2023, value: 48.3, source: 'DGMG' },
@@ -148,7 +148,7 @@ export const indicators: Indicator[] = [
     pillar: 'Pilier 2 — Capital humain & Éducation',
     pillarEn: 'Pillar 2 — Human Capital & Education',
     linkedProjectSlugs: ['universite-regionale-fada'],
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=85',
+    image: 'https://www.togofirst.com/media/k2/items/cache/57a563bcafe5adb5a476933fe298e364_L.jpg',
     history: [
       { year: 2022, value: 74.6, source: 'MENAPLN' },
       { year: 2023, value: 76.1, source: 'MENAPLN' },
