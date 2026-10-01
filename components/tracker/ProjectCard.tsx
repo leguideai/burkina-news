@@ -18,7 +18,10 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
   const statusLabel = isEn ? PROJECT_STATUS_LABELS_EN[project.currentStatus] : PROJECT_STATUS_LABELS[project.currentStatus];
 
   return (
-    <div className="group bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between h-full rounded-xl overflow-hidden shadow-xs">
+    <Link 
+      href={projectHref}
+      className="group bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all flex flex-col justify-between h-full rounded-xl overflow-hidden shadow-xs cursor-pointer block"
+    >
       <div>
         {/* Miniature Image Header */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
@@ -48,9 +51,7 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
 
           {/* Title */}
           <h3 className="font-bold text-base sm:text-lg font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-2">
-            <Link href={projectHref}>
-              {title}
-            </Link>
+            {title}
           </h3>
 
           <p className="text-xs font-serif text-[#555555] leading-relaxed line-clamp-2 mb-4">
@@ -119,15 +120,14 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
 
         <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-[11px] font-serif text-[#737373]">
           <span>{isEn ? 'Verified on ' : 'Vérifié le '}{new Date(project.lastVerifiedAt).toLocaleDateString(isEn ? 'en-US' : 'fr-FR')}</span>
-          <Link 
-            href={projectHref}
-            className="font-mono font-bold text-xs text-[#0b4627] hover:underline inline-flex items-center gap-1"
+          <span 
+            className="font-mono font-bold text-xs text-[#0b4627] group-hover:underline inline-flex items-center gap-1"
           >
             {isEn ? 'Project File' : 'Fiche'} <ArrowRight size={12} />
-          </Link>
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

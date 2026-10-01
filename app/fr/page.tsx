@@ -284,24 +284,25 @@ export default async function HomePage() {
           </div>
 
           {/* COLUMN 2 (Col 6 / 50%) : LE GRAND DÉCRYPTAGE (THE HERO) (Order 1 on mobile, Order 2 on desktop) */}
-          <div className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0">
+          <Link 
+            href={`/fr/${leadArticle.category}/${leadArticle.slug}`}
+            className="order-1 lg:order-2 lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-[#e6dfd5] lg:pr-8 pb-8 lg:pb-0 group cursor-pointer block"
+          >
             <div className="mb-3">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 border border-[#e6dfd5] rounded-md">
                 Grand Décryptage · Économie
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] leading-[1.18] mb-4">
-              <Link href={`/fr/${leadArticle.category}/${leadArticle.slug}`} className="hover:text-[#0b4627] transition-colors">
-                {leadArticle.title}
-              </Link>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-[1.18] mb-4">
+              {leadArticle.title}
             </h1>
 
             <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5] rounded-xl shadow-xs">
               <img 
                 src={leadArticle.image} 
                 alt={leadArticle.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
 
@@ -311,9 +312,11 @@ export default async function HomePage() {
 
             <div className="pt-3 border-t border-[#e6dfd5] flex flex-wrap justify-between items-center text-xs font-serif text-[#555555]">
               <span>Par {leadArticle.author} · Bobo-Dioulasso</span>
-              <span className="font-mono text-[11px] text-[#0b4627] font-semibold">{leadArticle.sourceCount} sources vérifiées</span>
+              <span className="font-mono text-[11px] text-[#0b4627] font-semibold flex items-center gap-1">
+                {leadArticle.sourceCount} sources vérifiées · <span className="group-hover:underline">Lire l'enquête →</span>
+              </span>
             </div>
-          </div>
+          </Link>
 
           {/* COLUMN 3 (Col 3 / 25%) : ANALYSES & DÉBATS (Order 3 on mobile and desktop) */}
           <div className="order-3 lg:col-span-3 flex flex-col gap-6">
@@ -325,20 +328,25 @@ export default async function HomePage() {
 
             <div className="space-y-5">
               {secondaryArticles.slice(0, 2).map((art) => (
-                <article key={art.id} className="group pb-5 border-b border-[#e6dfd5] last:border-0 last:pb-0">
+                <Link 
+                  key={art.id} 
+                  href={`/fr/${art.category}/${art.slug}`}
+                  className="group pb-5 border-b border-[#e6dfd5] last:border-0 last:pb-0 block cursor-pointer"
+                >
                   <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#0b4627] mb-1">
                     {art.category}
                   </div>
                   <h4 className="text-sm sm:text-base font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-1.5">
-                    <Link href={`/fr/${art.category}/${art.slug}`}>
-                      {art.title}
-                    </Link>
+                    {art.title}
                   </h4>
                   <p className="text-xs font-serif text-[#555555] line-clamp-2 mb-2">
                     {art.excerpt}
                   </p>
-                  <span className="text-[11px] font-mono text-[#0b4627] font-semibold">{art.sourceCount} sources vérifiées</span>
-                </article>
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#0b4627]">
+                    <span className="font-semibold">{art.sourceCount} sources vérifiées</span>
+                    <span className="font-bold group-hover:underline">Lire →</span>
+                  </div>
+                </Link>
               ))}
             </div>
 
@@ -385,32 +393,36 @@ export default async function HomePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#e6dfd5] border border-[#e6dfd5] bg-[#faf8f5]">
             {indicators.map((ind) => (
-              <div key={ind.id} className="p-6 flex flex-col justify-between">
+              <Link 
+                key={ind.id} 
+                href={`/fr/tracker/indicateurs/${ind.code}`}
+                className="p-6 flex flex-col justify-between hover:bg-white transition-colors cursor-pointer group block"
+              >
                 <div>
                   <div className="flex justify-between items-center text-[10px] font-mono text-[#737373] uppercase mb-2">
-                    <span>{ind.code}</span>
+                    <span className="group-hover:text-[#0b4627] font-semibold">{ind.code}</span>
                     <span className="text-[#0b4627] font-bold">2026</span>
                   </div>
 
                   <div className="flex items-baseline gap-1.5 mb-2">
-                    <span className="text-3xl font-bold font-mono text-[#141414] tracking-tight">
+                    <span className="text-3xl font-bold font-mono text-[#141414] tracking-tight group-hover:text-[#0b4627] transition-colors">
                       {ind.currentValue}
                     </span>
                     <span className="text-sm font-mono text-[#555555]">{ind.unit}</span>
                   </div>
 
-                  <h3 className="text-xs font-serif font-bold text-[#141414] leading-snug mb-3">
+                  <h3 className="text-xs font-serif font-bold text-[#141414] leading-snug mb-3 group-hover:text-[#0b4627] transition-colors">
                     {ind.name}
                   </h3>
                 </div>
 
-                <div className="pt-3 border-t border-[#e6dfd5] text-[10px] font-mono text-[#737373] flex justify-between">
+                <div className="pt-3 border-t border-[#e6dfd5] text-[10px] font-mono text-[#737373] flex justify-between items-center">
                   <span>Cible 2030 : {ind.target2030} {ind.unit}</span>
-                  <Link href={`/fr/tracker/indicateurs/${ind.code}`} className="text-[#0b4627] font-bold hover:underline">
+                  <span className="text-[#0b4627] font-bold group-hover:underline flex items-center gap-1">
                     Détail →
-                  </Link>
+                  </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
@@ -472,13 +484,16 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* Field Report */}
-            <article className="border border-[#e6dfd5] bg-[#faf8f5] flex flex-col justify-between hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs">
+            <Link 
+              href={`/fr/chantiers/${terrainArticle.slug}`}
+              className="border border-[#e6dfd5] bg-[#faf8f5] flex flex-col justify-between hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs group cursor-pointer block"
+            >
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                   <img 
                     src={terrainArticle.image || 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=85'} 
                     alt={terrainArticle.title}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
 
@@ -488,10 +503,8 @@ export default async function HomePage() {
                     <span>Enquête</span>
                   </div>
 
-                  <h3 className="text-lg sm:text-xl font-bold font-serif text-[#141414] leading-snug mb-3">
-                    <Link href={`/fr/chantiers/${terrainArticle.slug}`} className="hover:text-[#0b4627]">
-                      {terrainArticle.title}
-                    </Link>
+                  <h3 className="text-lg sm:text-xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-3">
+                    {terrainArticle.title}
                   </h3>
 
                   <p className="text-xs sm:text-sm font-serif text-[#444444] leading-relaxed mb-4">
@@ -503,21 +516,24 @@ export default async function HomePage() {
               <div className="px-6 pb-6 pt-0">
                 <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-serif text-[#555555]">
                   <span>Enquête de terrain · La Rédaction</span>
-                  <Link href={`/fr/chantiers/${terrainArticle.slug}`} className="font-mono font-bold text-xs text-[#0b4627] hover:underline">
+                  <span className="font-mono font-bold text-xs text-[#0b4627] group-hover:underline flex items-center gap-1">
                     Lire le reportage →
-                  </Link>
+                  </span>
                 </div>
               </div>
-            </article>
+            </Link>
 
             {/* Fact Check */}
-            <article className="border border-[#e6dfd5] bg-[#faf8f5] flex flex-col justify-between hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs">
+            <Link 
+              href={`/fr/${factCheckArticle.category}/${factCheckArticle.slug}`}
+              className="border border-[#e6dfd5] bg-[#faf8f5] flex flex-col justify-between hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs group cursor-pointer block"
+            >
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
                   <img 
                     src={factCheckArticle.image || 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=85'} 
                     alt={factCheckArticle.title}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
 
@@ -527,10 +543,8 @@ export default async function HomePage() {
                     <span className="text-[#c2410c] bg-white px-2 py-0.5 border border-[#e6dfd5] rounded-md">Vrai mais incomplet</span>
                   </div>
 
-                  <h3 className="text-lg sm:text-xl font-bold font-serif text-[#141414] leading-snug mb-3">
-                    <Link href={`/fr/securite/${factCheckArticle.slug}`} className="hover:text-[#0b4627]">
-                      {factCheckArticle.title}
-                    </Link>
+                  <h3 className="text-lg sm:text-xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug mb-3">
+                    {factCheckArticle.title}
                   </h3>
 
                   <p className="text-xs sm:text-sm font-serif text-[#444444] leading-relaxed mb-4">
@@ -542,12 +556,12 @@ export default async function HomePage() {
               <div className="px-6 pb-6 pt-0">
                 <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center text-xs font-serif text-[#555555]">
                   <span className="text-[#0b4627] font-semibold">{factCheckArticle.sourceCount} sources confrontées</span>
-                  <Link href={`/fr/${factCheckArticle.category}/${factCheckArticle.slug}`} className="font-mono font-bold text-xs text-[#0b4627] hover:underline">
+                  <span className="font-mono font-bold text-xs text-[#0b4627] group-hover:underline flex items-center gap-1">
                     Voir l'analyse des chiffres →
-                  </Link>
+                  </span>
                 </div>
               </div>
-            </article>
+            </Link>
 
           </div>
 

@@ -77,9 +77,10 @@ export default async function FilPageEn() {
                 const displayTitle = brief.title_en || brief.title;
 
                 return (
-                  <article 
+                  <Link 
                     key={brief.id} 
-                    className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all p-6 sm:p-8 rounded-xl shadow-xs"
+                    href={`/en/fil/${brief.slug}`}
+                    className="bg-white border border-[#e6dfd5] hover:border-[#141414] transition-all p-6 sm:p-8 rounded-xl shadow-xs group cursor-pointer block"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-[#e6dfd5]">
                       <div className="flex items-center gap-2">
@@ -101,7 +102,7 @@ export default async function FilPageEn() {
                         <img 
                           src={brief.image} 
                           alt={`Cover week ${brief.week_number}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
                     )}
@@ -124,14 +125,11 @@ export default async function FilPageEn() {
                       <span className="text-[11px] font-serif text-[#737373] italic">
                         Official primary sources cross-checked
                       </span>
-                      <Link 
-                        href={`/en/fil/${brief.slug}`}
-                        className="font-mono font-bold text-xs text-[#0b4627] hover:underline inline-flex items-center gap-1"
-                      >
+                      <span className="font-mono font-bold text-xs text-[#0b4627] group-hover:underline inline-flex items-center gap-1">
                         Read all {brief.facts?.length || 10} facts <ArrowRight size={12} />
-                      </Link>
+                      </span>
                     </div>
-                  </article>
+                  </Link>
                 );
               })}
             </div>

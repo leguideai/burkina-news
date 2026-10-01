@@ -262,7 +262,11 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
               {relatedProjects.length > 0 ? (
                 <div className="space-y-4">
                   {relatedProjects.map(proj => (
-                    <div key={proj.id} className="pb-3 border-b border-[#e6dfd5] last:border-0 last:pb-0">
+                    <Link 
+                      key={proj.id} 
+                      href={`/en/tracker/projets/${proj.slug}`}
+                      className="block pb-3 border-b border-[#e6dfd5] last:border-0 last:pb-0 group cursor-pointer"
+                    >
                       <div className="flex items-center justify-between text-[10px] font-mono text-[#737373] mb-1">
                         <div className="flex items-center gap-1.5">
                           {proj.code && (
@@ -274,12 +278,10 @@ export default async function IndicatorDetailPageEn({ params }: { params: Promis
                         </div>
                         <StatusBadge status={proj.currentStatus} size="sm" lang="en" />
                       </div>
-                      <h4 className="font-serif font-bold text-xs text-[#141414] hover:text-[#0b4627] mb-1 leading-snug">
-                        <Link href={`/en/tracker/projets/${proj.slug}`}>
-                          {proj.title}
-                        </Link>
+                      <h4 className="font-serif font-bold text-xs text-[#141414] group-hover:text-[#0b4627] mb-1 leading-snug transition-colors">
+                        {proj.title}
                       </h4>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (

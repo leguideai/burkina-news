@@ -76,7 +76,11 @@ export default async function FilPage() {
                 });
 
                 return (
-                  <article key={brief.id} className="bg-white border border-[#e6dfd5] p-6 hover:border-[#141414] transition-colors rounded-xl shadow-xs">
+                  <Link 
+                    key={brief.id} 
+                    href={`/fr/fil/${brief.slug}`}
+                    className="bg-white border border-[#e6dfd5] p-6 hover:border-[#141414] transition-colors rounded-xl shadow-xs group cursor-pointer block"
+                  >
                     <div className="flex flex-wrap justify-between items-center gap-2 pb-3 mb-4 border-b border-[#e6dfd5]">
                       <div className="flex items-center gap-2">
                         <span className="bg-[#0b4627] text-white px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-md">
@@ -95,16 +99,14 @@ export default async function FilPage() {
                           <img 
                             src={brief.image} 
                             alt={brief.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
                       )}
                       
                       <div className="sm:w-2/3 flex flex-col justify-between">
-                        <h2 className="text-xl font-bold font-serif text-[#141414] hover:text-[#0b4627] leading-snug mb-3">
-                          <Link href={`/fr/fil/${brief.slug}`}>
-                            {brief.title}
-                          </Link>
+                        <h2 className="text-xl font-bold font-serif text-[#141414] group-hover:text-[#0b4627] leading-snug mb-3 transition-colors">
+                          {brief.title}
                         </h2>
 
                         <ul className="space-y-2 text-xs font-serif text-[#444444] divide-y divide-neutral-100">
@@ -120,14 +122,11 @@ export default async function FilPage() {
 
                     <div className="pt-3 border-t border-[#e6dfd5] flex justify-between items-center">
                       <span className="text-[11px] font-serif text-[#737373]">Sources officielles confrontées</span>
-                      <Link 
-                        href={`/fr/fil/${brief.slug}`}
-                        className="font-mono font-bold text-xs text-[#0b4627] hover:underline inline-flex items-center gap-1"
-                      >
+                      <span className="font-mono font-bold text-xs text-[#0b4627] group-hover:underline inline-flex items-center gap-1">
                         Consulter les 10 faits <ArrowRight size={12} />
-                      </Link>
+                      </span>
                     </div>
-                  </article>
+                  </Link>
                 );
               })}
             </div>

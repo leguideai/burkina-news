@@ -152,7 +152,14 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4 text-xs shrink-0">
-            <Link href={methodeHref} className="hover:text-[#141414] transition-colors hidden sm:inline">
+            <Link 
+              href={methodeHref} 
+              className={`transition-colors hidden sm:inline px-2 py-0.5 rounded-md ${
+                pathname === methodeHref || pathname.startsWith(methodeHref + '/')
+                  ? 'bg-[#0b4627] text-white font-bold shadow-xs'
+                  : 'text-[#555555] hover:text-[#141414]'
+              }`}
+            >
               {strings.methodLink}
             </Link>
             <span className="text-[#d4cece] hidden sm:inline">·</span>
@@ -162,7 +169,11 @@ export default function Header() {
               <Tooltip position="bottom" content="Passer l'interface en français">
                 <Link 
                   href={frUrl} 
-                  className={`py-0.5 px-1 rounded-md transition-colors ${!isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+                  className={`px-2 py-0.5 rounded-md transition-colors ${
+                    !isEn 
+                      ? 'bg-[#0b4627] text-white font-bold shadow-xs' 
+                      : 'text-[#737373] hover:text-[#141414] hover:bg-[#e6dfd5]/40'
+                  }`}
                   aria-label="Passer en français"
                 >
                   FR
@@ -172,7 +183,11 @@ export default function Header() {
               <Tooltip position="bottom" content="Switch interface to English">
                 <Link 
                   href={enUrl} 
-                  className={`py-0.5 px-1 rounded-md transition-colors ${isEn ? 'text-[#0b4627] font-extrabold underline decoration-2 underline-offset-2' : 'text-neutral-400 hover:text-neutral-700'}`}
+                  className={`px-2 py-0.5 rounded-md transition-colors ${
+                    isEn 
+                      ? 'bg-[#0b4627] text-white font-bold shadow-xs' 
+                      : 'text-[#737373] hover:text-[#141414] hover:bg-[#e6dfd5]/40'
+                  }`}
                   aria-label="Switch to English"
                 >
                   EN
@@ -279,17 +294,24 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-8 flex justify-between items-center relative">
           
           <div className="flex items-center">
-            <Link 
-              href={homeHref} 
-              className={`py-2.5 px-4 text-xs font-bold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] ${
-                pathname === homeHref ? 'text-[#0b4627] bg-[#f4eee3]' : 'text-[#141414] hover:bg-neutral-50'
-              }`}
-            >
-              {isEn ? "Front Page" : "À la une"}
-            </Link>
+            {(() => {
+              const isHomeActive = pathname === homeHref;
+              return (
+                <Link 
+                  href={homeHref} 
+                  className={`py-2.5 px-4 text-xs font-bold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] ${
+                    isHomeActive 
+                      ? 'bg-[#0b4627] text-white shadow-xs' 
+                      : 'text-[#141414] bg-white hover:bg-neutral-50'
+                  }`}
+                >
+                  {isEn ? "Front Page" : "À la une"}
+                </Link>
+              );
+            })()}
 
             {categories.map((cat) => {
-              const active = pathname.startsWith(cat.href);
+              const active = pathname === cat.href || pathname.startsWith(cat.href + '/');
               const catCode = cat.href.split('/').pop() || '';
               const isHovered = hoveredCategoryCode === catCode;
 
@@ -302,17 +324,21 @@ export default function Header() {
                 >
                   <Link
                     href={cat.href}
-                    className={`py-2.5 px-3.5 text-xs font-semibold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] flex items-center gap-1.5 ${
-                      isHovered || active 
+                    className={`py-2.5 px-3.5 text-xs uppercase tracking-wider transition-colors border-r border-[#e6dfd5] flex items-center gap-1.5 ${
+                      active 
+                        ? 'bg-[#0b4627] text-white font-bold shadow-xs' 
+                        : isHovered 
                         ? 'text-[#0b4627] bg-[#f4eee3] font-bold' 
-                        : 'text-[#333333] hover:text-[#141414] hover:bg-neutral-50'
+                        : 'text-[#333333] hover:text-[#141414] bg-white hover:bg-neutral-50 font-semibold'
                     }`}
                   >
                     <span>{cat.label}</span>
                     <ChevronDown 
                       size={11} 
                       className={`transition-transform duration-200 ${
-                        isHovered 
+                        active 
+                          ? 'text-white' 
+                          : isHovered 
                           ? 'text-[#0b4627] rotate-180' 
                           : 'text-[#888888]'
                       }`} 
@@ -322,28 +348,71 @@ export default function Header() {
               );
             })}
 
-            <Link 
-              href={trackerHref} 
-              className={`py-2.5 px-4 text-xs font-bold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] ${
-                pathname.startsWith(trackerHref) ? 'text-[#0b4627] bg-[#f4eee3]' : 'text-[#0b4627] hover:bg-neutral-50'
-              }`}
-            >
-              {strings.trackerBtn}
-            </Link>
+            {(() => {
+              const isTrackerActive = (pathname === trackerHref || pathname.startsWith(trackerHref + '/')) && !pathname.startsWith(indicateursHref);
+              return (
+                <Link 
+                  href={trackerHref} 
+                  className={`py-2.5 px-4 text-xs font-bold uppercase tracking-wider transition-colors border-r border-[#e6dfd5] ${
+                    isTrackerActive 
+                      ? 'bg-[#0b4627] text-white shadow-xs' 
+                      : 'text-[#0b4627] bg-white hover:bg-[#f4eee3]/60'
+                  }`}
+                >
+                  {strings.trackerBtn}
+                </Link>
+              );
+            })()}
           </div>
 
-          <div className="flex items-center text-xs font-serif text-[#555555]">
-            <Link href={numerosHref} className="py-2.5 px-3 hover:text-[#141414] transition-colors">
-              {isEn ? "Issues" : "Les Numéros"}
-            </Link>
+          <div className="flex items-center text-xs font-serif text-[#555555] gap-1 py-1">
+            {(() => {
+              const isNumerosActive = pathname === numerosHref || pathname.startsWith(numerosHref + '/');
+              return (
+                <Link 
+                  href={numerosHref} 
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    isNumerosActive 
+                      ? 'bg-[#0b4627] text-white font-bold shadow-xs' 
+                      : 'hover:text-[#141414] hover:bg-[#faf8f5]'
+                  }`}
+                >
+                  {isEn ? "Issues" : "Les Numéros"}
+                </Link>
+              );
+            })()}
             <span className="text-neutral-300">/</span>
-            <Link href={filHref} className="py-2.5 px-3 hover:text-[#141414] transition-colors">
-              {isEn ? "The Brief" : "Le Fil"}
-            </Link>
+            {(() => {
+              const isFilActive = pathname === filHref || pathname.startsWith(filHref + '/');
+              return (
+                <Link 
+                  href={filHref} 
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    isFilActive 
+                      ? 'bg-[#0b4627] text-white font-bold shadow-xs' 
+                      : 'hover:text-[#141414] hover:bg-[#faf8f5]'
+                  }`}
+                >
+                  {isEn ? "The Brief" : "Le Fil"}
+                </Link>
+              );
+            })()}
             <span className="text-neutral-300">/</span>
-            <Link href={indicateursHref} className="py-2.5 px-3 hover:text-[#0b4627] font-semibold transition-colors">
-              {isEn ? "RELANCE Barometer" : "Baromètre RELANCE"}
-            </Link>
+            {(() => {
+              const isIndicateursActive = pathname === indicateursHref || pathname.startsWith(indicateursHref + '/');
+              return (
+                <Link 
+                  href={indicateursHref} 
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                    isIndicateursActive 
+                      ? 'bg-[#0b4627] text-white font-bold shadow-xs' 
+                      : 'text-[#0b4627] hover:bg-[#f4eee3]/60'
+                  }`}
+                >
+                  {isEn ? "RELANCE Barometer" : "Baromètre RELANCE"}
+                </Link>
+              );
+            })()}
           </div>
 
           {/* Desktop Mega Menu Dropdown : S'arrête aux marges de la page (left-8 right-8) et zéro tremblement */}
@@ -383,7 +452,7 @@ export default function Header() {
                         <Link
                           key={sub.code}
                           href={`${activeHoverCategory?.href}?sub=${sub.code}`}
-                          className="group/item flex items-center justify-between py-2 px-3 rounded-md text-[14px] font-medium text-[#222222] hover:text-[#0b4627] hover:bg-[#faf8f5] transition-all duration-150"
+                          className="group/item flex items-center justify-between py-2 px-3 rounded-lg text-[14px] font-medium text-[#222222] hover:text-[#0b4627] hover:bg-[#faf8f5] transition-all duration-150"
                         >
                           <span className="group-hover/item:translate-x-1 transition-transform duration-150">
                             {isEn ? sub.nameEn : sub.nameFr}
@@ -421,14 +490,14 @@ export default function Header() {
               <Link 
                 href={frUrl} 
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-1.5 font-bold rounded-md transition-colors ${!isEn ? 'bg-[#0b4627] text-white' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
+                className={`px-3 py-1.5 font-bold rounded-lg transition-colors ${!isEn ? 'bg-[#0b4627] text-white shadow-xs' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
               >
                 FR
               </Link>
               <Link 
                 href={enUrl} 
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-1.5 font-bold rounded-md transition-colors ${isEn ? 'bg-[#0b4627] text-white' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
+                className={`px-3 py-1.5 font-bold rounded-lg transition-colors ${isEn ? 'bg-[#0b4627] text-white shadow-xs' : 'bg-white text-[#141414] border border-[#e6dfd5]'}`}
               >
                 EN
               </Link>
@@ -437,40 +506,98 @@ export default function Header() {
 
           {/* Core Products / Main Sections on mobile */}
           <div className="grid grid-cols-2 gap-2 pt-1">
-            <Link 
-              href={trackerHref} 
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 bg-[#f4eee3] border border-[#0b4627]/30 text-[#0b4627] font-mono font-bold text-xs uppercase rounded-xl shadow-xs"
-            >
-              <SlidersHorizontal size={14} />
-              <span>{isEn ? "The Tracker" : "Le Tracker"}</span>
-            </Link>
+            {/* Front Page / À la une */}
+            {(() => {
+              const isHomeActive = pathname === homeHref;
+              return (
+                <Link 
+                  href={homeHref} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`col-span-2 flex items-center justify-between p-3 font-mono font-bold text-xs uppercase rounded-xl transition-colors shadow-xs ${
+                    isHomeActive 
+                      ? 'bg-[#0b4627] text-white border-2 border-[#0b4627] shadow-sm' 
+                      : 'bg-white border border-[#e6dfd5] text-[#141414] hover:bg-neutral-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${isHomeActive ? 'bg-white' : 'bg-[#0b4627]'}`} />
+                    <span>{isEn ? "Front Page (À la une)" : "À la une (Accueil)"}</span>
+                  </div>
+                  <ArrowRight size={14} className={isHomeActive ? 'text-white' : 'text-[#0b4627]'} />
+                </Link>
+              );
+            })()}
 
-            <Link 
-              href={numerosHref} 
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50 rounded-xl shadow-xs"
-            >
-              <BookOpen size={14} />
-              <span>{isEn ? "Monthly Issues" : "Les Numéros"}</span>
-            </Link>
+            {(() => {
+              const isTrackerActive = (pathname === trackerHref || pathname.startsWith(trackerHref + '/')) && !pathname.startsWith(indicateursHref);
+              return (
+                <Link 
+                  href={trackerHref} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 p-3 font-mono font-bold text-xs uppercase rounded-xl transition-colors shadow-xs ${
+                    isTrackerActive 
+                      ? 'bg-[#0b4627] text-white border-2 border-[#0b4627] shadow-sm' 
+                      : 'bg-white border border-[#e6dfd5] text-[#141414] hover:bg-neutral-50'
+                  }`}
+                >
+                  <SlidersHorizontal size={14} className={isTrackerActive ? 'text-white' : 'text-[#0b4627]'} />
+                  <span>{isEn ? "The Tracker" : "Le Tracker"}</span>
+                </Link>
+              );
+            })()}
 
-            <Link 
-              href={filHref} 
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50 rounded-xl shadow-xs"
-            >
-              <Newspaper size={14} />
-              <span>{isEn ? "The Brief (Weekly)" : "Le Fil Hebdo"}</span>
-            </Link>
+            {(() => {
+              const isNumerosActive = pathname === numerosHref || pathname.startsWith(numerosHref + '/');
+              return (
+                <Link 
+                  href={numerosHref} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 p-3 font-mono font-bold text-xs uppercase rounded-xl transition-colors shadow-xs ${
+                    isNumerosActive 
+                      ? 'bg-[#0b4627] text-white border-2 border-[#0b4627] shadow-sm' 
+                      : 'bg-white border border-[#e6dfd5] text-[#141414] hover:bg-neutral-50'
+                  }`}
+                >
+                  <BookOpen size={14} className={isNumerosActive ? 'text-white' : 'text-[#141414]'} />
+                  <span>{isEn ? "Monthly Issues" : "Les Numéros"}</span>
+                </Link>
+              );
+            })()}
 
-            <Link 
-              href={indicateursHref} 
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 bg-white border border-[#e6dfd5] text-[#141414] font-mono font-bold text-xs uppercase hover:bg-neutral-50 rounded-xl shadow-xs"
-            >
-              <span className="text-[#0b4627] font-bold">RELANCE</span>
-            </Link>
+            {(() => {
+              const isFilActive = pathname === filHref || pathname.startsWith(filHref + '/');
+              return (
+                <Link 
+                  href={filHref} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 p-3 font-mono font-bold text-xs uppercase rounded-xl transition-colors shadow-xs ${
+                    isFilActive 
+                      ? 'bg-[#0b4627] text-white border-2 border-[#0b4627] shadow-sm' 
+                      : 'bg-white border border-[#e6dfd5] text-[#141414] hover:bg-neutral-50'
+                  }`}
+                >
+                  <Newspaper size={14} className={isFilActive ? 'text-white' : 'text-[#141414]'} />
+                  <span>{isEn ? "The Brief (Weekly)" : "Le Fil Hebdo"}</span>
+                </Link>
+              );
+            })()}
+
+            {(() => {
+              const isIndicateursActive = pathname === indicateursHref || pathname.startsWith(indicateursHref + '/');
+              return (
+                <Link 
+                  href={indicateursHref} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 p-3 font-mono font-bold text-xs uppercase rounded-xl transition-colors shadow-xs ${
+                    isIndicateursActive 
+                      ? 'bg-[#0b4627] text-white border-2 border-[#0b4627] shadow-sm' 
+                      : 'bg-white border border-[#e6dfd5] text-[#141414] hover:bg-neutral-50'
+                  }`}
+                >
+                  <span className={isIndicateursActive ? 'text-white font-bold' : 'text-[#0b4627] font-bold'}>RELANCE</span>
+                </Link>
+              );
+            })()}
           </div>
 
           {/* Editorial Categories with Sub-Categories */}
@@ -479,38 +606,57 @@ export default function Header() {
               {isEn ? "Investigative Sections & Sub-Rubrics" : "Rubriques & Sous-Rubriques d'Enquête"}
             </div>
             <div className="space-y-2">
-              {activeCategoriesData.map((cat) => (
-                <div key={cat.code} className="border border-[#e6dfd5] bg-[#faf8f5] p-2.5 rounded-xl shadow-xs">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <Link
-                      href={isEn ? `/en/${cat.code}` : `/fr/${cat.code}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="font-mono text-xs font-bold uppercase text-[#0b4627] hover:underline"
-                    >
-                      {isEn ? cat.nameEn : cat.nameFr}
-                    </Link>
-                    <Link
-                      href={isEn ? `/en/${cat.code}` : `/fr/${cat.code}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="text-[10px] font-mono text-[#737373] hover:text-[#141414]"
-                    >
-                      {isEn ? "View all →" : "Voir tout →"}
-                    </Link>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {cat.subCategories?.map((sub) => (
+              {activeCategoriesData.map((cat) => {
+                const catHref = isEn ? `/en/${cat.code}` : `/fr/${cat.code}`;
+                const isCatActive = pathname === catHref || pathname.startsWith(catHref + '/');
+                return (
+                  <div 
+                    key={cat.code} 
+                    className={`p-2.5 rounded-xl shadow-xs transition-colors ${
+                      isCatActive 
+                        ? 'border-2 border-[#0b4627] bg-[#f4eee3]' 
+                        : 'border border-[#e6dfd5] bg-[#faf8f5]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
                       <Link
-                        key={sub.code}
-                        href={isEn ? `/en/${cat.code}?sub=${sub.code}` : `/fr/${cat.code}?sub=${sub.code}`}
+                        href={catHref}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="text-[11px] px-2 py-1 bg-white border border-[#e6dfd5] rounded-md text-[#333333] hover:border-[#0b4627] hover:text-[#0b4627] transition-colors"
+                        className={`font-mono text-xs font-bold uppercase flex items-center gap-1.5 ${
+                          isCatActive ? 'text-[#0b4627]' : 'text-[#141414] hover:text-[#0b4627]'
+                        }`}
                       >
-                        {isEn ? sub.nameEn : sub.nameFr}
+                        {isCatActive && <span className="w-2 h-2 rounded-full bg-[#0b4627] inline-block shrink-0" />}
+                        <span>{isEn ? cat.nameEn : cat.nameFr}</span>
                       </Link>
-                    ))}
+                      <Link
+                        href={catHref}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`text-[10px] font-mono ${
+                          isCatActive ? 'text-[#0b4627] font-bold' : 'text-[#737373] hover:text-[#141414]'
+                        }`}
+                      >
+                        {isEn ? "View all →" : "Voir tout →"}
+                      </Link>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {cat.subCategories?.map((sub) => {
+                        const subHref = `${catHref}?sub=${sub.code}`;
+                        return (
+                          <Link
+                            key={sub.code}
+                            href={subHref}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-[11px] px-2 py-1 bg-white border border-[#e6dfd5] rounded-lg text-[#333333] hover:border-[#0b4627] hover:text-[#0b4627] transition-colors"
+                          >
+                            {isEn ? sub.nameEn : sub.nameFr}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

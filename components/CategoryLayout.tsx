@@ -159,7 +159,7 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
             <Link
               href={pathname}
               scroll={false}
-              className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 rounded-xs cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0 rounded-lg cursor-pointer ${
                 selectedSubCategory === 'all'
                   ? 'bg-[#0b4627] text-white font-bold shadow-xs'
                   : 'bg-[#faf8f5] text-[#141414] border border-[#e6dfd5] hover:border-[#141414]'
@@ -312,10 +312,10 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
                     <Link 
                       key={ind.id} 
                       href={`/${isEn ? 'en' : 'fr'}/tracker/indicateurs/${ind.code}`}
-                      className="block p-2.5 bg-[#faf8f5] border border-[#e6dfd5] hover:border-[#141414] transition-colors rounded-lg"
+                      className="block p-2.5 bg-[#faf8f5] border border-[#e6dfd5] hover:border-[#141414] transition-colors rounded-lg group cursor-pointer"
                     >
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-serif font-bold text-[#141414]">{ind.name}</span>
+                        <span className="font-serif font-bold text-[#141414] group-hover:text-[#0b4627] transition-colors">{ind.name}</span>
                         <span className="font-mono font-bold text-[#0b4627]">{ind.currentValue} {ind.unit}</span>
                       </div>
                       <span className="text-[10px] font-mono text-[#737373] mt-1 block">

@@ -281,12 +281,12 @@ function SearchContent() {
                 <Link 
                   key={ind.id} 
                   href={`/fr/tracker/indicateurs/${ind.code}`}
-                  className="block p-4 hover:bg-[#faf8f5] transition-colors"
+                  className="block p-4 hover:bg-[#faf8f5] transition-colors group cursor-pointer"
                 >
                   <div className="flex justify-between items-start">
                     <div>
                       <span className="text-[10px] font-mono font-bold uppercase text-[#0b4627]">{ind.code} · {ind.category}</span>
-                      <h3 className="font-serif font-bold text-sm text-[#141414] mb-1">{ind.name}</h3>
+                      <h3 className="font-serif font-bold text-sm text-[#141414] group-hover:text-[#0b4627] mb-1 transition-colors">{ind.name}</h3>
                       <p className="font-serif text-xs text-[#555555] line-clamp-1">{ind.definition}</p>
                     </div>
                     <div className="text-right shrink-0 ml-4">

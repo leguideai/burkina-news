@@ -24,7 +24,10 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
   // 1. LEAD VARIANT (Main centerpiece story)
   if (variant === 'lead') {
     return (
-      <article className="group flex flex-col bg-white border border-[#e6dfd5] p-6 sm:p-8 rounded-2xl overflow-hidden shadow-xs">
+      <Link 
+        href={articleHref}
+        className="group flex flex-col bg-white border border-[#e6dfd5] hover:border-[#141414] p-6 sm:p-8 rounded-2xl overflow-hidden shadow-xs transition-colors cursor-pointer block"
+      >
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100 mb-6 rounded-xl">
           <SafeImage 
             src={imageSrc} 
@@ -51,9 +54,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
         </div>
 
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#141414] leading-[1.18] mb-4 group-hover:text-[#0b4627] transition-colors">
-          <Link href={articleHref}>
-            {title}
-          </Link>
+          {title}
         </h2>
 
         <p className="text-sm sm:text-base font-serif text-[#444444] leading-relaxed mb-6">
@@ -64,19 +65,22 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           <span className="text-[#555555] italic">
             {isEn ? "Newsroom Investigation · Bobo-Dioulasso" : "Enquête Rédactionnelle · Bobo-Dioulasso"}
           </span>
-          <Link href={articleHref} className="font-bold text-[#0b4627] hover:underline flex items-center gap-1">
+          <span className="font-bold text-[#0b4627] group-hover:underline flex items-center gap-1">
             <span>{isEn ? "Read investigation" : "Lire l'enquête"}</span>
             <ArrowRight size={13} />
-          </Link>
+          </span>
         </div>
-      </article>
+      </Link>
     );
   }
 
   // 2. HORIZONTAL VARIANT (Classic two-column)
   if (variant === 'horizontal') {
     return (
-      <article className="group flex flex-col sm:flex-row gap-5 p-4 bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs">
+      <Link 
+        href={articleHref}
+        className="group flex flex-col sm:flex-row gap-5 p-4 bg-white border border-[#e6dfd5] hover:border-[#141414] transition-colors rounded-xl overflow-hidden shadow-xs cursor-pointer block"
+      >
         <div className="sm:w-1/3 aspect-[4/3] overflow-hidden bg-neutral-100 shrink-0 rounded-lg">
           <SafeImage 
             src={imageSrc} 
@@ -91,16 +95,14 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
               {subCategoryName && (
                 <>
                   <span className="text-[#a3a3a3]">/</span>
-                  <span className="bg-[#f4eee3] text-[#0b4627] px-1.5 py-0.2 border border-[#e6dfd5]">
+                  <span className="bg-[#f4eee3] text-[#0b4627] px-1.5 py-0.2 border border-[#e6dfd5] rounded-sm">
                     {subCategoryName}
                   </span>
                 </>
               )}
             </div>
             <h3 className="text-base font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">
-              <Link href={articleHref}>
-                {title}
-              </Link>
+              {title}
             </h3>
             <p className="text-xs font-serif text-[#555555] line-clamp-2 mb-2">
               {excerpt}
@@ -108,19 +110,22 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           </div>
           <div className="text-[11px] text-[#0b4627] flex justify-between items-center pt-2 border-t border-neutral-100 font-mono">
             <span className="font-semibold">{verifiedSourcesLabel}</span>
-            <span className="text-[#737373] group-hover:text-[#0b4627] font-bold">
+            <span className="text-[#737373] group-hover:text-[#0b4627] font-bold group-hover:underline">
               {isEn ? "Read →" : "Lire →"}
             </span>
           </div>
         </div>
-      </article>
+      </Link>
     );
   }
 
   // 3. COMPACT VARIANT (With photographic evidence thumbnail)
   if (variant === 'compact') {
     return (
-      <article className="group flex gap-3 pb-4 mb-4 border-b border-[#e6dfd5] last:border-0 last:pb-0 last:mb-0 items-start">
+      <Link 
+        href={articleHref}
+        className="group flex gap-3 pb-4 mb-4 border-b border-[#e6dfd5] last:border-0 last:pb-0 last:mb-0 items-start cursor-pointer block hover:bg-[#faf8f5] p-2 rounded-lg transition-colors"
+      >
         <div className="w-20 h-16 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-lg">
           <SafeImage 
             src={imageSrc} 
@@ -141,19 +146,20 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
             )}
           </div>
           <h4 className="text-xs font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-1">
-            <Link href={articleHref}>
-              {title}
-            </Link>
+            {title}
           </h4>
           <span className="text-[10px] font-mono text-[#0b4627] font-semibold">{verifiedSourcesLabel}</span>
         </div>
-      </article>
+      </Link>
     );
   }
 
   // 4. DEFAULT CARD (Grid)
   return (
-    <article className="group flex flex-col bg-white border border-[#e6dfd5] p-5 hover:border-[#141414] transition-colors h-full rounded-xl overflow-hidden shadow-xs">
+    <Link 
+      href={articleHref}
+      className="group flex flex-col bg-white border border-[#e6dfd5] p-5 hover:border-[#141414] transition-colors h-full rounded-xl overflow-hidden shadow-xs cursor-pointer block"
+    >
       <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 rounded-lg">
         <SafeImage 
           src={imageSrc} 
@@ -170,7 +176,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
               {subCategoryName && (
                 <>
                   <span className="text-[#a3a3a3]">/</span>
-                  <span className="bg-[#f4eee3] text-[#0b4627] font-semibold px-1.5 py-0.5 border border-[#e6dfd5]">
+                  <span className="bg-[#f4eee3] text-[#0b4627] font-semibold px-1.5 py-0.5 border border-[#e6dfd5] rounded-sm">
                     {subCategoryName}
                   </span>
                 </>
@@ -179,9 +185,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           </div>
 
           <h3 className="text-lg font-bold font-serif text-[#141414] group-hover:text-[#0b4627] transition-colors leading-snug line-clamp-2 mb-2">
-            <Link href={articleHref}>
-              {title}
-            </Link>
+            {title}
           </h3>
 
           <p className="text-xs font-serif text-[#555555] leading-relaxed line-clamp-3 mb-4">
@@ -196,7 +200,7 @@ export default function ArticleCard({ article, variant = 'default', lang = 'fr' 
           </span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 

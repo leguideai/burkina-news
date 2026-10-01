@@ -326,7 +326,7 @@ function SearchContentEn() {
                     <Link
                       key={ind.code}
                       href={`/en/tracker/indicateurs/${ind.code}`}
-                      className="block p-5 bg-white border border-[#e6dfd5] rounded-xl shadow-xs hover:border-[#141414] transition-colors"
+                      className="block p-5 bg-white border border-[#e6dfd5] rounded-xl shadow-xs hover:border-[#141414] transition-colors group cursor-pointer"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <span className="text-[10px] font-mono font-bold uppercase text-[#0b4627] bg-[#f4eee3] px-2 py-0.5 rounded-md border border-[#e6dfd5]">
@@ -336,7 +336,7 @@ function SearchContentEn() {
                           {ind.currentValue} {ind.unit}
                         </span>
                       </div>
-                      <h3 className="font-serif font-bold text-base text-[#141414] mb-2 leading-snug">
+                      <h3 className="font-serif font-bold text-base text-[#141414] group-hover:text-[#0b4627] mb-2 leading-snug transition-colors">
                         {ind.nameEn || ind.name}
                       </h3>
                       <p className="text-xs font-serif text-[#555555] line-clamp-2">

@@ -421,7 +421,7 @@ export default function TrackerPage() {
             <div className="hidden sm:flex items-center border border-[#e6dfd5] p-0.5 bg-[#faf8f5] rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white text-[#0b4627] shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-[#0b4627] text-white shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
                 aria-label="Vue Grille"
                 title="Affichage en fiches"
               >
@@ -429,7 +429,7 @@ export default function TrackerPage() {
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white text-[#0b4627] shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-[#0b4627] text-white shadow-xs' : 'text-[#737373] hover:text-[#141414]'}`}
                 aria-label="Vue Tableau"
                 title="Affichage en tableau"
               >
@@ -455,7 +455,7 @@ export default function TrackerPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Main Projects Section (Col 8) */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8 min-w-0 w-full">
             
             {/* Results Count Strip */}
             <div className="flex items-center justify-between text-xs font-mono text-[#555555] mb-4 px-1">
@@ -477,32 +477,32 @@ export default function TrackerPage() {
                 </div>
               ) : (
                 /* TABLE AUDIT VIEW WITH SCROLL SAFETY */
-                <div className="mb-12">
+                <div className="mb-12 min-w-0 w-full">
                   <div className="sm:hidden text-[10px] font-mono text-[#737373] text-right mb-1">
                     ↔ Faites glisser le tableau pour voir toutes les colonnes
                   </div>
-                  <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-x-auto">
-                    <table className="w-full min-w-[720px] text-left border-collapse text-xs font-serif">
+                  <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-x-auto w-full">
+                    <table className="w-full text-left border-collapse text-xs font-serif min-w-[600px]">
                     <thead>
                       <tr className="border-b border-[#141414] bg-[#faf8f5] text-[10px] font-mono uppercase text-[#737373]">
-                        <th className="py-2.5 px-3">Statut</th>
-                        <th className="py-2.5 px-3">Projet & Description</th>
-                        <th className="py-2.5 px-3">Secteur</th>
-                        <th className="py-2.5 px-3">Région</th>
-                        <th className="py-2.5 px-3">Financement</th>
-                        <th className="py-2.5 px-3">Vérification</th>
-                        <th className="py-2.5 px-3 text-right">Dossier</th>
+                        <th className="py-2.5 px-2.5 whitespace-nowrap">Statut</th>
+                        <th className="py-2.5 px-3 min-w-[180px]">Projet & Description</th>
+                        <th className="py-2.5 px-2 whitespace-nowrap">Secteur</th>
+                        <th className="py-2.5 px-2 whitespace-nowrap">Région</th>
+                        <th className="py-2.5 px-2 whitespace-nowrap">Financement</th>
+                        <th className="py-2.5 px-2 whitespace-nowrap hidden xl:table-cell">Vérification</th>
+                        <th className="py-2.5 px-3 text-right whitespace-nowrap">Dossier</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#e6dfd5]">
                       {filteredProjects.map((proj) => (
                         <tr key={proj.id} className="hover:bg-[#faf8f5] transition-colors">
-                          <td className="py-2.5 px-3 whitespace-nowrap">
+                          <td className="py-2.5 px-2.5 whitespace-nowrap">
                             <StatusBadge status={proj.currentStatus} size="sm" />
                           </td>
-                          <td className="py-2.5 px-3 max-w-sm">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-9 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-10 h-8 sm:w-12 sm:h-9 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
                                 <img 
                                   src={proj.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
                                   alt={proj.title}
@@ -510,23 +510,26 @@ export default function TrackerPage() {
                                 />
                               </div>
                               <div className="min-w-0">
-                                <Link href={`/fr/tracker/projets/${proj.slug}`} className="font-bold text-[#141414] hover:text-[#0b4627] block leading-snug truncate">
+                                <Link href={`/fr/tracker/projets/${proj.slug}`} className="font-bold text-[#141414] hover:text-[#0b4627] block leading-snug line-clamp-1">
                                   {proj.title}
                                 </Link>
                                 <span className="text-[10px] text-[#737373] line-clamp-1">{proj.description}</span>
+                                <span className="text-[9px] font-mono text-[#888888] xl:hidden block">
+                                  Audité le {new Date(proj.lastVerifiedAt).toLocaleDateString('fr-FR')}
+                                </span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-2.5 px-3 font-mono whitespace-nowrap text-[#555555]">
+                          <td className="py-2.5 px-2 font-mono whitespace-nowrap text-[#555555]">
                             {proj.sector}
                           </td>
-                          <td className="py-2.5 px-3 font-mono whitespace-nowrap text-[#555555]">
+                          <td className="py-2.5 px-2 font-mono whitespace-nowrap text-[#555555]">
                             {proj.region}
                           </td>
-                          <td className="py-2.5 px-3 font-mono whitespace-nowrap font-bold text-[#141414]">
+                          <td className="py-2.5 px-2 font-mono whitespace-nowrap font-bold text-[#141414]">
                             {proj.amount ? `${proj.amount} ${proj.currency}` : '—'}
                           </td>
-                          <td className="py-2.5 px-3 font-mono text-[11px] text-[#737373] whitespace-nowrap">
+                          <td className="py-2.5 px-2 font-mono text-[11px] text-[#737373] whitespace-nowrap hidden xl:table-cell">
                             {new Date(proj.lastVerifiedAt).toLocaleDateString('fr-FR')}
                           </td>
                           <td className="py-2.5 px-3 text-right whitespace-nowrap">
@@ -614,7 +617,7 @@ export default function TrackerPage() {
                   <Link 
                     key={ind.id} 
                     href={`/fr/tracker/indicateurs/${ind.code}`}
-                    className="block p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg hover:border-[#141414] transition-colors group"
+                    className="block p-2.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg hover:border-[#141414] transition-colors group cursor-pointer"
                   >
                     <div className="flex justify-between items-baseline mb-0.5">
                       <span className="text-[10px] font-mono uppercase text-[#737373]">{ind.code}</span>
