@@ -32,7 +32,7 @@ function NewArticleContent() {
       featured_image: formData.image || '/images/lead.jpeg',
       type: formData.type || 'decryptage',
       confidence_level: formData.confidence || 'high',
-      status: 'published',
+      status: formData.status || 'published',
       tags: tagsInput.split(',').map((t: string) => t.trim()).filter(Boolean),
       sources: formData.sourceCount ? [
         {

@@ -18,6 +18,7 @@ export function mapArticleDTOToArticle(dto: ArticleDTO): Article {
   return {
     id: dto.id,
     type: (dto.type || 'decryptage') as ContentType,
+    status: (dto.status || 'published') as any,
     title: dto.title_fr,
     titleEn: dto.title_en || dto.title_fr,
     slug: dto.slug,
@@ -37,6 +38,12 @@ export function mapArticleDTOToArticle(dto: ArticleDTO): Article {
     tags: dto.tags || [],
     issueId: dto.issue_id || 'issue-03',
     isExclusive: dto.is_exclusive || false,
+    country: dto.country || 'Burkina Faso',
+    region: dto.region,
+    province: dto.province,
+    commune: dto.commune,
+    sector: dto.sector,
+    bailleur: dto.bailleur,
   };
 }
 
@@ -85,9 +92,12 @@ export function mapProjectDTOToProject(dto: ProjectDTO): Project {
     description: dto.description,
     descriptionEn: dto.description_en || dto.description,
     category: (dto.category || 'chantiers') as CategoryCode,
+    country: dto.country || 'Burkina Faso',
     region: dto.region,
     province: dto.province || '',
+    commune: dto.commune || '',
     sector: dto.sector,
+    bailleur: dto.bailleur || (dto.actors?.find(a => a.role?.toLowerCase().includes('bailleur'))?.name) || '',
     currentStatus: (dto.current_status || 'en-construction') as ProjectStatus,
     statusHistory: (dto.status_history || []).map((h) => ({
       status: h.status as ProjectStatus,

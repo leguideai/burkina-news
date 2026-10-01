@@ -16,6 +16,8 @@ import { trackerApi } from '@/lib/api/tracker';
 import { barometreApi } from '@/lib/api/barometre';
 import { mapArticleDTOToArticle, mapCategoryDTOToCategory, mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import { Project, Indicator } from '@/data/types';
+import { articles as mockArticles } from '@/data/mock/articles';
+import { localizeArticle } from '@/data/localize';
 
 interface CategoryLayoutProps {
   categoryCode: CategoryCode;
@@ -30,12 +32,19 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
   // Instant fallback for category header while API hydrates
   const fallbackCategory = useMemo(() => getCategoryByCode(categoryCode), [categoryCode]);
 
+  // Instant fallback for articles in case API is loading or offline
+  const fallbackArticles = useMemo(() => {
+    return mockArticles
+      .filter(a => a.category === categoryCode)
+      .map(a => (isEn ? localizeArticle(a, 'en') : a));
+  }, [categoryCode, isEn]);
+
   // Live dynamic states
   const [category, setCategory] = useState<Category | undefined>(fallbackCategory);
-  const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [allArticles, setAllArticles] = useState<Article[]>(fallbackArticles);
   const [sidebarProjects, setSidebarProjects] = useState<Project[]>(() => getProjectsByCategory(categoryCode, lang).slice(0, 2));
   const [sidebarIndicators, setSidebarIndicators] = useState<Indicator[]>(() => getIndicatorsByCategory(categoryCode, lang).slice(0, 2));
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Directly driven by URL search params (?sub=...) for instant Header & tab responsiveness
   const selectedSubCategory = searchParams.get('sub') || 'all';
@@ -55,11 +64,11 @@ function CategoryLayoutContent({ categoryCode, lang = 'fr' }: CategoryLayoutProp
 
       try {
         const res = await articlesApi.listArticles({ category: categoryCode, limit: 100 });
-        if (isMounted && res.articles) {
+        if (isMounted && res.articles && res.articles.length > 0) {
           setAllArticles(res.articles.map(mapArticleDTOToArticle));
         }
       } catch {
-        // API error
+        // Fallback already loaded
       }
 
       try {

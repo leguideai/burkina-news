@@ -102,13 +102,41 @@ function AdminArticlesContent() {
       setKpisLoading(true);
       const res = await articlesApi.adminListArticles({ limit: 100 });
       const allArts = res.articles || [];
-      const total = res.meta?.total || allArts.length;
-      const histoire = allArts.filter(a => a.category_code === 'histoire').length;
-      const decryptages = allArts.filter(a => a.type === 'decryptage').length;
-      const bilingual = allArts.filter(a => Boolean(a.title_en && a.body_en)).length;
-      setKpis({ total, histoire, decryptages, bilingual });
+      if (allArts.length > 0) {
+        const total = res.meta?.total || allArts.length;
+        const histoire = allArts.filter(a => a.category_code === 'histoire').length;
+        const decryptages = allArts.filter(a => a.type === 'decryptage').length;
+        const bilingual = allArts.filter(a => Boolean(a.title_en && a.body_en)).length;
+        setKpis({ total, histoire, decryptages, bilingual });
+      } else {
+        const fb = await fetch('/api/admin/data');
+        if (fb.ok) {
+          const d = await fb.json();
+          const arts: any[] = d.articles || [];
+          setKpis({
+            total: arts.length,
+            histoire: arts.filter(a => a.category === 'histoire').length,
+            decryptages: arts.filter(a => a.type === 'decryptage').length,
+            bilingual: arts.filter(a => Boolean(a.titleEn && a.bodyEn)).length,
+          });
+        }
+      }
     } catch {
-      // Fallback
+      try {
+        const fb = await fetch('/api/admin/data');
+        if (fb.ok) {
+          const d = await fb.json();
+          const arts: any[] = d.articles || [];
+          setKpis({
+            total: arts.length,
+            histoire: arts.filter(a => a.category === 'histoire').length,
+            decryptages: arts.filter(a => a.type === 'decryptage').length,
+            bilingual: arts.filter(a => Boolean(a.titleEn && a.bodyEn)).length,
+          });
+        }
+      } catch {
+        // Silent fallback
+      }
     } finally {
       setKpisLoading(false);
     }
@@ -118,7 +146,54 @@ function AdminArticlesContent() {
     loadKpis();
   }, [loadKpis]);
 
-  // Fetch paginated articles from Go API
+  // Helper function to map store articles to ArticleDTO
+  const mapStoreArticlesToDTOs = (rawList: any[]): ArticleDTO[] => {
+    return rawList.map((a: any) => ({
+      id: a.id,
+      slug: a.slug,
+      title_fr: a.title,
+      title_en: a.titleEn,
+      excerpt_fr: a.excerpt,
+      excerpt_en: a.excerptEn,
+      body_fr: a.body,
+      body_en: a.bodyEn,
+      category_code: a.category,
+      sub_category_code: a.subCategory,
+      featured_image: a.image,
+      image: a.image,
+      status: a.status || 'published',
+      type: a.type || 'decryptage',
+      confidence_level: a.confidence || 'high',
+      author_id: 'usr-diop',
+      author: {
+        id: 'usr-diop',
+        name: a.author || 'La Rédaction',
+        email: 'redaction@burkinanews.bf',
+        role: 'journalist',
+        avatar: '',
+        title: 'Grand Reporter',
+        status: 'active',
+        created_at: a.publishedAt || new Date().toISOString(),
+      },
+      tags: a.tags || [],
+      sources: [],
+      source_count: a.sourceCount || 0,
+      read_time: parseInt(a.readTime) || 5,
+      word_count: 600,
+      issue_id: a.issueId,
+      is_exclusive: a.isExclusive || false,
+      is_lead: false,
+      country: a.country || 'Burkina Faso',
+      region: a.region,
+      province: a.province,
+      commune: a.commune,
+      sector: a.sector,
+      bailleur: a.bailleur,
+      created_at: a.publishedAt || new Date().toISOString(),
+    }));
+  };
+
+  // Fetch paginated articles from Go API with local store fallback
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -131,12 +206,65 @@ function AdminArticlesContent() {
         status: statusFilter !== 'all' ? statusFilter : undefined,
         search: searchTerm ? searchTerm : undefined,
       });
-      setArticles(res.articles || []);
-      if (res.meta) {
-        setMeta(res.meta);
+
+      if (res.articles && res.articles.length > 0) {
+        setArticles(res.articles);
+        if (res.meta) {
+          setMeta(res.meta);
+        }
+      } else {
+        // Fallback to local admin store
+        const fb = await fetch('/api/admin/data');
+        if (fb.ok) {
+          const d = await fb.json();
+          let rawList: any[] = d.articles || [];
+          if (categoryFilter !== 'all') rawList = rawList.filter(a => a.category === categoryFilter);
+          if (subCategoryFilter !== 'all') rawList = rawList.filter(a => a.subCategory === subCategoryFilter);
+          if (typeFilter !== 'all') rawList = rawList.filter(a => a.type === typeFilter);
+          if (statusFilter !== 'all') rawList = rawList.filter(a => (a.status || 'published') === statusFilter);
+          if (searchTerm) {
+            const q = searchTerm.toLowerCase();
+            rawList = rawList.filter(a => 
+              (a.title || '').toLowerCase().includes(q) || 
+              (a.excerpt || '').toLowerCase().includes(q) ||
+              (a.titleEn || '').toLowerCase().includes(q)
+            );
+          }
+          const total = rawList.length;
+          const start = (currentPage - 1) * pageSize;
+          const paged = mapStoreArticlesToDTOs(rawList.slice(start, start + pageSize));
+          setArticles(paged);
+          setMeta({ page: currentPage, limit: pageSize, total, total_pages: Math.ceil(total / pageSize) || 1 });
+        }
       }
-    } catch (err: any) {
-      error('Erreur de chargement', err.message || 'Échec de la récupération des articles depuis la base.');
+    } catch {
+      // Fallback on /api/admin/data if Go backend is offline
+      try {
+        const fb = await fetch('/api/admin/data');
+        if (fb.ok) {
+          const d = await fb.json();
+          let rawList: any[] = d.articles || [];
+          if (categoryFilter !== 'all') rawList = rawList.filter(a => a.category === categoryFilter);
+          if (subCategoryFilter !== 'all') rawList = rawList.filter(a => a.subCategory === subCategoryFilter);
+          if (typeFilter !== 'all') rawList = rawList.filter(a => a.type === typeFilter);
+          if (statusFilter !== 'all') rawList = rawList.filter(a => (a.status || 'published') === statusFilter);
+          if (searchTerm) {
+            const q = searchTerm.toLowerCase();
+            rawList = rawList.filter(a => 
+              (a.title || '').toLowerCase().includes(q) || 
+              (a.excerpt || '').toLowerCase().includes(q) ||
+              (a.titleEn || '').toLowerCase().includes(q)
+            );
+          }
+          const total = rawList.length;
+          const start = (currentPage - 1) * pageSize;
+          const paged = mapStoreArticlesToDTOs(rawList.slice(start, start + pageSize));
+          setArticles(paged);
+          setMeta({ page: currentPage, limit: pageSize, total, total_pages: Math.ceil(total / pageSize) || 1 });
+        }
+      } catch (err: any) {
+        error('Erreur de chargement', err.message || 'Échec de la récupération des articles depuis la base.');
+      }
     } finally {
       setTimeout(() => setLoading(false), 200);
     }

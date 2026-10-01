@@ -41,6 +41,17 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import SearchableSelect from '@/components/ui/SearchableSelect';
+import { projects as mockProjects } from '@/data/mock/projects';
+import { indicators as mockIndicators } from '@/data/mock/indicators';
+import { INITIAL_TRACKER_SECTORS, INITIAL_TRACKER_BAILLEURS } from '@/data/mock/tracker-filters';
+
+const initialProjectStats = {
+  total: mockProjects.length,
+  byStatus: mockProjects.reduce((acc, p) => {
+    acc[p.currentStatus] = (acc[p.currentStatus] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>)
+};
 
 export default function TrackerPageEn() {
   const [search, setSearch] = useState('');
@@ -52,11 +63,15 @@ export default function TrackerPageEn() {
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const [enProjects, setEnProjects] = useState<Project[]>([]);
-  const [stats, setStats] = useState<{ total: number; byStatus: Record<string, number> }>({ total: 0, byStatus: {} });
-  const [keyIndicators, setKeyIndicators] = useState<Indicator[]>([]);
-  const [dynamicSectors, setDynamicSectors] = useState<string[]>([]);
-  const [dynamicBailleurs, setDynamicBailleurs] = useState<string[]>([]);
+  const [enProjects, setEnProjects] = useState<Project[]>(() => mockProjects.map(p => localizeProject(p, 'en')));
+  const [stats, setStats] = useState<{ total: number; byStatus: Record<string, number> }>(initialProjectStats);
+  const [keyIndicators, setKeyIndicators] = useState<Indicator[]>(() =>
+    mockIndicators
+      .filter(i => ['PIB-CROISSANCE', 'ELEC-CAPACITE', 'OR-PRODUCTION', 'PAUVRETE'].includes(i.code))
+      .map(i => localizeIndicator(i, 'en'))
+  );
+  const [dynamicSectors, setDynamicSectors] = useState<string[]>(() => INITIAL_TRACKER_SECTORS.map(s => s.nameEn || s.name));
+  const [dynamicBailleurs, setDynamicBailleurs] = useState<string[]>(() => INITIAL_TRACKER_BAILLEURS.map(b => b.nameEn || b.name));
 
   useEffect(() => {
     let isMounted = true;
@@ -71,7 +86,7 @@ export default function TrackerPageEn() {
 
         if (!isMounted) return;
 
-        if (projRes.status === 'fulfilled' && projRes.value.projects && projRes.value.projects.length > 0) {
+        if (projRes.status === 'fulfilled' && projRes.value?.projects && projRes.value.projects.length > 0) {
           const mapped = projRes.value.projects.map(mapProjectDTOToProject).map(p => localizeProject(p, 'en'));
           setEnProjects(mapped);
         }
@@ -150,11 +165,19 @@ export default function TrackerPageEn() {
       if (selectedStatus !== 'all' && p.currentStatus !== selectedStatus) {
         return false;
       }
-      if (selectedSector !== 'all' && p.sector !== selectedSector) {
-        return false;
+      if (selectedSector !== 'all') {
+        const pSec = (p.sector || '').toLowerCase().trim();
+        const selSec = selectedSector.toLowerCase().trim();
+        if (pSec !== selSec && !pSec.startsWith(selSec.slice(0, 8))) {
+          return false;
+        }
       }
-      if (selectedBailleur !== 'all' && p.bailleur !== selectedBailleur) {
-        return false;
+      if (selectedBailleur !== 'all') {
+        const pBai = (p.bailleur || '').toLowerCase().trim();
+        const selBai = selectedBailleur.toLowerCase().trim();
+        if (pBai !== selBai && !pBai.includes(selBai) && !selBai.includes(pBai)) {
+          return false;
+        }
       }
       if (selectedRegion !== 'all' && p.region !== selectedRegion) {
         return false;
@@ -165,8 +188,9 @@ export default function TrackerPageEn() {
       if (selectedCommune !== 'all') {
         const pDesc = (p.description || '').toLowerCase();
         const pTitle = (p.title || '').toLowerCase();
+        const pCommune = (p.commune || '').toLowerCase();
         const cLower = selectedCommune.toLowerCase();
-        if (!pDesc.includes(cLower) && !pTitle.includes(cLower)) {
+        if (pCommune !== cLower && !pDesc.includes(cLower) && !pTitle.includes(cLower)) {
           return false;
         }
       }

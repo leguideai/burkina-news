@@ -62,6 +62,7 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
       sub_category_code: formData.subCategory || undefined,
       featured_image: formData.image,
       type: formData.type,
+      status: formData.status || 'published',
       confidence_level: formData.confidence,
       tags: tagsInput.split(',').map((t: string) => t.trim()).filter(Boolean),
     };
