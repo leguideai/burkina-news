@@ -10,6 +10,7 @@ export default function PwaRegister() {
           .register('/sw.js')
           .then((registration) => {
             console.log('[PWA] Service Worker actif, scope:', registration.scope);
+            registration.update();
           })
           .catch((error) => {
             console.warn('[PWA] Échec enregistrement Service Worker:', error);

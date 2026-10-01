@@ -4,9 +4,9 @@
  * aux conditions de connectivité dégradées du Sahel / Burkina Faso.
  */
 
-const CACHE_NAME_STATIC = 'bn-static-v3';
-const CACHE_NAME_DYNAMIC = 'bn-dynamic-v3';
-const CACHE_NAME_API = 'bn-api-v3';
+const CACHE_NAME_STATIC = 'bn-static-v4';
+const CACHE_NAME_DYNAMIC = 'bn-dynamic-v4';
+const CACHE_NAME_API = 'bn-api-v4';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -57,6 +57,14 @@ self.addEventListener('fetch', (event) => {
   // Ignorer les requêtes non-GET et les requêtes admin ou websockets
   if (request.method !== 'GET') return;
   if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/api/admin')) return;
+
+  // ⚠️ CRITIQUE : Ne PAS intercepter les requêtes cross-origin (sauf l'API backend).
+  // Les images externes (unsplash, gstatic, lefaso.net, sidwaya, microdata, etc.)
+  // doivent être chargées nativement par le navigateur via les balises <img> (img-src CSP).
+  // Si le SW les intercepte avec fetch(), l'appel est bloqué par connect-src CSP et les règles CORS.
+  if (url.origin !== self.location.origin && !url.pathname.includes('/api/v1/')) {
+    return;
+  }
 
   // 1. Requêtes API publiques (/api/v1/articles, /api/v1/fil, /api/tracker, etc.)
   // Stratégie : Network First avec Fallback Cache (Stale-While-Revalidate pour la résilience)
@@ -152,8 +160,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Comportement standard par défaut
-  event.respondWith(
-    fetch(request).catch(() => caches.match(request))
-  );
+  // Comportement par défaut : ne pas intercepter, laisser le navigateur gérer nativement
+  return;
 });
