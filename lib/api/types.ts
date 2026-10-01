@@ -345,6 +345,12 @@ export interface ArticleDTO {
   issue_id?: string;
   is_exclusive: boolean;
   is_lead: boolean;
+  country?: string;
+  region?: string;
+  province?: string;
+  commune?: string;
+  sector?: string;
+  bailleur?: string;
   published_at?: string | null;
   created_at: string;
   updated_at?: string;
@@ -577,9 +583,12 @@ export interface ProjectDTO {
   description: string;
   description_en?: string;
   category: string;
+  country?: string;
   region: string;
   province?: string;
+  commune?: string;
   sector: string;
+  bailleur?: string;
   current_status: ProjectStatusType;
   pnd_program?: string;
   reliability?: string;

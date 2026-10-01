@@ -9,6 +9,9 @@ import { trackerApi } from '@/lib/api/tracker';
 import { barometreApi } from '@/lib/api/barometre';
 import { mapArticleDTOToArticle, mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import PrintAuditButton from '@/components/tracker/PrintAuditButton';
+import { articles as mockArticles } from '@/data/mock/articles';
+import { indicators as mockIndicators } from '@/data/mock/indicators';
+import { getProjectBySlug } from '@/data/mock/projects';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,14 +29,14 @@ export async function generateStaticParams() {
 export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  let project: Project | undefined;
+  let project: Project | undefined = getProjectBySlug(slug, 'fr');
   try {
     const dto = await trackerApi.getProject(slug);
     if (dto) {
       project = mapProjectDTOToProject(dto);
     }
   } catch {
-    // API error
+    // API error, project already has fallback
   }
 
   if (!project) {
@@ -41,28 +44,28 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   }
 
   const currentIndex = PROJECT_STATUS_ORDER.indexOf(project.currentStatus);
-  let allArticles: Article[] = [];
+  let allArticles: Article[] = mockArticles;
   try {
     const res = await articlesApi.listArticles({ limit: 100 });
-    if (res.articles) {
+    if (res.articles && res.articles.length > 0) {
       allArticles = res.articles.map(mapArticleDTOToArticle);
     }
   } catch {
-    allArticles = [];
+    allArticles = mockArticles;
   }
   const linkedArticles = project.linkedArticleIds
     .map(id => allArticles.find(a => a.id === id || a.slug === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
-  // Indicateurs RELANCE liés (Live API)
-  let allIndicators: Indicator[] = [];
+  // Indicateurs RELANCE liés (Live API avec repli résilient)
+  let allIndicators: Indicator[] = mockIndicators;
   try {
     const indDtos = await barometreApi.listIndicators();
     if (indDtos && indDtos.length > 0) {
       allIndicators = indDtos.map(mapIndicatorDTOToIndicator);
     }
   } catch {
-    allIndicators = [];
+    allIndicators = mockIndicators;
   }
 
   const linkedIndicators = (project.linkedIndicatorCodes || [])

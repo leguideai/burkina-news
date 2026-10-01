@@ -38,11 +38,12 @@ export type ContentType =
   | 'analyse'
   | 'fil'
 
-export type ContentStatus = 'draft' | 'review' | 'published'
+export type ContentStatus = 'draft' | 'review' | 'published' | 'archived'
 
 export interface Article {
   id: string
   type: ContentType
+  status?: ContentStatus // 'published' | 'review' | 'draft' | 'archived'
   title: string
   titleEn?: string
   slug: string
@@ -52,6 +53,12 @@ export interface Article {
   bodyEn?: string
   category: CategoryCode
   subCategory?: string
+  country?: string       // Pays ou zone géographique (ex: "Burkina Faso", "Alliance des États du Sahel (AES)")
+  region?: string        // Une des 17 régions officielles (ex: "Kadiogo", "Bankui", "Nando", "Guiriko")
+  province?: string      // Une des 47 provinces (ex: "Boulkiemdé", "Houet", "Kadiogo")
+  commune?: string       // Commune ou ville (ex: "Ouagadougou", "Bobo-Dioulasso", "Koudougou")
+  sector?: string        // Secteur officiel du Tracker (ex: "Énergie & Électrification", "Mines & Carrières")
+  bailleur?: string      // Bailleur officiel (ex: "Banque mondiale", "État du Burkina Faso")
   image: string
   author: string
   publishedAt: string
@@ -224,9 +231,12 @@ export interface Project {
   description: string
   descriptionEn?: string
   category: CategoryCode
+  country?: string // "Burkina Faso"
   region: string
   province?: string
+  commune?: string
   sector: string
+  bailleur?: string
   currentStatus: ProjectStatus
   statusHistory: ProjectStatusEntry[]
   actors: ProjectActor[]
@@ -238,7 +248,6 @@ export interface Project {
   linkedArticleIds: string[]
   linkedIndicatorCodes?: string[] // Codes des indicateurs RELANCE liés (Many-to-Many)
   pndProgram?: string
-  bailleur?: string
   reliability?: 'A' | 'B' | 'C'
   image: string
 }

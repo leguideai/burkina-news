@@ -698,6 +698,67 @@
   - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 107/107 pages statiques et dynamiques générées sans incident).
 - **État :** Validé et terminé.
 
+---
+
+### Entrée F10.1 — Diagnostic & Harmonisation du Tracker : Filtres Dynamiques, Territoire & Raccordement Exhaustif des 50 Articles
+
+- **Date :** 01 Octobre 2026
+- **Objectifs :**
+  1. **Diagnostic de l'absence d'articles et projets sur le Tracker :**
+     - Résolution du problème d'affichage vide sur `/fr/tracker`, `/en/tracker`, `/fr/tracker/projets/[slug]`, `/en/tracker/projets/[slug]` et `/fr/chantiers`.
+     - Identification de la cause première : initialisation des états React à `[]` sans repli de secours (`mockProjects` / `mockArticles`) lors des indisponibilités de l'API Go.
+     - Correction des discordances de libellés entre les données mock et le référentiel dynamique (`Transports & Désenclavement` vs `Transport & Désenclavement`, `BAD (Banque africaine de développement)` vs `BAD (Banque Africaine de Développement)`, etc.) qui produisaient 0 résultat lors de la sélection d'un filtre.
+  2. **Harmonisation Territoriale & Géographique des 50 Articles et 10 Projets :**
+     - Enrichissement des 50 articles (`art-01` à `art-50`) dans `data/mock/articles.ts` avec les métadonnées géographiques et de suivi : `country` (`Burkina Faso` ou `Alliance des États du Sahel (AES)` pour les sujets communautaires), `region` (17 régions officielles), `province` (47 provinces), `commune` (351 communes), `sector` (10 secteurs officiels du Tracker) et `bailleur` (bailleurs officiels).
+     - Remplacement de toutes les mentions obsolètes ("13 régions") par les "17 régions" officielles (notamment dans `art-08` et `art-50`).
+     - Attribution d'articles d'enquête liés à 100% des 10 chantiers du Tracker dans `data/mock/projects.ts` (notamment `proj-04` lié à `art-15` & `art-06`, et `proj-07` lié à `art-27` & `art-07`).
+  3. **Robustesse et Tolérance du Moteur de Filtrage :**
+     - Ajout d'une tolérance insensible à la casse et aux variantes singulier/pluriel dans `app/fr/tracker/page.tsx` et `app/en/tracker/page.tsx` pour les secteurs, bailleurs et communes.
+     - Mise à jour des adaptateurs `lib/api/mappers.ts` et DTOs `lib/api/types.ts` (`ArticleDTO`, `ProjectDTO`) pour transférer systématiquement `country`, `commune`, `bailleur`.
+- **Fichiers modifiés :**
+  - `data/mock/articles.ts` : 50/50 articles enrichis avec `country`, `region`, `province`, `commune`, `sector`, `bailleur`.
+  - `data/mock/projects.ts` : Harmonisation stricte des secteurs, bailleurs et articles liés.
+  - `data/types.ts` : Typage TypeScript strict pour `Article` et `Project`.
+  - `lib/api/types.ts` : Ajout des attributs de localisation et filtres dans `ArticleDTO` et `ProjectDTO`.
+  - `lib/api/mappers.ts` : Mappage des champs `country`, `region`, `province`, `commune`, `sector`, `bailleur`.
+  - `app/fr/tracker/page.tsx` & `app/en/tracker/page.tsx` : Initialisation résiliente et filtrage tolérant.
+  - `app/fr/tracker/projets/[slug]/page.tsx` & `app/en/tracker/projets/[slug]/page.tsx` : Fallback garanti sur les articles d'enquête liés.
+  - `components/CategoryLayout.tsx` : Fallback d'affichage immédiat des articles de catégorie.
+- **Vérifications :**
+  - Typage TypeScript : `npx tsc --noEmit` (code 0, 0 erreur).
+  - Compilation Next.js Turbopack : `pnpm build` (code 0, 107/107 pages validées).
+- **État :** Validé et terminé.
+
+---
+
+### Entrée F10.2 — Mixage Éditorial Réaliste des Statuts des Articles (Publié, En relecture, Brouillon, Archivé) & Intégration Desk Admin
+
+- **Date :** 01 Octobre 2026
+- **Objectifs :**
+  1. **Mixage réaliste des statuts sur l'ensemble des 50 articles :**
+     - Attribution d'un statut éditorial explicite sur chaque article de `data/mock/articles.ts` selon une répartition professionnelle :
+       - **Publiés (`published`) [35 articles / 70%] :** Toutes les grandes enquêtes de Une, rubriques principales, articles liés au Tracker (`art-01`, `art-05`, `art-06`, `art-07`, `art-08`, `art-10`, `art-11`, `art-15`, `art-16`, `art-19`, `art-27`) et sujets d'envergure.
+       - **En relecture (`review`) [8 articles / 16%] :** Articles en cours de validation déontologique et fact-checking par le desk (`art-14`, `art-21`, `art-26`, `art-30`, `art-35`, `art-36`, `art-41`, `art-49`).
+       - **Brouillons (`draft`) [4 articles / 8%] :** Sujets d'enquête en cours de rédaction par les journalistes (`art-18`, `art-25`, `art-32`, `art-39`).
+       - **Archivés (`archived`) [3 articles / 6%] :** Dossiers historiques ou clôturés (`art-17`, `art-24`, `art-46`).
+  2. **Intégration et Contrôle dans l'Administration Rédactionnelle :**
+     - Ajout du champ `status` dans le formulaire d'édition [`components/admin/ArticleEditorForm.tsx`](file:///Users/mac/Music/burkina-news-project/burkina-news/components/admin/ArticleEditorForm.tsx) permettant aux journalistes et éditeurs de modifier le statut en direct (*Publié, En relecture, Brouillon, Archivé*).
+     - Raccordement des formulaires de création ([`app/admin/articles/nouveau/page.tsx`](file:///Users/mac/Music/burkina-news-project/burkina-news/app/admin/articles/nouveau/page.tsx)) et d'édition ([`app/admin/articles/[id]/page.tsx`](file:///Users/mac/Music/burkina-news-project/burkina-news/app/admin/articles/[id]/page.tsx)).
+     - Robustesse du catalogue des articles ([`app/admin/articles/page.tsx`](file:///Users/mac/Music/burkina-news-project/burkina-news/app/admin/articles/page.tsx)) : ajout d'un mécanisme de repli résilient alimentant la table, la pagination, les badges colorés et les filtres de statut même lorsque l'API backend est hors ligne.
+- **Fichiers modifiés :**
+  - `data/types.ts` : Ajout de `'archived'` à `ContentStatus` et du champ `status?: ContentStatus` dans l'interface `Article`.
+  - `data/mock/articles.ts` : Mixage des 50 articles avec les 4 statuts éditoriaux.
+  - `lib/api/mappers.ts` : Mappage du statut dans `mapArticleDTOToArticle`.
+  - `components/admin/ArticleEditorForm.tsx` : Ajout du sélecteur de statut éditorial et intégration dans l'état du formulaire.
+  - `app/admin/articles/page.tsx` : Fallback résilient avec gestion des filtres par statut et badges colorés.
+  - `app/admin/articles/[id]/page.tsx` & `app/admin/articles/nouveau/page.tsx` : Propagation de `status` à la sauvegarde.
+- **Vérifications :**
+  - Typage TypeScript : `npx tsc --noEmit` (**0 erreur**).
+  - Compilation Next.js Turbopack : `pnpm build` (**107/107 routes compilées avec succès, code 0**).
+- **État :** Validé et terminé.
+
+
+
 
 
 

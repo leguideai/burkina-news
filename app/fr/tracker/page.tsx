@@ -43,6 +43,17 @@ import {
   getCommunesByCondition,
   getRegionByProvinceName,
 } from '@/data/mock/referentiel-territoire';
+import { projects as mockProjects } from '@/data/mock/projects';
+import { indicators as mockIndicators } from '@/data/mock/indicators';
+import { INITIAL_TRACKER_SECTORS, INITIAL_TRACKER_BAILLEURS } from '@/data/mock/tracker-filters';
+
+const initialProjectStats = {
+  total: mockProjects.length,
+  byStatus: mockProjects.reduce((acc, p) => {
+    acc[p.currentStatus] = (acc[p.currentStatus] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>)
+};
 
 export default function TrackerPage() {
   const [search, setSearch] = useState('');
@@ -54,11 +65,13 @@ export default function TrackerPage() {
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [stats, setStats] = useState<{ total: number; byStatus: Record<string, number> }>({ total: 0, byStatus: {} });
-  const [keyIndicators, setKeyIndicators] = useState<Indicator[]>([]);
-  const [dynamicSectors, setDynamicSectors] = useState<string[]>([]);
-  const [dynamicBailleurs, setDynamicBailleurs] = useState<string[]>([]);
+  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [stats, setStats] = useState<{ total: number; byStatus: Record<string, number> }>(initialProjectStats);
+  const [keyIndicators, setKeyIndicators] = useState<Indicator[]>(() =>
+    mockIndicators.filter(i => ['PIB-CROISSANCE', 'ELEC-CAPACITE', 'OR-PRODUCTION', 'PAUVRETE'].includes(i.code))
+  );
+  const [dynamicSectors, setDynamicSectors] = useState<string[]>(() => INITIAL_TRACKER_SECTORS.map(s => s.name));
+  const [dynamicBailleurs, setDynamicBailleurs] = useState<string[]>(() => INITIAL_TRACKER_BAILLEURS.map(b => b.name));
 
   useEffect(() => {
     let isMounted = true;
@@ -73,7 +86,7 @@ export default function TrackerPage() {
 
         if (!isMounted) return;
 
-        if (projRes.status === 'fulfilled' && projRes.value.projects && projRes.value.projects.length > 0) {
+        if (projRes.status === 'fulfilled' && projRes.value?.projects && projRes.value.projects.length > 0) {
           setProjects(projRes.value.projects.map(mapProjectDTOToProject));
         }
 
@@ -151,11 +164,19 @@ export default function TrackerPage() {
       if (selectedStatus !== 'all' && p.currentStatus !== selectedStatus) {
         return false;
       }
-      if (selectedSector !== 'all' && p.sector !== selectedSector) {
-        return false;
+      if (selectedSector !== 'all') {
+        const pSec = (p.sector || '').toLowerCase().trim();
+        const selSec = selectedSector.toLowerCase().trim();
+        if (pSec !== selSec && !pSec.startsWith(selSec.slice(0, 8))) {
+          return false;
+        }
       }
-      if (selectedBailleur !== 'all' && p.bailleur !== selectedBailleur) {
-        return false;
+      if (selectedBailleur !== 'all') {
+        const pBai = (p.bailleur || '').toLowerCase().trim();
+        const selBai = selectedBailleur.toLowerCase().trim();
+        if (pBai !== selBai && !pBai.includes(selBai) && !selBai.includes(pBai)) {
+          return false;
+        }
       }
       if (selectedRegion !== 'all' && p.region !== selectedRegion) {
         return false;
@@ -166,8 +187,9 @@ export default function TrackerPage() {
       if (selectedCommune !== 'all') {
         const pDesc = (p.description || '').toLowerCase();
         const pTitle = (p.title || '').toLowerCase();
+        const pCommune = (p.commune || '').toLowerCase();
         const cLower = selectedCommune.toLowerCase();
-        if (!pDesc.includes(cLower) && !pTitle.includes(cLower)) {
+        if (pCommune !== cLower && !pDesc.includes(cLower) && !pTitle.includes(cLower)) {
           return false;
         }
       }

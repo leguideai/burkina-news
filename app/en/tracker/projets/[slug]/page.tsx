@@ -8,8 +8,11 @@ import { articlesApi } from '@/lib/api/articles';
 import { trackerApi } from '@/lib/api/tracker';
 import { barometreApi } from '@/lib/api/barometre';
 import { mapArticleDTOToArticle, mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
-import { localizeProject, localizeIndicator } from '@/data/localize';
+import { localizeProject, localizeIndicator, localizeArticle } from '@/data/localize';
 import PrintAuditButton from '@/components/tracker/PrintAuditButton';
+import { articles as mockArticles } from '@/data/mock/articles';
+import { indicators as mockIndicators } from '@/data/mock/indicators';
+import { getProjectBySlug } from '@/data/mock/projects';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,14 +30,14 @@ export async function generateStaticParams() {
 export default async function ProjectDetailPageEn({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  let project: Project | undefined;
+  let project: Project | undefined = getProjectBySlug(slug, 'en');
   try {
     const dto = await trackerApi.getProject(slug);
     if (dto) {
       project = localizeProject(mapProjectDTOToProject(dto), 'en');
     }
   } catch {
-    // API error
+    // API error, project already has fallback
   }
 
   if (!project) {
@@ -42,10 +45,10 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
   }
 
   const currentIndex = PROJECT_STATUS_ORDER.indexOf(project.currentStatus);
-  let enArticles: Article[] = [];
+  let enArticles: Article[] = mockArticles.map(a => localizeArticle(a, 'en'));
   try {
     const res = await articlesApi.listArticles({ limit: 100 });
-    if (res.articles) {
+    if (res.articles && res.articles.length > 0) {
       enArticles = res.articles.map(dto => {
         const mapped = mapArticleDTOToArticle(dto);
         if (dto.title_en) mapped.title = dto.title_en;
@@ -54,20 +57,20 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
       });
     }
   } catch {
-    enArticles = [];
+    enArticles = mockArticles.map(a => localizeArticle(a, 'en'));
   }
   const linkedArticles = project.linkedArticleIds
     .map(id => enArticles.find(a => a.id === id || a.slug === id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
-  let liveIndicators: Indicator[] = [];
+  let liveIndicators: Indicator[] = mockIndicators.map(i => localizeIndicator(i, 'en'));
   try {
     const indDtos = await barometreApi.listIndicators();
     if (indDtos && indDtos.length > 0) {
       liveIndicators = indDtos.map(mapIndicatorDTOToIndicator).map(i => localizeIndicator(i, 'en'));
     }
   } catch {
-    liveIndicators = [];
+    liveIndicators = mockIndicators.map(i => localizeIndicator(i, 'en'));
   }
 
   const linkedIndicators = (project.linkedIndicatorCodes || [])

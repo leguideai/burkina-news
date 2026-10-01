@@ -109,6 +109,7 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
         image: initialData.featured_image || initialData.image || '',
         tags: Array.isArray(initialData.tags) ? initialData.tags : [],
         issueId: initialData.issue_id || initialData.issueId || 'issue-03',
+        status: (initialData.status || 'published') as any,
       };
     }, [initialData]);
 
@@ -123,6 +124,7 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
       category: 'economie',
       subCategory: '',
       type: 'decryptage',
+      status: 'published',
       author: 'La Rédaction',
       readTime: '5 min',
       sourceCount: 3,
@@ -439,6 +441,19 @@ const ArticleEditorForm = forwardRef<ArticleEditorFormHandle, ArticleEditorFormP
                       className={selectClass}
                     >
                       {CONTENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Statut éditorial</label>
+                    <select 
+                      value={formData.status || 'published'} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))} 
+                      className={selectClass}
+                    >
+                      <option value="published">Publié</option>
+                      <option value="review">En relecture</option>
+                      <option value="draft">Brouillon</option>
+                      <option value="archived">Archivé</option>
                     </select>
                   </div>
                   <div>
