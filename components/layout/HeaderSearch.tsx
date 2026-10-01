@@ -23,6 +23,7 @@ import { BriefFactDTO } from '@/lib/api/types';
 import { getArticles } from '@/data/mock/articles';
 import { getProjects } from '@/data/mock/projects';
 import { getIndicators } from '@/data/mock/indicators';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface HeaderSearchProps {
   lang: 'fr' | 'en';
@@ -319,9 +320,10 @@ export default function HeaderSearch({
                       className="group flex items-start gap-2.5 p-2 rounded-lg hover:bg-[#faf8f5] transition-colors"
                     >
                       {art.image && (
-                        <img 
+                        <SafeImage 
                           src={art.image} 
                           alt="" 
+                          fallbackSrc="/images/lead.jpeg"
                           className="w-10 h-10 object-cover rounded-md shrink-0 border border-[#e6dfd5]" 
                         />
                       )}

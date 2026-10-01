@@ -7,6 +7,7 @@ import { trackerFiltersApi } from '@/lib/api/trackerFilters';
 import { mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import StatusBadge from '@/components/tracker/StatusBadge';
+import SafeImage from '@/components/ui/SafeImage';
 import { 
   PROJECT_STATUS_LABELS, 
   PROJECT_STATUS_ORDER,
@@ -529,9 +530,10 @@ export default function TrackerPage() {
                           <td className="py-2.5 px-3">
                             <div className="flex items-center gap-2.5">
                               <div className="w-10 h-8 sm:w-12 sm:h-9 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
-                                <img 
+                                <SafeImage 
                                   src={proj.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
                                   alt={proj.title}
+                                  fallbackSrc="/images/lead.jpeg"
                                   className="w-full h-full object-cover"
                                 />
                               </div>

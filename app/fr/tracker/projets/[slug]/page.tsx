@@ -12,6 +12,7 @@ import PrintAuditButton from '@/components/tracker/PrintAuditButton';
 import { articles as mockArticles } from '@/data/mock/articles';
 import { indicators as mockIndicators } from '@/data/mock/indicators';
 import { getProjectBySlug } from '@/data/mock/projects';
+import SafeImage from '@/components/ui/SafeImage';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,9 +133,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             {/* Project Image */}
             <div className="border border-[#e6dfd5] bg-white rounded-xl shadow-xs overflow-hidden">
               <div className="aspect-[16/9] w-full bg-neutral-100">
-                <img 
+                <SafeImage 
                   src={project.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=85'} 
                   alt={project.title}
+                  fallbackSrc="/images/lead.jpeg"
                   className="w-full h-full object-cover"
                 />
               </div>

@@ -155,6 +155,10 @@ export default function ArticleBodyRenderer({
                   alt={caption || 'Photographie d\'enquête'}
                   className="w-full h-auto max-h-[560px] object-cover sm:object-contain transition-transform duration-300 group-hover:scale-[1.01]"
                   loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/images/lead.jpeg';
+                  }}
                 />
                 <button
                   type="button"
@@ -384,6 +388,10 @@ export default function ArticleBodyRenderer({
               <img
                 src={lightbox.url}
                 alt={lightbox.caption}
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/images/lead.jpeg';
+                }}
                 className="w-auto h-auto max-h-[75vh] max-w-full object-contain"
               />
             </div>

@@ -11,6 +11,8 @@ export default function SafeImage({
   alt = '',
   fallbackSrc = '/images/lead.jpeg',
   className,
+  referrerPolicy = 'no-referrer',
+  loading = 'lazy',
   ...props
 }: SafeImageProps) {
   const [imgSrc, setImgSrc] = useState<string>(src as string || fallbackSrc);
@@ -23,6 +25,8 @@ export default function SafeImage({
     <img
       src={imgSrc || fallbackSrc}
       alt={alt}
+      referrerPolicy={referrerPolicy}
+      loading={loading}
       onError={() => {
         if (imgSrc !== fallbackSrc) {
           setImgSrc(fallbackSrc);

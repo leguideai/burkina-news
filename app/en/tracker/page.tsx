@@ -8,6 +8,7 @@ import { mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/ma
 import { localizeProject, localizeIndicator } from '@/data/localize';
 import ProjectCard from '@/components/tracker/ProjectCard';
 import StatusBadge from '@/components/tracker/StatusBadge';
+import SafeImage from '@/components/ui/SafeImage';
 import { 
   PROJECT_STATUS_LABELS_EN, 
   PROJECT_STATUS_ORDER,
@@ -607,7 +608,7 @@ export default function TrackerPageEn() {
                           <td className="py-2.5 px-3 font-bold text-[#141414]">
                             <div className="flex items-center gap-2.5">
                               <div className="w-10 h-8 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
-                                <img src={imageSrc} alt="" className="w-full h-full object-cover" />
+                                <SafeImage src={imageSrc} fallbackSrc="/images/lead.jpeg" alt="" className="w-full h-full object-cover" />
                               </div>
                               <div className="min-w-0">
                                 <Link 

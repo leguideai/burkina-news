@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
+import SafeImage from '@/components/ui/SafeImage';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
 import { articlesApi } from '@/lib/api/articles';
 import { homepageApi } from '@/lib/api/homepage';
@@ -270,9 +271,10 @@ export default async function HomePageEn() {
                   <div className="flex gap-2.5 items-start">
                     {fact.image && (
                       <div className="w-14 h-11 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
-                        <img 
+                        <SafeImage 
                           src={fact.image} 
                           alt="Evidence thumbnail" 
+                          fallbackSrc="/images/lead.jpeg"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         />
                       </div>
@@ -310,9 +312,10 @@ export default async function HomePageEn() {
             </h1>
 
             <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5] rounded-xl shadow-xs">
-              <img 
+              <SafeImage 
                 src={leadArticle.image || leadArticle.imageUrl} 
                 alt={leadArticle.title} 
+                fallbackSrc="/images/lead.jpeg"
                 className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
@@ -350,9 +353,10 @@ export default async function HomePageEn() {
                   className="group pb-6 border-b border-[#e6dfd5] last:border-0 last:pb-0 block cursor-pointer"
                 >
                   <div className="w-full aspect-[16/10] overflow-hidden bg-neutral-100 mb-2.5 border border-[#e6dfd5] rounded-lg">
-                    <img 
+                    <SafeImage 
                       src={art.image || art.imageUrl} 
                       alt={art.title} 
+                      fallbackSrc="/images/lead.jpeg"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -514,9 +518,10 @@ export default async function HomePageEn() {
             >
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
-                  <img 
+                  <SafeImage 
                     src={terrainArticle.image || terrainArticle.imageUrl} 
                     alt={terrainArticle.title}
+                    fallbackSrc="/images/lead.jpeg"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
@@ -562,9 +567,10 @@ export default async function HomePageEn() {
             >
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
-                  <img 
+                  <SafeImage 
                     src={factCheckArticle.image || factCheckArticle.imageUrl} 
                     alt={factCheckArticle.title}
+                    fallbackSrc="/images/lead.jpeg"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
