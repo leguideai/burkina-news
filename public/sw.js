@@ -4,9 +4,9 @@
  * aux conditions de connectivité dégradées du Sahel / Burkina Faso.
  */
 
-const CACHE_NAME_STATIC = 'bn-static-v2';
-const CACHE_NAME_DYNAMIC = 'bn-dynamic-v2';
-const CACHE_NAME_API = 'bn-api-v2';
+const CACHE_NAME_STATIC = 'bn-static-v3';
+const CACHE_NAME_DYNAMIC = 'bn-dynamic-v3';
+const CACHE_NAME_API = 'bn-api-v3';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -117,16 +117,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Fichiers statiques (_next/static, images, fonts, icônes)
+  // 3. Fichiers statiques SAME-ORIGIN (_next/static, images, fonts, icônes)
   // Stratégie : Cache First avec Network Fallback
+  // ⚠️ On ne cache que les ressources same-origin.
+  // Les images cross-origin (unsplash, gstatic, etc.) sont chargées nativement
+  // par le navigateur via img-src CSP (qui autorise https: http:).
+  // Si le SW les interceptait, le fetch() serait bloqué par connect-src CSP.
   if (
-    url.pathname.startsWith('/_next/static') ||
-    url.pathname.endsWith('.png') ||
-    url.pathname.endsWith('.jpg') ||
-    url.pathname.endsWith('.jpeg') ||
-    url.pathname.endsWith('.svg') ||
-    url.pathname.endsWith('.ico') ||
-    url.pathname.endsWith('.woff2')
+    url.origin === self.location.origin && (
+      url.pathname.startsWith('/_next/static') ||
+      url.pathname.endsWith('.png') ||
+      url.pathname.endsWith('.jpg') ||
+      url.pathname.endsWith('.jpeg') ||
+      url.pathname.endsWith('.svg') ||
+      url.pathname.endsWith('.ico') ||
+      url.pathname.endsWith('.woff2')
+    )
   ) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
