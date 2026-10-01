@@ -358,6 +358,12 @@ export default async function ProjectDetailPageEn({ params }: { params: Promise<
                     <dd className="font-semibold text-[#141414]">{project.province}</dd>
                   </div>
                 )}
+                {project.bailleur && (
+                  <div className="py-2.5 flex justify-between">
+                    <dt className="text-[#737373]">Main Donor:</dt>
+                    <dd className="font-semibold text-[#0b4627]">{project.bailleur}</dd>
+                  </div>
+                )}
                 {project.pndProgram && (
                   <div className="py-2.5 flex justify-between">
                     <dt className="text-[#737373]">PND Program:</dt>

@@ -34,6 +34,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 import { 
   BURKINA_REGIONS_17, 
   BURKINA_PROVINCES_47, 
@@ -93,14 +94,36 @@ export default function TrackerPage() {
     return () => { isMounted = false; };
   }, []);
 
-  const sectors = useMemo(() => Array.from(new Set(projects.map(p => p.sector))), [projects]);
-  const regions = useMemo(() => Array.from(new Set(projects.map(p => p.region))), [projects]);
+  const sectors = useMemo(() => {
+    return Array.from(new Set(projects.map(p => p.sector).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [projects]);
+
+  const BAILLEURS_OFFICIELS = [
+    "État du Burkina Faso",
+    "Banque mondiale",
+    "BAD",
+    "CEDEAO",
+    "Union Européenne",
+    "Coopération bilatérale",
+    "Secteur privé"
+  ];
+
+  const bailleurs = useMemo(() => {
+    const fromProjects = projects.map(p => p.bailleur).filter(Boolean) as string[];
+    const combined = Array.from(new Set([...BAILLEURS_OFFICIELS, ...fromProjects]));
+    return combined.sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [projects]);
+
+  const regions = useMemo(() => {
+    return [...BURKINA_REGIONS_17].sort((a, b) => a.localeCompare(b, 'fr'));
+  }, []);
 
   const availableProvinces = useMemo(() => {
     if (selectedRegion !== 'all') {
       return getProvincesByRegion(selectedRegion);
     }
-    return BURKINA_PROVINCES_47;
+    return [...BURKINA_PROVINCES_47].sort((a, b) => a.localeCompare(b, 'fr'));
   }, [selectedRegion]);
 
   const availableCommunes = useMemo(() => {
@@ -138,8 +161,9 @@ export default function TrackerPage() {
       }
       if (selectedCommune !== 'all') {
         const pDesc = (p.description || '').toLowerCase();
+        const pTitle = (p.title || '').toLowerCase();
         const cLower = selectedCommune.toLowerCase();
-        if (!pDesc.includes(cLower)) {
+        if (!pDesc.includes(cLower) && !pTitle.includes(cLower)) {
           return false;
         }
       }
@@ -259,73 +283,81 @@ export default function TrackerPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8">
         
         {/* Unified Search & Filters Bar */}
-        <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-3.5 sm:p-4 mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs p-3 sm:p-3.5 mb-6 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-2.5">
           
           {/* Search Field */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-[200px]">
             <input 
               type="text" 
-              placeholder="Rechercher par nom de chantier, région, bailleur, maître d'ouvrage..."
+              placeholder="Rechercher par chantier, mot-clé, opérateur..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
+              className="w-full pl-8 pr-3 py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] placeholder:text-[#888888] focus:outline-none focus:border-[#141414]"
             />
-            <Search size={14} className="absolute left-2.5 top-2.5 sm:top-2 text-[#888888]" />
+            <Search size={14} className="absolute left-2.5 top-2.5 text-[#888888]" />
             {search && (
               <button 
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-2.5 sm:top-2 text-gray-400 hover:text-gray-600 p-0.5"
+                className="absolute right-2.5 top-2 text-gray-400 hover:text-gray-600 p-0.5"
               >
                 <X size={14} />
               </button>
             )}
           </div>
 
-          {/* Faceted Dropdowns (Full-width grid on mobile, inline on desktop) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:items-center gap-2 text-xs font-mono w-full lg:w-auto">
+          {/* Faceted Searchable Dropdowns */}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono shrink-0">
             
-            <select 
+            {/* Secteur */}
+            <SearchableSelect
+              placeholder="Secteurs"
+              allOptionLabel="Tous les secteurs"
               value={selectedSector}
-              onChange={(e) => setSelectedSector(e.target.value)}
-              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
-            >
-              <option value="all">Tous les secteurs</option>
-              {sectors.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+              onChange={setSelectedSector}
+              options={sectors}
+              allValue="all"
+              searchPlaceholder="Filtrer un secteur..."
+              lang="fr"
+            />
 
-            <select 
+            {/* Bailleur */}
+            <SearchableSelect
+              placeholder="Bailleurs"
+              allOptionLabel="Tous les bailleurs"
               value={selectedBailleur}
-              onChange={(e) => setSelectedBailleur(e.target.value)}
-              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
-            >
-              <option value="all">Tous les bailleurs</option>
-              <option value="État du Burkina Faso">État du Burkina Faso</option>
-              <option value="Banque mondiale">Banque mondiale</option>
-              <option value="BAD">BAD</option>
-              <option value="CEDEAO">CEDEAO</option>
-              <option value="Union Européenne">Union Européenne</option>
-              <option value="Coopération bilatérale">Coopération bilatérale</option>
-              <option value="Secteur privé">Secteur privé</option>
-            </select>
+              onChange={setSelectedBailleur}
+              options={bailleurs}
+              allValue="all"
+              searchPlaceholder="Filtrer un bailleur..."
+              lang="fr"
+            />
 
-            <select 
+            {/* Région */}
+            <SearchableSelect
+              placeholder="Régions"
+              allOptionLabel="Toutes les 17 régions"
               value={selectedRegion}
-              onChange={(e) => {
-                const val = e.target.value;
+              onChange={(val) => {
                 setSelectedRegion(val);
                 setSelectedProvince('all');
                 setSelectedCommune('all');
               }}
-              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
-            >
-              <option value="all">Toutes les 17 régions</option>
-              {BURKINA_REGIONS_17.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+              options={regions}
+              allValue="all"
+              searchPlaceholder="Rechercher une région..."
+              lang="fr"
+            />
 
-            <select 
+            {/* Province */}
+            <SearchableSelect
+              placeholder="Provinces"
+              allOptionLabel={
+                selectedRegion !== 'all'
+                  ? `Provinces de ${selectedRegion} (${availableProvinces.length})`
+                  : 'Toutes les 47 provinces'
+              }
               value={selectedProvince}
-              onChange={(e) => {
-                const val = e.target.value;
+              onChange={(val) => {
                 setSelectedProvince(val);
                 setSelectedCommune('all');
                 if (val !== 'all') {
@@ -335,43 +367,55 @@ export default function TrackerPage() {
                   }
                 }
               }}
-              className={`w-full lg:w-auto px-2.5 py-2 sm:py-1.5 border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
-                selectedRegion !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
-              }`}
-            >
-              <option value="all">
-                {selectedRegion !== 'all' ? `Provinces de ${selectedRegion} (${availableProvinces.length})` : `Toutes les 47 provinces`}
-              </option>
-              {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
+              options={availableProvinces}
+              allValue="all"
+              searchPlaceholder="Rechercher une province..."
+              lang="fr"
+            />
 
-            <select 
+            {/* Commune / Ville */}
+            <SearchableSelect
+              placeholder="Communes"
+              allOptionLabel={
+                selectedProvince !== 'all'
+                  ? `Communes (${availableCommunes.length})`
+                  : selectedRegion !== 'all'
+                  ? `Communes de ${selectedRegion} (${availableCommunes.length})`
+                  : 'Toutes les 351 communes'
+              }
               value={selectedCommune}
-              onChange={(e) => setSelectedCommune(e.target.value)}
-              className={`w-full lg:w-auto px-2.5 py-2 sm:py-1.5 border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
-                selectedProvince !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
-              }`}
-            >
-              <option value="all">
-                {selectedProvince !== 'all' ? `Villes/Communes (${availableCommunes.length})` : `Toutes les 351 communes`}
-              </option>
-              {availableCommunes.map((c, idx) => (
-                <option key={`fr-commune-${c}-${idx}`} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedCommune}
+              options={availableCommunes}
+              allValue="all"
+              searchPlaceholder="Rechercher une commune..."
+              lang="fr"
+            />
 
-            <select 
+            {/* Statut (Présentation distincte) */}
+            <SearchableSelect
+              placeholder="Statut"
+              allOptionLabel="Tous les statuts (6)"
+              variant="status"
+              statusColorMap={PROJECT_STATUS_COLORS}
+              statusNumberMap={{
+                annonce: '01',
+                finance: '02',
+                'en-construction': '03',
+                'en-service': '04',
+                suspendu: '05',
+                annule: '06',
+              }}
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full lg:w-auto px-2.5 py-2 sm:py-1.5 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
-            >
-              <option value="all">Tous les statuts (6)</option>
-              {PROJECT_STATUS_ORDER.map(st => (
-                <option key={st} value={st}>{PROJECT_STATUS_LABELS[st]}</option>
-              ))}
-            </select>
+              onChange={setSelectedStatus}
+              options={PROJECT_STATUS_ORDER.map((st) => ({
+                value: st,
+                label: PROJECT_STATUS_LABELS[st],
+              }))}
+              allValue="all"
+              searchPlaceholder="Filtrer par statut..."
+              autoSort={false}
+              lang="fr"
+            />
 
             {/* View Mode Toggles */}
             <div className="hidden sm:flex items-center border border-[#e6dfd5] p-0.5 bg-[#faf8f5] rounded-lg">

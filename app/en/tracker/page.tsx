@@ -39,6 +39,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 
 export default function TrackerPageEn() {
   const [search, setSearch] = useState('');
@@ -92,14 +93,36 @@ export default function TrackerPageEn() {
     return () => { isMounted = false; };
   }, []);
 
-  const sectors = useMemo(() => Array.from(new Set(enProjects.map(p => p.sector))), [enProjects]);
-  const regions = useMemo(() => Array.from(new Set(enProjects.map(p => p.region))), [enProjects]);
+  const sectors = useMemo(() => {
+    return Array.from(new Set(enProjects.map(p => p.sector).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [enProjects]);
+
+  const BAILLEURS_OFFICIELS = [
+    "État du Burkina Faso",
+    "Banque mondiale",
+    "BAD",
+    "CEDEAO",
+    "Union Européenne",
+    "Coopération bilatérale",
+    "Secteur privé"
+  ];
+
+  const bailleurs = useMemo(() => {
+    const fromProjects = enProjects.map(p => p.bailleur).filter(Boolean) as string[];
+    const combined = Array.from(new Set([...BAILLEURS_OFFICIELS, ...fromProjects]));
+    return combined.sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [enProjects]);
+
+  const regions = useMemo(() => {
+    return [...BURKINA_REGIONS_17].sort((a, b) => a.localeCompare(b, 'fr'));
+  }, []);
 
   const availableProvinces = useMemo(() => {
     if (selectedRegion !== 'all') {
       return getProvincesByRegion(selectedRegion);
     }
-    return BURKINA_PROVINCES_47;
+    return [...BURKINA_PROVINCES_47].sort((a, b) => a.localeCompare(b, 'fr'));
   }, [selectedRegion]);
 
   const availableCommunes = useMemo(() => {
@@ -137,8 +160,9 @@ export default function TrackerPageEn() {
       }
       if (selectedCommune !== 'all') {
         const pDesc = (p.description || '').toLowerCase();
+        const pTitle = (p.title || '').toLowerCase();
         const cLower = selectedCommune.toLowerCase();
-        if (!pDesc.includes(cLower)) {
+        if (!pDesc.includes(cLower) && !pTitle.includes(cLower)) {
           return false;
         }
       }
@@ -324,77 +348,65 @@ export default function TrackerPageEn() {
                 </div>
               </div>
 
-              {/* Dropdown Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3">
+              {/* Dropdown Filters with Real-time Search */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 pt-3">
                 {/* Sector */}
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
-                    Sector
-                  </label>
-                  <select
+                  <SearchableSelect
+                    placeholder="Sectors"
+                    allOptionLabel="All sectors"
                     value={selectedSector}
-                    onChange={(e) => setSelectedSector(e.target.value)}
-                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
-                  >
-                    <option value="all">All sectors</option>
-                    {sectors.map(sec => (
-                      <option key={sec} value={sec}>{sec}</option>
-                    ))}
-                  </select>
+                    onChange={setSelectedSector}
+                    options={sectors}
+                    allValue="all"
+                    searchPlaceholder="Filter sector..."
+                    lang="en"
+                  />
                 </div>
 
                 {/* Bailleur */}
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
-                    Donor
-                  </label>
-                  <select
+                  <SearchableSelect
+                    placeholder="Donors"
+                    allOptionLabel="All donors"
                     value={selectedBailleur}
-                    onChange={(e) => setSelectedBailleur(e.target.value)}
-                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
-                  >
-                    <option value="all">All donors</option>
-                    <option value="État du Burkina Faso">État du Burkina Faso</option>
-                    <option value="Banque mondiale">Banque mondiale</option>
-                    <option value="BAD">BAD</option>
-                    <option value="CEDEAO">CEDEAO</option>
-                    <option value="Union Européenne">Union Européenne</option>
-                    <option value="Coopération bilatérale">Coopération bilatérale</option>
-                    <option value="Secteur privé">Secteur privé</option>
-                  </select>
+                    onChange={setSelectedBailleur}
+                    options={bailleurs}
+                    allValue="all"
+                    searchPlaceholder="Filter donor..."
+                    lang="en"
+                  />
                 </div>
 
                 {/* Region */}
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
-                    Region
-                  </label>
-                  <select
+                  <SearchableSelect
+                    placeholder="Regions"
+                    allOptionLabel="All 17 regions"
                     value={selectedRegion}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                    onChange={(val) => {
                       setSelectedRegion(val);
                       setSelectedProvince('all');
                       setSelectedCommune('all');
                     }}
-                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
-                  >
-                    <option value="all">All 17 regions</option>
-                    {BURKINA_REGIONS_17.map(reg => (
-                      <option key={reg} value={reg}>{reg}</option>
-                    ))}
-                  </select>
+                    options={regions}
+                    allValue="all"
+                    searchPlaceholder="Search region..."
+                    lang="en"
+                  />
                 </div>
 
                 {/* Province */}
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
-                    Province
-                  </label>
-                  <select
+                  <SearchableSelect
+                    placeholder="Provinces"
+                    allOptionLabel={
+                      selectedRegion !== 'all'
+                        ? `Provinces (${availableProvinces.length})`
+                        : 'All 47 provinces'
+                    }
                     value={selectedProvince}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                    onChange={(val) => {
                       setSelectedProvince(val);
                       setSelectedCommune('all');
                       if (val !== 'all') {
@@ -404,57 +416,59 @@ export default function TrackerPageEn() {
                         }
                       }
                     }}
-                    className={`w-full p-2 border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
-                      selectedRegion !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
-                    }`}
-                  >
-                    <option value="all">
-                      {selectedRegion !== 'all' ? `Provinces (${availableProvinces.length})` : `All 47 provinces`}
-                    </option>
-                    {availableProvinces.map(prov => (
-                      <option key={prov} value={prov}>{prov}</option>
-                    ))}
-                  </select>
+                    options={availableProvinces}
+                    allValue="all"
+                    searchPlaceholder="Search province..."
+                    lang="en"
+                  />
                 </div>
 
                 {/* Commune / Town */}
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
-                    Town / Commune
-                  </label>
-                  <select
+                  <SearchableSelect
+                    placeholder="Communes"
+                    allOptionLabel={
+                      selectedProvince !== 'all'
+                        ? `Towns (${availableCommunes.length})`
+                        : selectedRegion !== 'all'
+                        ? `Towns of ${selectedRegion} (${availableCommunes.length})`
+                        : 'All 351 communes'
+                    }
                     value={selectedCommune}
-                    onChange={(e) => setSelectedCommune(e.target.value)}
-                    className={`w-full p-2 border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414] ${
-                      selectedProvince !== 'all' ? 'bg-[#f4efe8] font-medium' : 'bg-[#faf8f5]'
-                    }`}
-                  >
-                    <option value="all">
-                      {selectedProvince !== 'all' ? `Towns (${availableCommunes.length})` : `All 351 communes`}
-                    </option>
-                    {availableCommunes.map((c, idx) => (
-                      <option key={`en-commune-${c}-${idx}`} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setSelectedCommune}
+                    options={availableCommunes}
+                    allValue="all"
+                    searchPlaceholder="Search town/commune..."
+                    lang="en"
+                  />
                 </div>
 
-                {/* Status */}
+                {/* Status (Distinct presentation) */}
                 <div>
-                  <label className="block text-[10px] font-mono uppercase text-[#737373] mb-1">
-                    Status
-                  </label>
-                  <select
+                  <SearchableSelect
+                    placeholder="Status"
+                    allOptionLabel="All statuses (6)"
+                    variant="status"
+                    statusColorMap={PROJECT_STATUS_COLORS}
+                    statusNumberMap={{
+                      annonce: '01',
+                      finance: '02',
+                      'en-construction': '03',
+                      'en-service': '04',
+                      suspendu: '05',
+                      annule: '06',
+                    }}
                     value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full p-2 bg-[#faf8f5] border border-[#e6dfd5] rounded-lg text-xs text-[#141414] focus:outline-none focus:border-[#141414]"
-                  >
-                    <option value="all">All statuses</option>
-                    {PROJECT_STATUS_ORDER.map(s => (
-                      <option key={s} value={s}>{PROJECT_STATUS_LABELS_EN[s]}</option>
-                    ))}
-                  </select>
+                    onChange={setSelectedStatus}
+                    options={PROJECT_STATUS_ORDER.map((st) => ({
+                      value: st,
+                      label: PROJECT_STATUS_LABELS_EN[st],
+                    }))}
+                    allValue="all"
+                    searchPlaceholder="Filter status..."
+                    autoSort={false}
+                    lang="en"
+                  />
                 </div>
               </div>
 

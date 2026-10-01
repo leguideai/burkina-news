@@ -3284,10 +3284,10 @@ export const BURKINA_PROVINCES_47: string[] = Object.keys(PROVINCE_COMMUNES_MAP)
  * Si aucune région n'est passée, retourne les 47 provinces
  */
 export function getProvincesByRegion(region?: string | null): string[] {
-  if (!region || region === "Toutes les régions" || region === "National" || region === "National (Multi-régions)") {
+  if (!region || region === "Toutes les régions" || region === "all" || region === "National" || region === "National (Multi-régions)") {
     return BURKINA_PROVINCES_47;
   }
-  return REGION_PROVINCES_MAP[region] || [];
+  return [...(REGION_PROVINCES_MAP[region] || [])].sort((a, b) => a.localeCompare("fr"));
 }
 
 /**

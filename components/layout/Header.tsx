@@ -401,40 +401,6 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* 3.1 CONTEXTUAL PRODUCT SUB-BAR (Brief Samba v5, Section 3) */}
-      {pathname.includes('/tracker') && (
-        <div className="hidden md:block bg-[#f4eee3] border-b border-[#e6dfd5] text-[11px] font-mono py-1.5 px-8">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-[#0b4627] font-bold uppercase shrink-0">
-              <span>{pathname.includes('/indicateurs') ? "RELANCE 2026-2030" : "Le Tracker"} :</span>
-            </div>
-            <div className="flex items-center gap-4 overflow-x-auto scrollbar-none">
-              {pathname.includes('/indicateurs') ? (
-                JOURNAL_PRODUCTS.find(p => p.code === 'relance')?.subMenus.map(m => (
-                  <Link
-                    key={m.code}
-                    href={isEn ? m.hrefEn : m.hrefFr}
-                    className="text-[#555555] hover:text-[#0b4627] whitespace-nowrap transition-colors"
-                  >
-                    {isEn ? m.labelEn : m.labelFr}
-                  </Link>
-                ))
-              ) : (
-                JOURNAL_PRODUCTS.find(p => p.code === 'tracker')?.subMenus.map(m => (
-                  <Link
-                    key={m.code}
-                    href={isEn ? m.hrefEn : m.hrefFr}
-                    className="text-[#555555] hover:text-[#0b4627] whitespace-nowrap transition-colors"
-                  >
-                    {isEn ? m.labelEn : m.labelFr}
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 4. MOBILE DRAWER WITH RICH NAVIGATION & LANGUAGE PICKER */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b-2 border-[#141414] px-4 py-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-150 rounded-b-2xl shadow-xl">
