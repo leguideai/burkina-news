@@ -83,49 +83,62 @@ export function mapCategoryDTOToCategory(dto: CategoryDTO): Category {
  * Convertit un ProjectDTO de l'API Go vers le format Project exploité par l'espace visiteur.
  */
 export function mapProjectDTOToProject(dto: ProjectDTO): Project {
+  const d = dto as any;
+  const currentStatus = (d.currentStatus || d.current_status || 'en-construction') as ProjectStatus;
+  const rawHistory = d.statusHistory || d.status_history || [];
+  const rawActors = d.actors || [];
+  const rawSources = d.sources || [];
+  const linkedArticleIds = d.linkedArticleIds || d.linked_article_ids || [];
+  const linkedIndicatorCodes = d.linkedIndicatorCodes || d.linked_indicator_codes || [];
+  const pndProgram = d.pndProgram || d.pnd_program || '';
+  const lastVerifiedAt = d.lastVerifiedAt || d.last_verified_at || d.updated_at || d.created_at || '';
+  const titleEn = d.titleEn || d.title_en || d.title;
+  const descriptionEn = d.descriptionEn || d.description_en || d.description;
+  const image = d.image || d.featured_image || d.featuredImage || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=900&q=85';
+
   return {
-    id: dto.id,
-    code: dto.code,
-    title: dto.title,
-    titleEn: dto.title_en || dto.title,
-    slug: dto.slug,
-    description: dto.description,
-    descriptionEn: dto.description_en || dto.description,
-    category: (dto.category || 'chantiers') as CategoryCode,
-    country: dto.country || 'Burkina Faso',
-    region: dto.region,
-    province: dto.province || '',
-    commune: dto.commune || '',
-    sector: dto.sector,
-    bailleur: dto.bailleur || (dto.actors?.find(a => a.role?.toLowerCase().includes('bailleur'))?.name) || '',
-    currentStatus: (dto.current_status || 'en-construction') as ProjectStatus,
-    statusHistory: (dto.status_history || []).map((h) => ({
-      status: h.status as ProjectStatus,
-      date: h.date,
-      source: h.source,
-      note: h.note,
-      noteEn: h.note_en,
+    id: d.id,
+    code: d.code,
+    title: d.title,
+    titleEn,
+    slug: d.slug,
+    description: d.description,
+    descriptionEn,
+    category: (d.category || 'chantiers') as CategoryCode,
+    country: d.country || 'Burkina Faso',
+    region: d.region,
+    province: d.province || '',
+    commune: d.commune || '',
+    sector: d.sector,
+    bailleur: d.bailleur || (rawActors.find((a: any) => a.role?.toLowerCase().includes('bailleur'))?.name) || '',
+    currentStatus,
+    statusHistory: rawHistory.map((h: any) => ({
+      status: (h.status || 'annonce') as ProjectStatus,
+      date: h.date || '',
+      source: h.source || '',
+      note: h.note || '',
+      noteEn: h.noteEn || h.note_en || '',
     })),
-    actors: (dto.actors || []).map((a) => ({
-      role: a.role,
-      roleEn: a.role_en,
-      name: a.name,
+    actors: rawActors.map((a: any) => ({
+      role: a.role || '',
+      roleEn: a.roleEn || a.role_en || a.role || '',
+      name: a.name || '',
     })),
-    amount: dto.amount || '',
-    currency: dto.currency || 'FCFA',
-    capacity: dto.capacity || '',
-    lastVerifiedAt: dto.last_verified_at || dto.updated_at || dto.created_at || '',
-    sources: (dto.sources || []).map((s) => ({
-      title: s.title,
-      url: s.url,
-      date: s.date,
-      institution: s.institution,
+    amount: d.amount || '',
+    currency: d.currency || 'FCFA',
+    capacity: d.capacity || '',
+    lastVerifiedAt,
+    sources: rawSources.map((s: any) => ({
+      title: s.title || '',
+      url: s.url || '',
+      date: s.date || '',
+      institution: s.institution || '',
     })),
-    linkedArticleIds: dto.linked_article_ids || [],
-    linkedIndicatorCodes: dto.linked_indicator_codes || [],
-    pndProgram: dto.pnd_program || '',
-    reliability: (dto.reliability as any) || 'A',
-    image: dto.image || dto.featured_image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=900&q=85',
+    linkedArticleIds,
+    linkedIndicatorCodes,
+    pndProgram,
+    reliability: (d.reliability as any) || 'A',
+    image,
   };
 }
 

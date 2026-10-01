@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ArticleCard from '@/components/editorial/ArticleCard';
 import ProjectCard from '@/components/tracker/ProjectCard';
+import SafeImage from '@/components/ui/SafeImage';
 import InteractiveNewsletter from '@/components/ui/InteractiveNewsletter';
 import { articlesApi } from '@/lib/api/articles';
 import { homepageApi } from '@/lib/api/homepage';
@@ -259,9 +260,10 @@ export default async function HomePage() {
                   <div className="flex gap-2.5 items-start">
                     {fact.image && (
                       <div className="w-14 h-11 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
-                        <img 
+                        <SafeImage 
                           src={fact.image} 
                           alt="Preuve factuelle" 
+                          fallbackSrc="/images/lead.jpeg"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         />
                       </div>
@@ -299,9 +301,10 @@ export default async function HomePage() {
             </h1>
 
             <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-100 mb-4 border border-[#e6dfd5] rounded-xl shadow-xs">
-              <img 
+              <SafeImage 
                 src={leadArticle.image} 
                 alt={leadArticle.title}
+                fallbackSrc="/images/lead.jpeg"
                 className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
@@ -490,9 +493,10 @@ export default async function HomePage() {
             >
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
-                  <img 
+                  <SafeImage 
                     src={terrainArticle.image || 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=85'} 
                     alt={terrainArticle.title}
+                    fallbackSrc="/images/lead.jpeg"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
@@ -530,9 +534,10 @@ export default async function HomePage() {
             >
               <div>
                 <div className="aspect-[16/9] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
-                  <img 
+                  <SafeImage 
                     src={factCheckArticle.image || 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=85'} 
                     alt={factCheckArticle.title}
+                    fallbackSrc="/images/lead.jpeg"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>

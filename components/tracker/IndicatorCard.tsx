@@ -2,6 +2,7 @@ import { Indicator } from '@/data/types';
 import { TrendingUp, TrendingDown, Minus, ArrowRight, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { getSourceUrl } from '@/data/sources';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface IndicatorCardProps {
   indicator: Indicator;
@@ -24,9 +25,10 @@ export default function IndicatorCard({ indicator, lang = 'fr' }: IndicatorCardP
       {/* Photographic Evidence Header */}
       {indicator.image && (
         <div className="block relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5] pointer-events-none">
-          <img 
+          <SafeImage 
             src={indicator.image} 
             alt={indicator.name}
+            fallbackSrc="/images/lead.jpeg"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-2 left-2 bg-[#141414] text-white px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-widest rounded-md">

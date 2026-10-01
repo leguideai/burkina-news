@@ -2,6 +2,7 @@ import { Project, PROJECT_STATUS_ORDER, PROJECT_STATUS_LABELS, PROJECT_STATUS_LA
 import StatusBadge from './StatusBadge';
 import { ArrowRight, MapPin, Building2 } from 'lucide-react';
 import Link from 'next/link';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface ProjectCardProps {
   project: Project;
@@ -25,9 +26,10 @@ export default function ProjectCard({ project, lang = 'fr' }: ProjectCardProps) 
       <div>
         {/* Miniature Image Header */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 border-b border-[#e6dfd5]">
-          <img 
+          <SafeImage 
             src={imageSrc} 
             alt={title}
+            fallbackSrc="/images/lead.jpeg"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">

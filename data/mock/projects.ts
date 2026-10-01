@@ -109,7 +109,7 @@ export const projects: Project[] = [
       { title: 'Note de financement BAD', url: '#', date: '2025-02-15', institution: 'BAD' },
     ],
     linkedArticleIds: ['art-07'],
-    image: 'https://media-files.abidjan.net/photo/000_Par8269405.jpg',
+    image: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=900&q=85',
   },
   {
     id: 'proj-03',
@@ -157,7 +157,7 @@ export const projects: Project[] = [
       { title: 'Rapport de production S1 2026', url: '#', date: '2026-07-15', institution: 'SONAGESS' },
     ],
     linkedArticleIds: ['art-06'],
-    image: 'https://www.araa.org/sites/default/files/styles/i/public/2023-07/3_0.jpg?itok=I6XH_vS_',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=85',
   },
   {
     id: 'proj-04',
@@ -270,17 +270,9 @@ export const projects: Project[] = [
     description: 'Programme national de réouverture progressive des écoles fermées pour cause d\'insécurité, avec recrutement d\'enseignants et sécurisation des sites.',
     descriptionEn: 'Statutory emergency program for the secure, phased reopening of primary and secondary schools closed by insecurity, paired with targeted teacher postings and community perimeter protection.',
     category: 'societe',
-    currentStatus: 'en-construction',
+    currentStatus: 'annonce',
     statusHistory: [
-      { status: 'annonce', date: '2025-09-01', source: 'Ministère de l\'Éducation', noteEn: 'National Back-to-School emergency initiative presented' },
-      { status: 'engage', date: '2025-11-15', source: 'Décret présidentiel', noteEn: 'Presidential decree gazetting dedicated educational security funds' },
-      { 
-        status: 'en-construction', 
-        date: '2026-02-01', 
-        source: 'Rapport MENAPLN', 
-        note: '480 écoles rouvertes à ce jour',
-        noteEn: '480 schools restored and operational according to statutory Ministry tally'
-      },
+      { status: 'annonce', date: '2025-09-01', source: 'Ministère de l\'Éducation', note: 'Lancement du programme d\'urgence', noteEn: 'National Back-to-School emergency initiative presented' },
     ],
     actors: [
       { role: 'Maître d\'ouvrage', roleEn: 'Contracting Authority', name: 'MENAPLN' },
@@ -313,11 +305,10 @@ export const projects: Project[] = [
     description: 'Réhabilitation et élargissement de 85 km de la route nationale RN1 entre Bobo-Dioulasso et Banfora.',
     descriptionEn: 'Major asphalt resurfacing, structural widening, and culvert reinforcement over 85 kilometers of strategic international highway RN1 connecting Bobo-Dioulasso and Banfora.',
     category: 'chantiers',
-    currentStatus: 'en-construction',
+    currentStatus: 'engage',
     statusHistory: [
-      { status: 'annonce', date: '2024-05-12', source: 'Conseil des ministres', noteEn: 'Inter-state transit highway corridor upgrade authorized' },
-      { status: 'engage', date: '2024-11-30', source: 'Ministère des Infrastructures', noteEn: 'Contract formally executed with international contractor' },
-      { status: 'en-construction', date: '2025-04-20', source: 'Constat terrain', noteEn: 'Heavy earthworks, subgrade grading, and asphalt laying verified' },
+      { status: 'annonce', date: '2024-05-12', source: 'Conseil des ministres', note: 'Approbation du corridor Bobo-Banfora', noteEn: 'Inter-state transit highway corridor upgrade authorized' },
+      { status: 'engage', date: '2024-11-30', source: 'Ministère des Infrastructures', note: 'Attribution du marché et mobilisation du financement', noteEn: 'Contract formally executed with international contractor' },
     ],
     actors: [
       { role: 'Maître d\'ouvrage', roleEn: 'Contracting Authority', name: 'DGIR' },
@@ -379,7 +370,7 @@ export const projects: Project[] = [
       { title: 'Données DGMG Q1 2026', url: '#', date: '2026-04-30', institution: 'DGMG' },
     ],
     linkedArticleIds: ['art-01', 'art-19'],
-    image: 'https://www.sikafinance.com/api/image/ImageNewsGet?id=DA5D943B-644D-49BD-965B-79413A1E9D01',
+    image: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=900&q=85',
   },
   {
     id: 'proj-09',
@@ -464,7 +455,7 @@ export const projects: Project[] = [
       { title: 'Note FAO Burkina', url: '#', date: '2026-06-30', institution: 'FAO' },
     ],
     linkedArticleIds: ['art-08'],
-    image: 'https://www.sidwaya.info/wp-content/uploads/2025/09/2-31.jpg',
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69109853?auto=format&fit=crop&w=900&q=85',
   },
 ]
 

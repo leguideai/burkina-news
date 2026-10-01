@@ -23,6 +23,41 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [dynamicCategories, setDynamicCategories] = useState<CategoryDTO[]>([]);
 
+  // Date dynamique exacte correspondant au pays et fuseau horaire de l'utilisateur
+  const [dynamicDateline, setDynamicDateline] = useState<string>(() => {
+    try {
+      const now = new Date();
+      const locale = isEn ? 'en-US' : 'fr-FR';
+      const formatted = new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }).format(now);
+      const cap = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+      return `${cap} · Ouagadougou & Bobo-Dioulasso`;
+    } catch {
+      return strings.dateline;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      const now = new Date();
+      const locale = isEn ? 'en-US' : 'fr-FR';
+      const formatted = new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }).format(now);
+      const cap = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+      setDynamicDateline(`${cap} · Ouagadougou & Bobo-Dioulasso`);
+    } catch {
+      setDynamicDateline(strings.dateline);
+    }
+  }, [isEn, strings.dateline]);
+
   // Load real categories & subcategories from Go API / PostgreSQL
   useEffect(() => {
     let isMounted = true;
@@ -142,8 +177,11 @@ export default function Header() {
       <div className="border-b border-[#e6dfd5] text-[11px] font-serif text-[#555555] py-1.5 px-3 sm:px-8">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-semibold uppercase tracking-wider text-[#141414] text-[10px] sm:text-[11px] truncate">
-              {strings.dateline}
+            <span 
+              className="font-semibold uppercase tracking-wider text-[#141414] text-[10px] sm:text-[11px] truncate"
+              suppressHydrationWarning
+            >
+              {dynamicDateline}
             </span>
           </div>
 

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSourceUrl } from '@/data/sources';
 import PrintAuditButton from '@/components/tracker/PrintAuditButton';
+import SafeImage from '@/components/ui/SafeImage';
 
 export const dynamic = 'force-dynamic';
 
@@ -137,9 +138,10 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
             {indicator.image && (
               <div className="bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden">
                 <div className="aspect-[16/9] w-full bg-neutral-100">
-                  <img 
+                  <SafeImage 
                     src={indicator.image} 
                     alt={indicator.name}
+                    fallbackSrc="/images/lead.jpeg"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -302,9 +304,10 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
                       className="p-3 bg-[#faf8f5] border border-[#e6dfd5] hover:border-[#141414] rounded-lg flex gap-3 items-start group cursor-pointer block transition-colors"
                     >
                       <div className="w-16 h-12 shrink-0 overflow-hidden bg-neutral-100 border border-[#e6dfd5] rounded-md">
-                        <img 
+                        <SafeImage 
                           src={p.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80'} 
                           alt={p.title}
+                          fallbackSrc="/images/lead.jpeg"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
