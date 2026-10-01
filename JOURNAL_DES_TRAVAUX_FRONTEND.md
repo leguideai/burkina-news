@@ -585,6 +585,39 @@
   - `go test ./...` : 0 erreur.
 - **État :** Validé et terminé.
 
+### Entrée F6.9 — Dynamisation CRUD des Filtres du Tracker dans l'Admin Dashboard, Tri Alphabétique & Clicabilité Universelle
+
+- **Date :** 01 Octobre 2026
+- **Objectifs :**
+  1. **Dynamisation des Filtres du Tracker :** Rendre les données des filtres (Secteurs d'intervention et Bailleurs de fonds) 100% dynamiques et administrables via le dashboard admin (`/admin/projets/filtres`) sans jamais modifier le code source.
+  2. **Tri Alphabétique Universel :** Appliquer rigoureusement l'ordre alphabétique (`localeCompare`) sur l'intégralité des menus déroulants et sélecteurs de données (Secteurs, Bailleurs, Régions, Provinces, Communes).
+  3. **Recherche Intégrée :** Équiper les menus déroulants d'une recherche textuelle en direct (`SearchableSelect`) pour une ergonomie optimale.
+  4. **Différenciation Visuelle des Statuts :** Présentation graphique distincte des 6 statuts du Tracker (onglets colorés avec numérotation et accents spécifiques) par rapport aux filtres standard.
+  5. **Clicabilité Globale des Cartes :** Rendre l'ensemble des cards du site (Articles, Chantiers, Indicateurs RELANCE, Dépêches du Fil, Kiosque de parutions) intégralement cliquables avec redirection directe vers leur page de détail.
+  6. **Design & Arrondis :** Harmonisation des coins arrondis (`rounded-lg`, `rounded-xl`, `rounded-full`) sur l'ensemble des boutons, cartes, badges et menus déroulants de la plateforme.
+  7. **Contraste de Navigation Active :** Renforcement du contraste visuel (fond et bordure) des onglets de navigation actifs par rapport aux inactifs.
+  8. **Correction d'Empilement du Baromètre :** Résolution du débordement des articles sous le cadre du Baromètre RELANCE en vue liste.
+- **Fichiers créés / modifiés :**
+  - `data/types.ts` : Modèles `TrackerSector`, `TrackerBailleur` et `TrackerFiltersConfig`.
+  - `data/mock/tracker-filters.ts` : Référentiel initial complet de 10 secteurs et 10 bailleurs de fonds officiels avec descriptions.
+  - `data/admin-store.ts` : Persistance JSON (`data/submissions/tracker-filters.json`) avec méthodes de lecture/écriture synchronisées.
+  - `app/api/admin/data/route.ts` : Handlers d'actions CRUD complètes pour les secteurs et bailleurs de fonds.
+  - `app/api/tracker/filters/route.ts` : Endpoint public `GET /api/tracker/filters?lang=...` avec tri alphabétique garanti (`localeCompare(..., lang)`).
+  - `lib/api/trackerFilters.ts` & `lib/api/index.ts` : Client API singleton `trackerFiltersApi`.
+  - `app/admin/projets/filtres/page.tsx` : Interface d'administration dédiée :
+    - Gestion CRUD complète des Secteurs (création, édition bilingue FR/EN, suppression avec vérification des projets rattachés).
+    - Gestion CRUD complète des Bailleurs de fonds (type, siège, statut, projets rattachés).
+    - Exploration interactive du découpage territorial (17 Régions, 47 Provinces, 351 Communes).
+  - `app/admin/projets/page.tsx` : Bouton d'accès direct "Gérer les Filtres" et sélecteur de secteur dynamique.
+  - `components/admin/AdminSidebar.tsx` : Intégration de l'élément "Filtres du Tracker" dans la navigation latérale avec icône `Filter`.
+  - `components/admin/ProjectEditorForm.tsx` : Raccordement des listes déroulantes de secteurs et bailleurs aux données dynamiques de l'API.
+  - `app/fr/tracker/page.tsx` & `app/en/tracker/page.tsx` : Consommation dynamique des filtres et tri alphabétique strict.
+  - `components/editorial/ArticleCard.tsx`, `components/tracker/ProjectCard.tsx`, `app/fr/tracker/indicateurs/page.tsx` : Clicabilité universelle des cartes.
+- **Vérifications :**
+  - Typage TypeScript sans faute : `npx tsc --noEmit` (code 0, 0 erreur).
+  - Compilation Next.js 16 avec Turbopack : `pnpm build` (code 0, 105/105 pages statiques et dynamiques validées).
+- **État :** Validé et terminé.
+
 ---
 
 *(Les entrées suivantes seront ajoutées lors de l'intégration des phases F8 à F10 synchronisées avec les semaines backend)*

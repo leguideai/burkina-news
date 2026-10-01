@@ -5,7 +5,8 @@ import { briefs as initialBriefs } from './mock/briefs';
 import { issues as initialIssues } from './mock/issues';
 import { categories as initialCategories } from './mock/categories';
 import { SUB_CATEGORIES } from './mock/referentiel';
-import { Article, Project, Indicator, Brief, Issue, Category, SubCategory, Correction, ProjectStatus } from './types';
+import { Article, Project, Indicator, Brief, Issue, Category, SubCategory, Correction, ProjectStatus, TrackerFiltersConfig } from './types';
+import { INITIAL_TRACKER_FILTERS_CONFIG } from './mock/tracker-filters';
 import fs from 'fs';
 import path from 'path';
 
@@ -159,6 +160,7 @@ interface AdminState {
   corrections: Correction[];
   homepageConfig: HomepageConfig;
   users: AdminUser[];
+  trackerFilters: TrackerFiltersConfig;
 }
 
 declare global {
@@ -393,6 +395,28 @@ export function getPersistedCategories(): Category[] | null {
   return null;
 }
 
+export function saveTrackerFilters(config: TrackerFiltersConfig) {
+  try {
+    const dirPath = path.join(process.cwd(), 'data', 'submissions');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    fs.writeFileSync(path.join(dirPath, 'tracker-filters.json'), JSON.stringify(config, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving tracker-filters.json', e);
+  }
+}
+
+export function getPersistedTrackerFilters(): TrackerFiltersConfig | null {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'submissions', 'tracker-filters.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading tracker-filters.json', e);
+  }
+  return null;
+}
+
 function getInitialState(): AdminState {
   const persistedConfig = getPersistedHomepageConfig();
   const persistedUsers = getPersistedAdminUsers();
@@ -404,6 +428,7 @@ function getInitialState(): AdminState {
   const persistedCorrections = getPersistedCorrections();
   const persistedCategories = getPersistedCategories();
   const persistedSubCategories = getPersistedSubCategories();
+  const persistedTrackerFilters = getPersistedTrackerFilters();
 
   const activeSubCategories: SubCategory[] = persistedSubCategories || [...SUB_CATEGORIES];
   const baseCategories: Category[] = persistedCategories || [...initialCategories];
@@ -423,6 +448,7 @@ function getInitialState(): AdminState {
     corrections: persistedCorrections || [...initialCorrections],
     homepageConfig: persistedConfig || { ...initialHomepageConfig },
     users: persistedUsers || [...ADMIN_USERS],
+    trackerFilters: persistedTrackerFilters || { ...INITIAL_TRACKER_FILTERS_CONFIG },
   };
 }
 

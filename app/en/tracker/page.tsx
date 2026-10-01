@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { trackerApi } from '@/lib/api/tracker';
 import { barometreApi } from '@/lib/api/barometre';
+import { trackerFiltersApi } from '@/lib/api/trackerFilters';
 import { mapProjectDTOToProject, mapIndicatorDTOToIndicator } from '@/lib/api/mappers';
 import { localizeProject, localizeIndicator } from '@/data/localize';
 import ProjectCard from '@/components/tracker/ProjectCard';
@@ -54,15 +55,18 @@ export default function TrackerPageEn() {
   const [enProjects, setEnProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<{ total: number; byStatus: Record<string, number> }>({ total: 0, byStatus: {} });
   const [keyIndicators, setKeyIndicators] = useState<Indicator[]>([]);
+  const [dynamicSectors, setDynamicSectors] = useState<string[]>([]);
+  const [dynamicBailleurs, setDynamicBailleurs] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
     (async () => {
       try {
-        const [projRes, statsRes, indRes] = await Promise.allSettled([
+        const [projRes, statsRes, indRes, filtersRes] = await Promise.allSettled([
           trackerApi.listProjects({ limit: 100 }),
           trackerApi.getStats(),
           barometreApi.listIndicators(),
+          trackerFiltersApi.getFilters('en'),
         ]);
 
         if (!isMounted) return;
@@ -86,6 +90,15 @@ export default function TrackerPageEn() {
             setKeyIndicators(filtered);
           }
         }
+
+        if (filtersRes.status === 'fulfilled' && filtersRes.value) {
+          if (filtersRes.value.sectors && filtersRes.value.sectors.length > 0) {
+            setDynamicSectors(filtersRes.value.sectors);
+          }
+          if (filtersRes.value.bailleurs && filtersRes.value.bailleurs.length > 0) {
+            setDynamicBailleurs(filtersRes.value.bailleurs);
+          }
+        }
       } catch (e) {
         console.error('Error synchronizing English Tracker API:', e);
       }
@@ -94,9 +107,10 @@ export default function TrackerPageEn() {
   }, []);
 
   const sectors = useMemo(() => {
-    return Array.from(new Set(enProjects.map(p => p.sector).filter(Boolean)))
-      .sort((a, b) => a.localeCompare(b, 'fr'));
-  }, [enProjects]);
+    const fromProjects = enProjects.map(p => p.sector).filter(Boolean) as string[];
+    const combined = Array.from(new Set([...dynamicSectors, ...fromProjects]));
+    return combined.sort((a, b) => a.localeCompare(b, 'en'));
+  }, [enProjects, dynamicSectors]);
 
   const BAILLEURS_OFFICIELS = [
     "État du Burkina Faso",
@@ -110,9 +124,10 @@ export default function TrackerPageEn() {
 
   const bailleurs = useMemo(() => {
     const fromProjects = enProjects.map(p => p.bailleur).filter(Boolean) as string[];
-    const combined = Array.from(new Set([...BAILLEURS_OFFICIELS, ...fromProjects]));
-    return combined.sort((a, b) => a.localeCompare(b, 'fr'));
-  }, [enProjects]);
+    const base = dynamicBailleurs.length > 0 ? dynamicBailleurs : BAILLEURS_OFFICIELS;
+    const combined = Array.from(new Set([...base, ...fromProjects]));
+    return combined.sort((a, b) => a.localeCompare(b, 'en'));
+  }, [enProjects, dynamicBailleurs]);
 
   const regions = useMemo(() => {
     return [...BURKINA_REGIONS_17].sort((a, b) => a.localeCompare(b, 'fr'));

@@ -131,6 +131,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
             <div className="divide-y divide-[#e6dfd5] bg-white border border-[#e6dfd5] rounded-xl shadow-xs overflow-hidden">
               {brief.facts?.map((fact, index) => {
                 const catInfo = fact.category_code ? categories.find(c => c.code === fact.category_code) : null;
+                const catName = catInfo ? (catInfo.name_fr || (catInfo as any).nameFr || catInfo.name_en) : '';
                 const factText = fact.text_fr;
                 const factWhyWatch = fact.why_watch_fr;
                 
@@ -158,9 +159,9 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                           <Link 
                             href={`/fr/${fact.category_code}`}
                             className="text-[10px] font-mono font-bold uppercase text-[#555555] hover:text-[#0b4627] hover:underline"
-                            title={`Voir tous les contenus ${catInfo.nameFr}`}
+                            title={`Voir tous les contenus ${catName}`}
                           >
-                            {catInfo.nameFr}
+                            {catName}
                           </Link>
                         )}
                       </div>
@@ -225,7 +226,7 @@ export default async function BriefDetailPage({ params }: { params: Promise<{ sl
                               href={`/fr/${fact.category_code}`}
                               className="text-[#737373] hover:text-[#141414] hover:underline inline-flex items-center gap-0.5"
                             >
-                              <span>Rubrique {catInfo.nameFr}</span>
+                              <span>Rubrique {catName}</span>
                               <ChevronRight size={12} />
                             </Link>
                           )}
